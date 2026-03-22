@@ -13,7 +13,7 @@ import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import storyVideo from "../data/story-video.json";
+import storyVideo from "../data/story-data.json";
 
 const COLORS = {
   bg: "#1f1313",
