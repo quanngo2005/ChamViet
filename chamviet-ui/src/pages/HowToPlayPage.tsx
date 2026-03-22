@@ -95,6 +95,37 @@ function HeroSection() {
             đại. Khám phá cách bốn bước đơn giản có thể đưa bạn đến thế giới của những câu
             chuyện dân gian Việt Nam xưa.
           </Typography>
+
+          {/* YouTube Video Mock */}
+          <Box
+            sx={{
+              mt: { xs: 4, md: 6 },
+              position: "relative",
+              paddingTop: "56.25%", // 16:9 Aspect Ratio
+              width: "100%",
+              borderRadius: 4,
+              overflow: "hidden",
+              boxShadow: "0px 20px 40px rgba(15, 23, 42, 0.08)",
+              border: "1px solid rgba(15, 23, 42, 0.06)",
+              backgroundColor: "#e2e8f0"
+            }}
+          >
+            <iframe
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                border: "none"
+              }}
+              src="https://www.youtube.com/embed/YE7VzlLtp-4?si=placeholder"
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </Box>
         </Stack>
       </Container>
     </Box>
@@ -108,7 +139,6 @@ function StepsSection() {
       title: "Lắp Ghép Puzzle",
       description:
         "Chơi vật lý: Xây dựng thế giới của bạn với những mảnh ghép gỗ thủ công lấy cảm hứng từ đời sống làng quê.",
-      accent: "rgba(217, 164, 65, 0.18)",
       glyph: "🧩",
     },
     {
@@ -116,7 +146,6 @@ function StepsSection() {
       title: "Quét Mã QR",
       description:
         "Kết nối số: Khai mở bản sắc kỹ thuật số ẩn chứa của những nhân vật huyền thoại.",
-      accent: "rgba(168, 50, 50, 0.12)",
       glyph: "📱",
     },
     {
@@ -124,7 +153,6 @@ function StepsSection() {
       title: "Đặt và Phản Chiếu",
       description:
         "Tương tác kỳ diệu: Trải nghiệm trình chiếu ảnh ba chiều (hologram) bên trong chiếc hộp đặc biệt của chúng tôi.",
-      accent: "rgba(34, 197, 94, 0.12)",
       glyph: "🔮",
     },
     {
@@ -132,111 +160,177 @@ function StepsSection() {
       title: "Xem và Lắng Nghe",
       description:
         "Câu chuyện sống động: Đắm mình vào những câu chuyện dân gian Việt Nam được kể lại với hình ảnh đầy ấn tượng.",
-      accent: "rgba(59, 130, 246, 0.12)",
       glyph: "🎧",
     },
   ];
 
   return (
-    <Box sx={{ backgroundColor: COLORS.surfaceAlt, py: { xs: 7, md: 10 } }}>
-      <Container maxWidth="lg">
-        <Stack spacing={6}>
-          <Stack spacing={1.5} sx={{ textAlign: "center", mx: "auto", maxWidth: 760 }}>
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{ alignItems: "center", justifyContent: "center", color: COLORS.title }}
-            >
-              <Box component="span" sx={{ fontSize: 18, opacity: 0.8 }}>
-                ✿
-              </Box>
-              <Box component="span" sx={{ fontSize: 18, opacity: 0.8 }}>
-                ☁
-              </Box>
-            </Stack>
-            <Typography
-              variant="h4"
-              sx={{
-                color: COLORS.title,
-                fontWeight: 900,
-                fontSize: { xs: 26, md: 36 },
-                lineHeight: { xs: "32px", md: "40px" },
-              }}
-            >
-              4 Steps to Magic
-            </Typography>
-          </Stack>
+    <Box sx={{ position: "relative", backgroundColor: COLORS.surfaceAlt, py: { xs: 7, md: 10 }, overflow: "hidden" }}>
+      {/* Decorative Elements */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 15,
+          right: 0,
+          opacity: 0.05,
+          fontSize: 300,
+          fontFamily: "'Material Symbols Outlined', sans-serif",
+          pointerEvents: "none",
+          transform: "translate(20%, -20%)"
+        }}
+        aria-hidden
+      >
+      </Box>
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: 15,
+          left: 0,
+          opacity: 0.05,
+          fontSize: 300,
+          fontFamily: "'Material Symbols Outlined', sans-serif",
+          pointerEvents: "none",
+          transform: "translate(-20%, 20%)"
+        }}
+        aria-hidden
+      >
+      </Box>
 
-          <Box
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+        <Stack spacing={6}>
+          <Typography
+            variant="h2"
             sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
-              gap: 3,
+              color: "#0f172a",
+              fontWeight: 700,
+              fontSize: { xs: 26, md: 30 },
+              lineHeight: "36px",
+              textAlign: "center"
             }}
           >
-            {steps.map((step) => (
-              <Card
-                key={step.number}
-                sx={{
-                  borderRadius: 2,
-                  backgroundColor: COLORS.surface,
-                  border: "1px solid rgba(15, 23, 42, 0.06)",
-                  boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.06)",
-                  overflow: "hidden",
-                }}
-              >
-                <Box sx={{ p: 3 }}>
-                  <Stack spacing={2}>
-                    <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
+            4 Bước ma thuật
+          </Typography>
+
+          <Box sx={{ position: "relative" }}>
+            {/* Connecting Line (Desktop) */}
+            <Box
+              sx={{
+                display: { xs: "none", lg: "block" },
+                position: "absolute",
+                top: 96,
+                left: "12.5%",
+                right: "12.5%",
+                height: 2,
+                borderTop: "2px dashed rgba(168, 50, 50, 0.2)",
+                zIndex: 0
+              }}
+            />
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
+                columnGap: 6,
+                rowGap: 8,
+                position: "relative",
+                zIndex: 1
+              }}
+            >
+              {steps.map((step) => (
+                <Stack key={step.number} alignItems="center" textAlign="center">
+                  {/* Image Container */}
+                  <Box
+                    sx={{
+                      width: 192,
+                      height: 192,
+                      borderRadius: 3,
+                      border: "2px solid rgba(168, 50, 50, 0.2)",
+                      backgroundColor: COLORS.surfaceAlt,
+                      position: "relative",
+                      mb: 3,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: "10px",
+                        backgroundColor: "rgba(168, 50, 50, 0.05)",
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        p: 2,
+                        position: "relative",
+                        zIndex: 1,
+                      }}
+                    >
                       <Box
                         sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 2,
-                          backgroundColor: step.accent,
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 3,
+                          backgroundColor: "rgba(168, 50, 50, 0.1)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: 22,
+                          fontSize: 64
                         }}
-                        aria-hidden
                       >
                         {step.glyph}
                       </Box>
+                    </Box>
+                  </Box>
 
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography
-                          sx={{
-                            color: COLORS.primary,
-                            fontWeight: 900,
-                            fontSize: 12,
-                            letterSpacing: "1.2px",
-                            textTransform: "uppercase",
-                            lineHeight: "18px",
-                          }}
-                        >
-                          Step {step.number}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            color: COLORS.title,
-                            fontWeight: 800,
-                            fontSize: 18,
-                            lineHeight: "26px",
-                          }}
-                        >
-                          {step.title}
-                        </Typography>
-                      </Box>
-                    </Stack>
+                  {/* Number Badge */}
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 3,
+                      backgroundColor: COLORS.primary,
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -2px rgba(0,0,0,0.1)",
+                      mb: 2,
+                    }}
+                  >
+                    {step.number}
+                  </Box>
 
-                    <Typography sx={{ color: COLORS.body, fontSize: 14, lineHeight: 1.7 }}>
-                      {step.description}
-                    </Typography>
-                  </Stack>
-                </Box>
-              </Card>
-            ))}
+                  {/* Title */}
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      color: "#0f172a",
+                      fontWeight: 700,
+                      fontSize: 20,
+                      lineHeight: "28px",
+                      mb: 1
+                    }}
+                  >
+                    {step.title}
+                  </Typography>
+
+                  {/* Description */}
+                  <Typography
+                    sx={{
+                      color: "#475569",
+                      fontSize: 14,
+                      lineHeight: "20px"
+                    }}
+                  >
+                    {step.description}
+                  </Typography>
+                </Stack>
+              ))}
+            </Box>
           </Box>
         </Stack>
       </Container>

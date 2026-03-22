@@ -46,7 +46,8 @@ type StoryVideoContent = {
 
 const CONTENT = storyVideo as StoryVideoContent;
 
-function CinemaHero({ onPlay }: { onPlay: () => void }) {
+function CinemaHero() {
+  const [playing, setPlaying] = useState(false);
   return (
     <Box sx={{ py: { xs: 4, md: 6 } }}>
       <Container maxWidth="lg">
@@ -71,38 +72,50 @@ function CinemaHero({ onPlay }: { onPlay: () => void }) {
               justifyContent: "center",
             }}
           >
-            <Box
-              sx={{
-                width: { xs: 76, md: 96 },
-                height: { xs: 76, md: 96 },
-                borderRadius: 3,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(168, 50, 50, 0.80)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                boxShadow: "0px 25px 50px rgba(0, 0, 0, 0.25)",
-                cursor: "pointer",
-                userSelect: "none",
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label="Play story video"
-            onClick={onPlay}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onPlay();
-              }
-            }}
-          >
-            <Typography sx={{ color: "#ffffff", fontSize: { xs: 34, md: 42 }, pl: 0.5 }}>
-              ▶
-              </Typography>
-            </Box>
+            {!playing ? (
+              <Box
+                sx={{
+                  width: { xs: 76, md: 96 },
+                  height: { xs: 76, md: 96 },
+                  borderRadius: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(168, 50, 50, 0.80)",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
+                  boxShadow: "0px 25px 50px rgba(0, 0, 0, 0.25)",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Play story video"
+                onClick={() => setPlaying(true)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setPlaying(true);
+                  }
+                }}
+              >
+                <Typography sx={{ color: "#ffffff", fontSize: { xs: 34, md: 42 }, pl: 0.5 }}>
+                  ▶
+                </Typography>
+              </Box>
+            ) : (
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/Mb0RWyh3sqQ?autoplay=1"
+                title="Story Video"
+                frameBorder="0"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+            )}
           </Box>
 
-          <Box
+          {/* <Box
             sx={{
               position: "absolute",
               left: 0,
@@ -142,7 +155,7 @@ function CinemaHero({ onPlay }: { onPlay: () => void }) {
                 </Typography>
               </Stack>
             </Stack>
-          </Box>
+          </Box> */}
         </Box>
       </Container>
     </Box>
@@ -407,12 +420,7 @@ export default function StoryPage() {
 
   return (
     <Box sx={{ backgroundColor: COLORS.bg }}>
-      <CinemaHero
-        onPlay={() => {
-          setToastMessage("Video chưa được cấu hình (VITE_STORY_VIDEO_URL).");
-          setToastOpen(true);
-        }}
-      />
+      <CinemaHero />
       <StoryDetails />
       <CallToAction />
       <ExploreSection
