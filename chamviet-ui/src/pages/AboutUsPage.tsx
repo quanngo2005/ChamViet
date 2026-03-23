@@ -101,7 +101,7 @@ function HeroSection() {
               fontSize: '60px',
               lineHeight: '60px',
               textAlign: 'center',
-              fontFamily: "'Be Vietnam Pro', sans-serif",
+              
             }}
           >
             Tìm Hiểu Văn Hóa Thông Qua Đồ Chơi
@@ -115,7 +115,7 @@ function HeroSection() {
               textAlign: 'center',
               fontWeight: 300,
               maxWidth: '672px',
-              fontFamily: "'Be Vietnam Pro', sans-serif",
+              
             }}
           >
             Kết nối thế hệ kỹ thuật số với di sản văn hóa phong phú, đầy cảm xúc của Việt Nam.
@@ -144,7 +144,7 @@ function MissionSection() {
                   fontSize: '14px',
                   letterSpacing: '2.8px',
                   textTransform: 'uppercase',
-                  fontFamily: "'Be Vietnam Pro', sans-serif",
+                  
                 }}
               >
                 Sứ Mệnh
@@ -158,7 +158,7 @@ function MissionSection() {
                   fontWeight: 900,
                   fontSize: '36px',
                   lineHeight: '40px',
-                  fontFamily: "'Be Vietnam Pro', sans-serif",
+                  
                 }}
               >
                 Cầu nối thời gian
@@ -170,7 +170,7 @@ function MissionSection() {
                   color: '#475569',
                   fontSize: '18px',
                   lineHeight: '1.625',
-                  fontFamily: "'Be Vietnam Pro', sans-serif",
+                  
                 }}
               >
                 Tại Chạm Việt, chúng tôi tin rằng văn hóa không chỉ được tìm thấy trong bảo
@@ -194,7 +194,7 @@ function MissionSection() {
                         fontWeight: 'bold',
                         fontSize: '16px',
                         color: '#0f172a',
-                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        
                       }}
                     >
                       Di sản kể chuyện
@@ -203,7 +203,7 @@ function MissionSection() {
                       sx={{
                         fontSize: '14px',
                         color: '#475569',
-                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        
                       }}
                     >
                       Kể những câu chuyện về Việt Nam thông qua những hiện vật bằng gỗ được chế
@@ -225,7 +225,7 @@ function MissionSection() {
                         fontWeight: 'bold',
                         fontSize: '16px',
                         color: '#0f172a',
-                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        
                       }}
                     >
                       Kết nối giữa các thế hệ
@@ -234,7 +234,7 @@ function MissionSection() {
                       sx={{
                         fontSize: '14px',
                         color: '#475569',
-                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        
                       }}
                     >
                       Khuyến khích cha mẹ và con cái cùng nhau khám phá cội nguồn thông qua các
@@ -328,7 +328,7 @@ function StorySection() {
                 fontSize: '14px',
                 letterSpacing: '2.8px',
                 textTransform: 'uppercase',
-                fontFamily: "'Be Vietnam Pro', sans-serif",
+                
               }}
             >
               Câu Chuyện
@@ -340,7 +340,7 @@ function StorySection() {
                 fontWeight: 900,
                 fontSize: '36px',
                 textAlign: 'center',
-                fontFamily: "'Be Vietnam Pro', sans-serif",
+                
               }}
             >
               Khởi nguồn của Chạm Việt
@@ -366,7 +366,7 @@ function StorySection() {
                       fontSize: '18px',
                       color: '#334155',
                       lineHeight: '1.625',
-                      fontFamily: "'Be Vietnam Pro', sans-serif",
+                      
                     }}
                   >
                     Chạm Việt ra đời từ một nhận ra rất giản dị: trẻ em đang dần mất kết nối với
@@ -379,7 +379,7 @@ function StorySection() {
                       fontSize: '18px',
                       color: '#334155',
                       lineHeight: '1.625',
-                      fontFamily: "'Be Vietnam Pro', sans-serif",
+                      
                     }}
                   >
                     Chúng tôi quyết định kết hợp sự ấm áp của chất liệu gỗ truyền thống với sức
@@ -433,7 +433,7 @@ function StorySection() {
                             fontSize: '16px',
                             color: '#0f172a',
                             mb: 0.5,
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                            
                           }}
                         >
                           {feature.title}
@@ -442,7 +442,7 @@ function StorySection() {
                           sx={{
                             fontSize: '12px',
                             color: '#64748b',
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                            
                           }}
                         >
                           {feature.description}
@@ -485,7 +485,7 @@ function TeamSection() {
                 fontSize: '14px',
                 letterSpacing: '2.8px',
                 textTransform: 'uppercase',
-                fontFamily: "'Be Vietnam Pro', sans-serif",
+                
               }}
             >
               The Team
@@ -497,7 +497,7 @@ function TeamSection() {
                 fontWeight: 900,
                 fontSize: '36px',
                 textAlign: 'center',
-                fontFamily: "'Be Vietnam Pro', sans-serif",
+                
               }}
             >
               Creators of Culture
@@ -539,7 +539,7 @@ function TeamSection() {
                         fontWeight: 'bold',
                         fontSize: '20px',
                         color: '#0f172a',
-                        fontFamily: "'Be Vietnam Pro', sans-serif",
+                        
                       }}
                     >
                       {member.name}
