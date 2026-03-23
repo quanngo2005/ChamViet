@@ -9,9 +9,9 @@ import Container from "@mui/material/Container";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
 import Snackbar from "@mui/material/Snackbar";
-import Slider from "@mui/material/Slider";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 import storyVideo from "../data/story-data.json";
 
@@ -48,22 +48,33 @@ const CONTENT = storyVideo as StoryVideoContent;
 
 function CinemaHero() {
   const [playing, setPlaying] = useState(false);
+  const isLandscapePhone = useMediaQuery("(orientation: landscape) and (max-height: 500px)", {
+    noSsr: true,
+  });
+
   return (
-    <Box sx={{ py: { xs: 4, md: 6 } }}>
-      <Container maxWidth="lg">
+    <Box sx={{ py: isLandscapePhone ? 0 : { xs: 4, md: 6 } }}>
+      <Container
+        maxWidth={isLandscapePhone ? false : "lg"}
+        disableGutters={isLandscapePhone}
+        sx={isLandscapePhone ? { height: "100vh" } : undefined}
+      >
         <Box
           sx={{
             position: "relative",
-            borderRadius: 3.5,
+            borderRadius: isLandscapePhone ? 0 : 3.5,
             overflow: "hidden",
-            border: `1px solid ${COLORS.borderSoft}`,
-            boxShadow: "0px 26px 56px rgba(0, 0, 0, 0.38)",
+            border: isLandscapePhone ? "none" : `1px solid ${COLORS.borderSoft}`,
+            boxShadow: isLandscapePhone ? "none" : "0px 26px 56px rgba(0, 0, 0, 0.38)",
+            height: isLandscapePhone ? "100vh" : "auto",
+            width: "100%",
           }}
         >
           <Box
             sx={{
-              aspectRatio: "16 / 9",
-              width: "100%",
+              ...(isLandscapePhone
+                ? { width: "100%", height: "100%" }
+                : { aspectRatio: "16 / 9", width: "100%" }),
               backgroundImage:
                 "linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.70) 100%), radial-gradient(circle at 18% 22%, rgba(168, 50, 50, 0.55) 0%, rgba(168, 50, 50, 0.00) 55%), radial-gradient(circle at 85% 18%, rgba(217, 164, 65, 0.28) 0%, rgba(217, 164, 65, 0.00) 60%)",
               backgroundColor: "#0b0b0b",

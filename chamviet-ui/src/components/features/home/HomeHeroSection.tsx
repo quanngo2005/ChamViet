@@ -19,8 +19,8 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
       <Box
         sx={{
           position: 'absolute',
-          top: 40,
-          right: 40,
+          top: { xs: 16, md: 40 },
+          right: { xs: 16, md: 40 },
           width: 128,
           height: 128,
           backgroundColor: 'rgba(217, 164, 65, 0.2)',
@@ -32,8 +32,8 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
       <Box
         sx={{
           position: 'absolute',
-          bottom: 40,
-          left: 40,
+          bottom: { xs: 16, md: 40 },
+          left: { xs: 16, md: 40 },
           width: 192,
           height: 192,
           backgroundColor: 'secondary.light',
@@ -78,7 +78,7 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
                 sx={{
                   color: 'secondary.dark',
                   fontWeight: 'bold',
-                  fontSize: { xs: '42px', md: '60px' },
+                  fontSize: { xs: '34px', sm: '42px', md: '60px' },
                   lineHeight: 1.2,
                 }}
               >
@@ -88,21 +88,29 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
                 </Box>
               </Typography>
 
-              <Typography sx={{ color: 'secondary.main', fontSize: '20px', lineHeight: 1.4, maxWidth: '512px' }}>
+              <Typography
+                sx={{
+                  color: 'secondary.main',
+                  fontSize: { xs: '16px', sm: '18px', md: '20px' },
+                  lineHeight: 1.4,
+                  maxWidth: '512px',
+                }}
+              >
                 {copy.description}
               </Typography>
 
-              <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap" useFlexGap>
                 <Button
                   variant="contained"
                   sx={{
                     backgroundColor: 'primary.main',
                     color: 'common.white',
-                    padding: '16px 32px',
+                    padding: { xs: '12px 20px', sm: '16px 32px' },
                     borderRadius: '12px',
                     fontWeight: 'bold',
-                    fontSize: '18px',
+                    fontSize: { xs: '16px', sm: '18px' },
                     textTransform: 'none',
+                    width: { xs: '100%', sm: 'auto' },
                     '&:hover': { backgroundColor: 'primary.dark' },
                   }}
                 >
@@ -113,11 +121,12 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
                   sx={{
                     borderColor: 'rgba(168, 50, 50, 0.2)',
                     color: 'secondary.dark',
-                    padding: '16px 32px',
+                    padding: { xs: '12px 20px', sm: '16px 32px' },
                     borderRadius: '12px',
                     fontWeight: 'bold',
-                    fontSize: '18px',
+                    fontSize: { xs: '16px', sm: '18px' },
                     textTransform: 'none',
+                    width: { xs: '100%', sm: 'auto' },
                   }}
                 >
                   {copy.secondaryCta}
@@ -131,7 +140,7 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
               sx={{
                 borderRadius: '16px',
                 boxShadow: '0px 25px 50px -12px rgba(0,0,0,0.25)',
-                height: { xs: 350, md: 500 },
+                height: { xs: 260, sm: 350, md: 500 },
                 border: '4px solid',
                 borderColor: 'background.default',
                 overflow: 'hidden',

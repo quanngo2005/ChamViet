@@ -1,4 +1,5 @@
 import { Outlet } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react"
 
 import Box from "@mui/material/Box";
 
@@ -12,6 +13,7 @@ export default function MainLayout() {
       <Box component="main" id="content" role="main" sx={{ flex: 1 }}>
         <Outlet />
       </Box>
+      <Analytics />
       <Footer />
     </Box>
   );

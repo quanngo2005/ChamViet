@@ -1,4 +1,4 @@
-import storyVideo from "../../../data/story-video.json";
+import storyVideo from "../../../data/story-data.json";
 
 export const COLORS = {
   bg: "#1f1313",
