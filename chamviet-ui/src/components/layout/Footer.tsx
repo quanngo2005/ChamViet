@@ -34,28 +34,29 @@ export default function Footer() {
       sx={{
         backgroundColor: "rgba(168, 50, 50, 0.05)",
         borderTop: "1px solid rgba(168, 50, 50, 0.1)",
-        py: 8,
+        py: { xs: 5, md: 8 },
         mt: "auto",
       }}
     >
       <Container maxWidth="lg">
-        <Stack spacing={6}>
+        <Stack spacing={{ xs: 4, md: 6 }}>
           <Box
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr" },
-              gap: 6,
+              gap: { xs: 4, md: 6 },
+              textAlign: { xs: "center", md: "left" },
             }}
           >
             <Box>
               <Stack spacing={3}>
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Stack direction="row" spacing={1} alignItems="center" justifyContent={{ xs: "center", md: "flex-start" }}>
                   <Box
                     sx={{
                       backgroundColor: "#a83232",
                       borderRadius: "6px",
-                      width: 40,
-                      height: 40,
+                      width: { xs: 36, md: 40 },
+                      height: { xs: 36, md: 40 },
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -68,7 +69,7 @@ export default function Footer() {
                   <Typography
                     sx={{
                       fontWeight: 800,
-                      fontSize: "24px",
+                      fontSize: { xs: "20px", md: "24px" },
                       color: "#a83232",
                     }}
                   >
@@ -78,10 +79,11 @@ export default function Footer() {
 
                 <Typography
                   sx={{
-                    fontSize: "16px",
+                    fontSize: { xs: "14.5px", md: "16px" },
                     color: "#475569",
                     lineHeight: 1.5,
-                    maxWidth: 384,
+                    maxWidth: { xs: "none", md: 384 },
+                    mx: { xs: "auto", md: 0 },
                   }}
                 >
                   Chúng tôi kiến tạo những giá trị giáo dục bền vững thông qua chất liệu gỗ tự
@@ -104,7 +106,7 @@ export default function Footer() {
                   >
                     {group.title}
                   </Typography>
-                  <Stack spacing={2}>
+                  <Stack spacing={2} sx={{ alignItems: { xs: "center", md: "flex-start" } }}>
                     {group.links.map((link) => (
                       <Link
                         key={link.label}
@@ -129,10 +131,10 @@ export default function Footer() {
           <Box
             sx={{
               borderTop: "1px solid rgba(168, 50, 50, 0.1)",
-              pt: 4,
+              pt: { xs: 3, md: 4 },
             }}
           >
-            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>
+            <Typography sx={{ fontSize: "12px", color: "#64748b", textAlign: { xs: "center", md: "left" } }}>
               © 2024 Chạm Việt. Tất cả quyền được bảo lưu.
             </Typography>
           </Box>

@@ -8,7 +8,6 @@ import {
   ProductIncludedSection,
   ProductHologramSection,
   ProductEducationSection,
-  ProductRelatedSection,
 } from '../components/features/productDetail';
 import { useProductDetailData } from '../hooks/useProductDetailData';
 import { PRODUCT_DETAIL_COPY } from '../data/productDetail';
@@ -17,7 +16,7 @@ import { useParams } from 'react-router-dom';
 export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
-  const { product, quantity, setQuantity, relatedProducts } = useProductDetailData(productId);
+  const { product, quantity, setQuantity } = useProductDetailData(productId);
 
   if (!product) {
     const { notFound } = PRODUCT_DETAIL_COPY;
@@ -100,7 +99,7 @@ export default function ProductDetailPage() {
       <ProductIncludedSection />
       <ProductHologramSection />
       <ProductEducationSection />
-      
+
     </Box>
   );
 }
