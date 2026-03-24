@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 
 import Footer from "./Footer";
 import Header from "./Header";
+import ChatWidget from "../common/ChatWidget";
 
 export default function MainLayout() {
   return (
@@ -15,6 +16,7 @@ export default function MainLayout() {
       </Box>
       <Analytics />
       <Footer />
+      <ChatWidget />
     </Box>
   );
 }
