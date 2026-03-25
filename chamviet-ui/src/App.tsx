@@ -13,6 +13,7 @@ import HowToPlayPage from "./pages/HowToPlayPage";
 import ProductListPage from "./pages/ProductListPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import StoryPage from "./pages/StoryPage";
+import ScanPage from "./pages/ScanPage";
 
 function ScrollToTop() {
   const location = useLocation();
@@ -84,6 +85,8 @@ export default function App() {
         <Route path="how-to-play" element={<HowToPlayPage />} />
         <Route path="products" element={<ProductListPage />} />
         <Route path="products/:productId" element={<ProductDetailPage />} />
+        <Route path="scan" element={<ScanPage />} />
+        <Route path="story/:storySlug" element={<StoryPage />} />
 
           <Route
             path="dashboard"
