@@ -18,6 +18,8 @@ import YouTubeStopOverlayPlayer, {
   type VideoRegistry,
   type VideoStopConfig,
 } from "../components/video/YouTubeStopOverlayPlayer";
+import mascotHac from "../assets/be-hac.png";
+
 
 const COLORS = {
   bg: "#1f1313",
@@ -53,11 +55,11 @@ const CONTENT = storyVideo as StoryVideoContent;
 const VIDEO_REGISTRY: VideoRegistry = {
   Mb0RWyh3sqQ: {
     stopTime: 30,
-    mascotAvatar: "/assets/be-go.png",
+    mascotAvatar: mascotHac,
     dialogue: [
       {
         id: 0,
-        text: "Chào bạn! Mình là Bé Gỗ. Bạn thấy tác phẩm này thế nào?",
+        text: "Chào bạn! Mình là Bé hạc. Bạn thấy tác phẩm này thế nào?",
         options: [
           { label: "Rất tuyệt vời!", nextStep: 1 },
           { label: "Tìm hiểu thêm", nextStep: 2 },
@@ -98,23 +100,23 @@ function CinemaHero({ onCtaClick }: { onCtaClick?: (videoId: string, config: Vid
             boxShadow: isLandscapePhone ? "none" : "0px 26px 56px rgba(0, 0, 0, 0.38)",
             height: isLandscapePhone ? "100vh" : "auto",
             width: "100%",
+          }}
+        >
+          <Box
+            sx={{
+              ...(isLandscapePhone
+                ? { width: "100%", height: "100%" }
+                : { aspectRatio: "16 / 9", width: "100%" }),
+              position: "relative",
             }}
           >
-            <Box
-              sx={{
-                ...(isLandscapePhone
-                  ? { width: "100%", height: "100%" }
-                  : { aspectRatio: "16 / 9", width: "100%" }),
-                position: "relative",
-              }}
-            >
-              <YouTubeStopOverlayPlayer
-                videoId="Mb0RWyh3sqQ"
-                registry={VIDEO_REGISTRY}
-                colors={COLORS}
-                onCtaClick={onCtaClick}
-              />
-            </Box>
+            <YouTubeStopOverlayPlayer
+              videoId="Mb0RWyh3sqQ"
+              registry={VIDEO_REGISTRY}
+              colors={COLORS}
+              onCtaClick={onCtaClick}
+            />
+          </Box>
         </Box>
       </Container>
     </Box>
