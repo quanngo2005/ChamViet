@@ -19,6 +19,7 @@ const navItems = [
   { label: "Sản Phẩm", to: "/products" },
   { label: "Câu Chuyện", to: "/story" },
   { label: "Cách Chơi", to: "/how-to-play" },
+  { label: "Quét Thẻ", to: "/scan" },
   { label :"Giỏ Hàng", to: "/cart" },
   { label: "Đăng Nhập", to: "/login" },
 ];

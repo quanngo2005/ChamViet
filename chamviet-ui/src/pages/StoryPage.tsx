@@ -14,6 +14,12 @@ import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 import storyVideo from "../data/story-data.json";
+import YouTubeStopOverlayPlayer, {
+  type VideoRegistry,
+  type VideoStopConfig,
+} from "../components/video/YouTubeStopOverlayPlayer";
+import mascotHac from "../assets/be-hac.png";
+
 
 const COLORS = {
   bg: "#1f1313",
@@ -46,8 +52,34 @@ type StoryVideoContent = {
 
 const CONTENT = storyVideo as StoryVideoContent;
 
-function CinemaHero() {
-  const [playing, setPlaying] = useState(false);
+const VIDEO_REGISTRY: VideoRegistry = {
+  Mb0RWyh3sqQ: {
+    stopTime: 30,
+    mascotAvatar: mascotHac,
+    dialogue: [
+      {
+        id: 0,
+        text: "Chào bạn! Mình là Bé hạc. Bạn thấy tác phẩm này thế nào?",
+        options: [
+          { label: "Rất tuyệt vời!", nextStep: 1 },
+          { label: "Tìm hiểu thêm", nextStep: 2 },
+        ],
+      },
+      {
+        id: 1,
+        text: "Ưu đãi đặc biệt! Khám phá bộ sưu tập ChamViet và nhận ưu đãi hôm nay.",
+        options: [{ label: "Xem sản phẩm", nextStep: -1, isCta: true }],
+      },
+      {
+        id: 2,
+        text: "Sản phẩm này mang đậm nét văn hóa Việt. Bạn sẵn sàng xem tiếp chứ?",
+        options: [{ label: "Bắt đầu thôi!", nextStep: -1, isCta: true }],
+      },
+    ],
+  },
+};
+
+function CinemaHero({ onCtaClick }: { onCtaClick?: (videoId: string, config: VideoStopConfig) => void }) {
   const isLandscapePhone = useMediaQuery("(orientation: landscape) and (max-height: 500px)", {
     noSsr: true,
   });
@@ -75,98 +107,16 @@ function CinemaHero() {
               ...(isLandscapePhone
                 ? { width: "100%", height: "100%" }
                 : { aspectRatio: "16 / 9", width: "100%" }),
-              backgroundImage:
-                "linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.70) 100%), radial-gradient(circle at 18% 22%, rgba(168, 50, 50, 0.55) 0%, rgba(168, 50, 50, 0.00) 55%), radial-gradient(circle at 85% 18%, rgba(217, 164, 65, 0.28) 0%, rgba(217, 164, 65, 0.00) 60%)",
-              backgroundColor: "#0b0b0b",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              position: "relative",
             }}
           >
-            {!playing ? (
-              <Box
-                sx={{
-                  width: { xs: 76, md: 96 },
-                  height: { xs: 76, md: 96 },
-                  borderRadius: 3,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(168, 50, 50, 0.80)",
-                  border: "1px solid rgba(255, 255, 255, 0.12)",
-                  boxShadow: "0px 25px 50px rgba(0, 0, 0, 0.25)",
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label="Play story video"
-                onClick={() => setPlaying(true)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setPlaying(true);
-                  }
-                }}
-              >
-                <Typography sx={{ color: "#ffffff", fontSize: { xs: 34, md: 42 }, pl: 0.5 }}>
-                  ▶
-                </Typography>
-              </Box>
-            ) : (
-              <iframe
-                width="100%"
-                height="100%"
-                src="https://www.youtube.com/embed/Mb0RWyh3sqQ?autoplay=1"
-                title="Story Video"
-                frameBorder="0"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-              />
-            )}
+            <YouTubeStopOverlayPlayer
+              videoId="Mb0RWyh3sqQ"
+              registry={VIDEO_REGISTRY}
+              colors={COLORS}
+              onCtaClick={onCtaClick}
+            />
           </Box>
-
-          {/* <Box
-            sx={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              bottom: 0,
-              px: { xs: 2, md: 3 },
-              py: { xs: 1.75, md: 2.25 },
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.65) 40%, rgba(0,0,0,0.80) 100%)",
-            }}
-          >
-            <Stack spacing={1.25}>
-              <Slider
-                size="small"
-                value={28}
-                aria-label="Story video progress"
-                sx={{
-                  color: "#ffffff",
-                  "& .MuiSlider-rail": { opacity: 0.28 },
-                  "& .MuiSlider-track": { border: "none" },
-                  "& .MuiSlider-thumb": {
-                    width: 12,
-                    height: 12,
-                    boxShadow: "0 0 0 4px rgba(255,255,255,0.16)",
-                  },
-                }}
-              />
-              <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
-                <Typography sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13 }}>
-                  {CONTENT.hero.currentTime}
-                </Typography>
-                <Typography sx={{ color: "rgba(255,255,255,0.50)", fontWeight: 700, fontSize: 13 }}>
-                  {CONTENT.hero.separator}
-                </Typography>
-                <Typography sx={{ color: "rgba(255,255,255,0.85)", fontWeight: 700, fontSize: 13 }}>
-                  {CONTENT.hero.totalTime}
-                </Typography>
-              </Stack>
-            </Stack>
-          </Box> */}
         </Box>
       </Container>
     </Box>
@@ -431,7 +381,11 @@ export default function StoryPage() {
 
   return (
     <Box sx={{ backgroundColor: COLORS.bg }}>
-      <CinemaHero />
+      <CinemaHero
+        onCtaClick={(_videoId, _config) => {
+          setToastOpen(true);
+        }}
+      />
       <StoryDetails />
       <CallToAction />
       <ExploreSection
