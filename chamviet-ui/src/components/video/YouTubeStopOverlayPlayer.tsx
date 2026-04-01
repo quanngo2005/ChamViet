@@ -12,6 +12,8 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import MicIcon from "@mui/icons-material/Mic";
 import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import { useVoiceAI } from "../../hooks/useVoiceAi";
+import { STORY_REGISTRY } from "../../data/video-story-qa";
+import type { StoryConfig } from "../../data/video-story-qa";
 import mascotHac from "../../assets/be-hac.png";
 
 
@@ -52,6 +54,7 @@ export interface VideoStopConfig {
   dialogue?: DialogueStep[];
   dialogues?: Record<string, DialogueStep>;
   startDialogueId?: string | number;
+  storyConfig?: StoryConfig;
   [key: string]: any;
 }
 
@@ -68,10 +71,11 @@ const DEFAULT_VIDEO_REGISTRY: VideoRegistry = {
   Mb0RWyh3sqQ: {
     stopTime: 8,
     mascotAvatar: mascotHac,
-    dialogue: [
-    ],
+    storyConfig: STORY_REGISTRY["Mb0RWyh3sqQ"],
+    dialogue: [],
   },
 };
+const PRELOAD_THERSHOLD = 5;
 
 // ─── Component props ──────────────────────────────────────────────────────────
 interface YouTubeStopOverlayPlayerProps {
@@ -95,6 +99,10 @@ const GLOBAL_STYLES = `
   @keyframes typingBounce {
     0%, 80%, 100% { transform: translateY(0); }
     40%           { transform: translateY(-6px); }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50%      { box-shadow: 0 0 0 12px rgba(239,68,68,0); }
   }
 `;
 
@@ -134,49 +142,80 @@ function TypingDots() {
   );
 }
 
+// ─── Phase status text ────────────────────────────────────────────────────────
+function phaseStatusText(phase: string, isRecording: boolean): { primary: string; secondary: string } {
+  if (isRecording) return { primary: "Đang nghe...", secondary: "Thả tay để gửi" };
+  switch (phase) {
+    case "loading": return { primary: "Đang chuẩn bị...", secondary: "Bé hạc đang tải câu chuyện" };
+    case "greeting": return { primary: "Bé hạc đang chào...", secondary: "Lắng nghe nhé!" };
+    case "asking": return { primary: "Bé hạc đang hỏi...", secondary: "Lắng nghe câu hỏi nhé!" };
+    case "evaluating": return { primary: "Đang xử lý...", secondary: "Bé hạc đang suy nghĩ" };
+    case "responding": return { primary: "Bé hạc đang trả lời...", secondary: "Lắng nghe nhé!" };
+    case "done": return { primary: "Hoàn thành!", secondary: "Nhấn Tiếp tục để xem video" };
+    default: return { primary: "Nhấn giữ để trả lời", secondary: "Bé hạc lắng nghe bạn nói" };
+  }
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function YouTubeStopOverlayPlayer({
   videoId,
-  autoplay = false,
+  autoplay: _autoplay = false,
   registry,
-  onCtaClick,
-  // colors accepted for API compat but theming handled via COLORS constant
+  onCtaClick: _onCtaClick,
 }: YouTubeStopOverlayPlayerProps) {
-  // ── Voice AI ────────────────────────────────────────────────────────────────
-  const {
-    isRecording,
-    isProcessing,
-    aiText,
-    startRecording,
-    stopRecording,
-    resetAiText,
-  } = useVoiceAI({
-    backendUrl: "http://localhost:8000",
-    onResponse: (text, audioUrl) => {
-      const audio = new Audio(audioUrl);
-      audio.play();
-    },
-    onError: () => alert("Có lỗi xảy ra với Bé hạc rồi!"),
-  });
-
-  // ── State ───────────────────────────────────────────────────────────────────
+  // ── State ───────────────────────────────────────────────────────────────
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const [currentStepId, setCurrentStepId] = useState<number | string>(0);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [sessionInitiated, setSessionInitiated] = useState(false);
 
-  // ── Refs ────────────────────────────────────────────────────────────────────
+  // ── Refs ────────────────────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
   const intervalRef = useRef<number | null>(null);
   const triggeredRef = useRef(false);
+  const preloadedRef = useRef(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
-  const prevAiText = useRef("");
-  const prevIsRecording = useRef(false);
 
   const activeRegistry = registry || DEFAULT_VIDEO_REGISTRY;
   const config = activeRegistry[videoId];
 
-  // ── Inject global keyframes ─────────────────────────────────────────────────
+  // Look up story config: from config, or from global STORY_REGISTRY
+  const storyConfig = config?.storyConfig || STORY_REGISTRY[videoId];
+
+  // ── Message helpers ─────────────────────────────────────────────────────
+  const addMessage = useCallback((role: "user" | "ai", content: string) => {
+    setMessages((prev) => [
+      ...prev,
+      { role, content, id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}` },
+    ]);
+  }, []);
+
+  // ── Voice AI ────────────────────────────────────────────────────────────
+  const {
+    isRecording,
+    isProcessing,
+    sessionPhase,
+    currentQuestionIndex,
+    score,
+    initSession,
+    preloadStory,
+    startRecording,
+    stopRecording,
+  } = useVoiceAI({
+    backendUrl: "http://localhost:8081",
+    storyConfig,
+    onUserText: (text) => addMessage("user", text),
+    onAiMessage: (text) => addMessage("ai", text),
+    onQuestionRead: (_qText) => {
+      // Question text comes through onAiMessage already via speakAndNotify
+    },
+    onSessionEnd: (_s, _t) => {
+      // Session done — handled by sessionPhase === "done"
+    },
+    onError: () => addMessage("ai", "Ôi, có lỗi xảy ra rồi! Bé thử lại nhé."),
+  });
+
+  // ── Inject global keyframes ─────────────────────────────────────────────
   useEffect(() => {
     const id = "be-go-styles";
     if (!document.getElementById(id)) {
@@ -187,49 +226,27 @@ export default function YouTubeStopOverlayPlayer({
     }
   }, []);
 
-  // ── Auto-scroll chat to bottom ──────────────────────────────────────────────
+  // ── Auto-scroll chat to bottom ──────────────────────────────────────────
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isProcessing]);
 
-  // ── Sync aiText → chat messages ─────────────────────────────────────────────
+  // ── Init session when overlay opens ─────────────────────────────────────
   useEffect(() => {
-    if (aiText && aiText !== prevAiText.current) {
-      prevAiText.current = aiText;
-      setMessages((prev) => [
-        ...prev,
-        { role: "ai", content: aiText, id: `ai-${Date.now()}` },
-      ]);
+    if (overlayOpen && storyConfig && !sessionInitiated) {
+      setSessionInitiated(true);
+      initSession();
     }
-  }, [aiText]);
+  }, [overlayOpen, storyConfig, sessionInitiated, initSession]);
 
-  // ── Push user message when recording stops ──────────────────────────────────
-  // We capture the transcript via aiText; user text comes from STT inside hook.
-  // We track isRecording falling edge to show a placeholder "Đang nhận diện..."
-  useEffect(() => {
-    if (prevIsRecording.current && !isRecording && isProcessing) {
-      // Recording just stopped and processing starts
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "user",
-          content: "🎙️ (đang nhận diện...)",
-          id: `user-pending-${Date.now()}`,
-        },
-      ]);
-    }
-    prevIsRecording.current = isRecording;
-  }, [isRecording, isProcessing]);
-
-  // ── Reset on overlay close ──────────────────────────────────────────────────
+  // ── Reset on overlay close ──────────────────────────────────────────────
   const resetOverlay = useCallback(() => {
     setMessages([]);
-    setCurrentStepId(config?.startDialogueId || 0);
-    prevAiText.current = "";
-    resetAiText?.();
-  }, [config, resetAiText]);
+    setSessionInitiated(false);
+    preloadedRef.current = false;
+  }, []);
 
-  // ── Polling logic (unchanged) ───────────────────────────────────────────────
+  // ── Polling logic ───────────────────────────────────────────────────────
   const clearPolling = () => {
     if (intervalRef.current) {
       window.clearInterval(intervalRef.current);
@@ -246,6 +263,13 @@ export default function YouTubeStopOverlayPlayer({
 
       if (currentTime < config.stopTime - 2) {
         triggeredRef.current = false;
+        preloadedRef.current = false;
+      }
+
+      // Preload 5s before stop
+      if (!preloadedRef.current && currentTime >= config.stopTime - PRELOAD_THERSHOLD) {
+        preloadedRef.current = true;
+        preloadStory();
       }
 
       if (!triggeredRef.current && currentTime >= config.stopTime) {
@@ -260,7 +284,7 @@ export default function YouTubeStopOverlayPlayer({
     return () => clearPolling();
   }, []);
 
-  // ── YouTube event handlers ──────────────────────────────────────────────────
+  // ── YouTube event handlers ──────────────────────────────────────────────
   const onReady: YouTubeProps["onReady"] = (event) => {
     playerRef.current = event.target;
   };
@@ -270,14 +294,9 @@ export default function YouTubeStopOverlayPlayer({
     else clearPolling();
   };
 
-  // ── Dialogue helpers ────────────────────────────────────────────────────────
-  const currentStep = config?.dialogues
-    ? config.dialogues[currentStepId as string]
-    : config?.dialogue?.find((s) => s.id === currentStepId);
-
   const mascotSrc = config?.mascotAvatarUrl || config?.mascotAvatar || "";
 
-  // ── Action handlers ─────────────────────────────────────────────────────────
+  // ── Action handlers ─────────────────────────────────────────────────────
   const handleSkip = () => {
     setOverlayOpen(false);
     if (playerRef.current) {
@@ -302,20 +321,19 @@ export default function YouTubeStopOverlayPlayer({
     setTimeout(() => resetOverlay(), 500);
   };
 
-  // ── Seeding first AI message from dialogue step ─────────────────────────────
-  useEffect(() => {
-    if (overlayOpen && currentStep && messages.length === 0) {
-      setMessages([
-        {
-          role: "ai",
-          content: currentStep.text,
-          id: `ai-init-${Date.now()}`,
-        },
-      ]);
-    }
-  }, [overlayOpen]);
+  // ── Mic enabled only in listening phase ─────────────────────────────────
+  const canRecord = sessionPhase === "listening" && !isProcessing && !isRecording;
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Status text ─────────────────────────────────────────────────────────
+  const status = phaseStatusText(sessionPhase, isRecording);
+
+  // ── QA progress ─────────────────────────────────────────────────────────
+  const totalQuestions = storyConfig?.qaList?.length ?? 0;
+  const progressText = totalQuestions > 0
+    ? `Câu ${Math.min(currentQuestionIndex + 1, totalQuestions)}/${totalQuestions} · Đúng: ${score}`
+    : "";
+
+  // ── Render ──────────────────────────────────────────────────────────────
   return (
     <Box
       sx={{
@@ -478,17 +496,38 @@ export default function YouTubeStopOverlayPlayer({
                       background:
                         "linear-gradient(to right, rgba(168,50,50,0.06), rgba(168,50,50,0.02))",
                       flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 800, color: COLORS.titleDark, lineHeight: 1.2 }}
-                    >
-                      Hỏi đáp cùng Bé hạc
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: COLORS.mutedDark }}>
-                      Nhấn giữ micro để trò chuyện
-                    </Typography>
+                    <Box>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 800, color: COLORS.titleDark, lineHeight: 1.2 }}
+                      >
+                        Hỏi đáp cùng Bé hạc
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: COLORS.mutedDark }}>
+                        Nhấn giữ micro để trò chuyện
+                      </Typography>
+                    </Box>
+                    {progressText && (
+                      <Box
+                        sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 999,
+                          bgcolor: COLORS.accentSoft,
+                          color: COLORS.accent,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {progressText}
+                      </Box>
+                    )}
                   </Box>
 
                   {/* Messages area */}
@@ -582,29 +621,36 @@ export default function YouTubeStopOverlayPlayer({
                     {/* Mic button */}
                     <Box
                       component="button"
-                      onMouseDown={startRecording}
-                      onMouseUp={stopRecording}
-                      onTouchStart={startRecording}
-                      onTouchEnd={stopRecording}
+                      onMouseDown={canRecord ? startRecording : undefined}
+                      onMouseUp={isRecording ? stopRecording : undefined}
+                      onTouchStart={canRecord ? startRecording : undefined}
+                      onTouchEnd={isRecording ? stopRecording : undefined}
                       sx={{
                         flexShrink: 0,
                         width: 56,
                         height: 56,
                         borderRadius: "50%",
                         border: "none",
-                        cursor: "pointer",
+                        cursor: canRecord || isRecording ? "pointer" : "not-allowed",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        bgcolor: isRecording ? "#ef4444" : COLORS.accent,
+                        bgcolor: isRecording
+                          ? "#ef4444"
+                          : canRecord
+                            ? COLORS.accent
+                            : "rgba(168,50,50,0.4)",
                         color: "#fff",
                         boxShadow: isRecording
                           ? "0 0 0 8px rgba(239,68,68,0.2), 0 4px 16px rgba(239,68,68,0.4)"
-                          : "0 4px 14px rgba(168,50,50,0.35)",
+                          : canRecord
+                            ? "0 4px 14px rgba(168,50,50,0.35)"
+                            : "none",
                         transform: isRecording ? "scale(1.12)" : "scale(1)",
                         transition: "all 0.2s ease",
                         outline: "none",
-                        "&:active": { transform: "scale(0.96)" },
+                        opacity: canRecord || isRecording ? 1 : 0.6,
+                        "&:active": canRecord || isRecording ? { transform: "scale(0.96)" } : {},
                       }}
                     >
                       {isRecording ? (
@@ -624,12 +670,10 @@ export default function YouTubeStopOverlayPlayer({
                           transition: "color 0.2s",
                         }}
                       >
-                        {isRecording ? "Đang nghe..." : "Nhấn giữ để trả lời"}
+                        {status.primary}
                       </Typography>
                       <Typography variant="caption" sx={{ color: COLORS.mutedDark }}>
-                        {isRecording
-                          ? "Thả tay để gửi"
-                          : "Bé hạc lắng nghe bạn nói"}
+                        {status.secondary}
                       </Typography>
                     </Box>
                   </Box>

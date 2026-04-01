@@ -245,3 +245,7 @@ def ending_api(body: EndingInput):
     _check()
     return {"text": _llm_pure(conversation_service.build_ending_prompt(
         body.story_title, body.child_age, body.score, body.total))}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

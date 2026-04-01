@@ -18,6 +18,7 @@ import YouTubeStopOverlayPlayer, {
   type VideoRegistry,
   type VideoStopConfig,
 } from "../components/video/YouTubeStopOverlayPlayer";
+import { STORY_REGISTRY } from "../data/video-story-qa";
 import mascotHac from "../assets/be-hac.png";
 
 
@@ -56,26 +57,8 @@ const VIDEO_REGISTRY: VideoRegistry = {
   Mb0RWyh3sqQ: {
     stopTime: 30,
     mascotAvatar: mascotHac,
-    dialogue: [
-      {
-        id: 0,
-        text: "Chào bạn! Mình là Bé hạc. Bạn thấy tác phẩm này thế nào?",
-        options: [
-          { label: "Rất tuyệt vời!", nextStep: 1 },
-          { label: "Tìm hiểu thêm", nextStep: 2 },
-        ],
-      },
-      {
-        id: 1,
-        text: "Ưu đãi đặc biệt! Khám phá bộ sưu tập ChamViet và nhận ưu đãi hôm nay.",
-        options: [{ label: "Xem sản phẩm", nextStep: -1, isCta: true }],
-      },
-      {
-        id: 2,
-        text: "Sản phẩm này mang đậm nét văn hóa Việt. Bạn sẵn sàng xem tiếp chứ?",
-        options: [{ label: "Bắt đầu thôi!", nextStep: -1, isCta: true }],
-      },
-    ],
+    storyConfig: STORY_REGISTRY["Mb0RWyh3sqQ"],
+    dialogue: [],
   },
 };
 

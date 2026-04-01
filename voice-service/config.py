@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ── Groq API ──────────────────────────────────
-GROQ_API_KEY  = os.getenv("GROQ_API_KEY", "api")
+GROQ_API_KEY  = os.getenv("GROQ_API_KEY")
 
 # ── STT (Groq Whisper) ────────────────────────
 WHISPER_MODEL = "whisper-large-v3-turbo"

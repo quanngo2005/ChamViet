@@ -32,5 +32,9 @@ dist-ssr
 *.sln
 *.sw?
 4-step-section.json
+**/.env
+**/.env.local
+**/.env.*.local
 
 .agent
+.venv

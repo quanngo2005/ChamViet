@@ -38,4 +38,5 @@ public class AIService {
                 })
                 .block(); // Đợi kết quả trả về (Synchronous)
     }
+    
 }
