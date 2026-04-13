@@ -13,7 +13,8 @@ services:
       context: ./vision-service
     ports:
       - "5000:5000"
-    gpus: all
+    volumes:
+      - ./vision-service/models:/app/models:ro
     deploy:
       resources:
         reservations:

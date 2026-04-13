@@ -50,10 +50,10 @@ public class Orders {
     private String addressDetail;
 
     @Column(precision = 10, scale = 6)
-    private Double latitude;
+    private BigDecimal latitude;
 
     @Column(precision = 10, scale = 6)
-    private Double longitude;
+    private BigDecimal longitude;
 
     @Column(name = "shipping_address", columnDefinition = "TEXT")
     private String shippingAddress;

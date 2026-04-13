@@ -2,6 +2,10 @@ package com.vn.chamviet.chamviet_api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
@@ -31,6 +35,7 @@ public class ProductVariant {
     @Column(name = "piece_count", nullable = false)
     private Integer pieceCount;
 
-    @Column(columnDefinition = "JSON")
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
     private JsonNode attributes;
 }

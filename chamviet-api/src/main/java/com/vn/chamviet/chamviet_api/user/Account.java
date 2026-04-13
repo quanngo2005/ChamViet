@@ -32,8 +32,8 @@ public class Account {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('ACTIVE','INACTIVE','BANNED') DEFAULT 'ACTIVE'")
-    private AccountStatus status = AccountStatus.ACTIVE;
+    @Column(columnDefinition = "ENUM('ACTIVE','INACTIVE','BANNED') DEFAULT 'INACTIVE'")
+    private AccountStatus status = AccountStatus.INACTIVE;
 
     public enum AccountStatus {
         ACTIVE, INACTIVE, BANNED

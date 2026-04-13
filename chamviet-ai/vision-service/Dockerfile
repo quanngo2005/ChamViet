@@ -1,7 +1,27 @@
+FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime AS builder
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+ENV PYTHONDONTWRITEBYTECODE=1
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip && \
+    pip install --no-compile --prefix=/install -r requirements.txt && \
+    rm -rf /install/lib/python*/site-packages/torch* /install/lib/python*/site-packages/nvidia* /install/lib/python*/site-packages/triton* && \
+    find /install -name "*.pyc" -delete && \
+    find /install -type d -name "__pycache__" -empty -delete
+
+# --- Runtime stage ---
 FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/install/lib/python3.10/site-packages \
+    PATH=/install/bin:$PATH \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
 WORKDIR /app
 
@@ -9,15 +29,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libgl1 \
     libglib2.0-0 \
-  && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && addgroup --system appgroup \
+    && adduser --system --ingroup appgroup appuser
 
-COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
-  && pip install --no-cache-dir -r requirements.txt
+COPY --from=builder /install /install
+COPY main.py ./
 
-COPY main.py ./main.py
-COPY models ./models
+
+USER appuser
 
 EXPOSE 5000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "main:app", \
+    "--host", "0.0.0.0", \
+    "--port", "5000", \
+    "--workers", "1"]

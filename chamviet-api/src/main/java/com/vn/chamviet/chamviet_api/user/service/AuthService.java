@@ -2,9 +2,11 @@ package com.vn.chamviet.chamviet_api.user.service;
 
 import com.vn.chamviet.chamviet_api.user.Account;
 import com.vn.chamviet.chamviet_api.user.AccountRepo;
+import com.vn.chamviet.chamviet_api.user.Role;
 import com.vn.chamviet.chamviet_api.user.dto.*;
 import com.vn.chamviet.chamviet_api.user.mapper.AccountMapper;
 import com.vn.chamviet.chamviet_api.security.JwtService;
+import com.vn.chamviet.chamviet_api.utilites.PasswordEncrypt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +17,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,9 +27,11 @@ public class AuthService {
     private final AccountRepo accountRepo;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
     private final AccountMapper accountMapper;
+    private final PasswordEncrypt passwordEncrypt;
+    private final com.vn.chamviet.chamviet_api.user.ActivationTokenRepo activationTokenRepo;
+    private final com.vn.chamviet.chamviet_api.mail.EmailService emailService;
 
     /**
      * Authenticate user and generate JWT tokens
@@ -34,20 +40,34 @@ public class AuthService {
         log.info("Login attempt for email: {}", request.getEmail());
         
         try {
-            // Authenticate using Spring Security
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
+            // Validate input
+            if (request.getEmail() == null || request.getEmail().isEmpty()) {
+                throw new RuntimeException("Email is required");
+            }
+            if (request.getPassword() == null || request.getPassword().isEmpty()) {
+                throw new RuntimeException("Password is required");
+            }
 
-            // Load user details
-            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+            // Find user by email
             Account account = accountRepo.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Generate tokens
+            // Check if account is active
+            if (account.getStatus() != Account.AccountStatus.ACTIVE) {
+                log.warn("Login attempt for inactive/banned account: {}", request.getEmail());
+                throw new RuntimeException("Account is not active. Please activate your account.");
+            }
+
+            // Decrypt stored password and compare with request password
+            String decryptedPassword = passwordEncrypt.decrypt(account.getPasswordHash());
+            if (!Objects.equals(decryptedPassword, request.getPassword())) {
+                log.warn("Incorrect password for email: {}", request.getEmail());
+                throw new RuntimeException("Invalid email or password");
+            }
+
+            // Generate JWT tokens
+            // Create UserDetails for JWT generation
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
 
@@ -61,8 +81,11 @@ public class AuthService {
                     .account(accountMapper.toDTO(account))
                     .build();
 
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             log.error("Login failed for email: {}", request.getEmail(), e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Login error for email: {}", request.getEmail(), e);
             throw new RuntimeException("Invalid email or password");
         }
     }
@@ -77,7 +100,7 @@ public class AuthService {
             final String refreshToken = request.getRefreshToken();
             
             // Validate refresh token
-            if (!jwtService.isTokenValid(refreshToken, null)) {
+            if (!jwtService.isTokenValid(refreshToken)) {
                 throw new RuntimeException("Invalid or expired refresh token");
             }
 
@@ -102,9 +125,12 @@ public class AuthService {
                     .account(accountMapper.toDTO(account))
                     .build();
 
+        } catch (RuntimeException e) {
+            log.error("Refresh token failed", e);
+            throw e;
         } catch (Exception e) {
             log.error("Refresh token failed", e);
-            throw new RuntimeException("Failed to refresh token: " + e.getMessage());
+            throw new RuntimeException("Failed to refresh token");
         }
     }
 
@@ -118,18 +144,33 @@ public class AuthService {
         if (accountRepo.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
-
-        try {
+       try {
             Account account = accountMapper.toEntity(request);
-            account.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            account.setPasswordHash(passwordEncrypt.encrypt(request.getPassword()));
+            account.setStatus(Account.AccountStatus.INACTIVE);
+
+             
+             // Set default role to 2 (Customer)
+             Role customerRole = new Role();
+             customerRole.setId(2);
+             account.setRole(customerRole);
             
-            Account savedAccount = accountRepo.save(account);
+            
+            com.vn.chamviet.chamviet_api.user.Account savedAccount = accountRepo.save(account);
+           // create activation token
+            String token = java.util.UUID.randomUUID().toString();
+            com.vn.chamviet.chamviet_api.user.ActivationToken activationToken = com.vn.chamviet.chamviet_api.user.ActivationToken.builder()
+                    .token(token)
+                    .account(savedAccount)
+                    .expiresAt(java.time.LocalDateTime.now().plusHours(24))
+                    .build();
+            activationTokenRepo.save(activationToken);
+           // send activation email
+            emailService.sendActivationEmail(savedAccount, token);
             
             log.info("Registration successful for email: {}", request.getEmail());
-
-            return accountMapper.toRegisterResponse(savedAccount);
-
-        } catch (Exception e) {
+          return accountMapper.toRegisterResponse(savedAccount);
+       } catch (Exception e) {
             log.error("Registration failed for email: {}", request.getEmail(), e);
             throw new RuntimeException("Registration failed: " + e.getMessage());
         }
@@ -138,6 +179,20 @@ public class AuthService {
     /**
      * Logout - typically client-side only, but can be used to invalidate tokens
      */
+    public com.vn.chamviet.chamviet_api.user.dto.RegisterResponse activateAccount(String token) {
+        log.info("Activate account with token: {}", token);
+        com.vn.chamviet.chamviet_api.user.ActivationToken activationToken = activationTokenRepo.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired activation token"));
+        if (activationToken.getExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("Activation token expired");
+        }
+        com.vn.chamviet.chamviet_api.user.Account account = activationToken.getAccount();
+        account.setStatus(com.vn.chamviet.chamviet_api.user.Account.AccountStatus.ACTIVE);
+        com.vn.chamviet.chamviet_api.user.Account saved = accountRepo.save(account);
+        activationTokenRepo.delete(activationToken);
+        return accountMapper.toRegisterResponse(saved);
+    }
+
     public void logout(String token) {
         log.info("Logout request");
         // In a production system, you might want to:
@@ -146,3 +201,4 @@ public class AuthService {
         // For now, just log
     }
 }
+

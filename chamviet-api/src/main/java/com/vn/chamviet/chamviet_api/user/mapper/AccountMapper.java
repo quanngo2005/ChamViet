@@ -65,7 +65,7 @@ public class AccountMapper {
                 .email(request.getEmail())
                 .fullName(request.getFullName())
                 .phone(request.getPhone())
-                .status(Account.AccountStatus.ACTIVE)
+                .status(Account.AccountStatus.INACTIVE)
                 .build();
     }
 

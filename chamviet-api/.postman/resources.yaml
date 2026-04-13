@@ -2,6 +2,10 @@
 workspace:
   id: cba8643b-3de2-4c98-93a0-267727d958e2
 
+cloudResources:
+  collections:
+    ..\postman\collections\ChamViet AI Testing: a4f82f8d-822b-4a70-9ba2-2ad841c13cd6
+
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:
 #localResources:

@@ -1,6 +1,7 @@
 package com.vn.chamviet.chamviet_api.utilites;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
@@ -10,6 +11,8 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+
+@Component
 public class PasswordEncrypt {
     private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final int IV_LENGTH = 16;
