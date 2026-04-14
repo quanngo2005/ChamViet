@@ -32,5 +32,15 @@ dist-ssr
 *.sln
 *.sw?
 4-step-section.json
+**/.env
+**/.env.local
+**/.env.*.local
 
 .agent
+.venv
+chamviet-api/src/main/resources/application-prod.properties
+chamviet-ai/voice-service/.env.example
+chamviet-api/.github/copilot-instructions.md
+*.md
+/chamviet-api/postman
+ChamViet_AI.postman_collection.json

@@ -1,0 +1,6 @@
+name: ChamVietDemo
+values:
+  - key: encryption.secret-key
+    value: ''
+    enabled: true
+color: 0

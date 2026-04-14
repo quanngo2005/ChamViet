@@ -1,0 +1,2 @@
+src/data/video-dialogues-example.ts(1,36): error TS2307: Cannot find module '../components/common/YouTubeStopOverlayPlayer' or its corresponding type declarations.
+src/pages/StoryPage.tsx(383,25): error TS6133: 'config' is declared but its value is never read.
