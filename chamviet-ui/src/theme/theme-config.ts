@@ -2,6 +2,7 @@ import type { CommonColors } from "@mui/material/styles";
 
 import type { ThemeCssVariables } from "./types";
 import type { PaletteColorNoChannels } from "./core/palette";
+import { heritageColors } from "./heritage-pulse";
 
 // ----------------------------------------------------------------------
 
@@ -28,29 +29,29 @@ export const themeConfig: ThemeConfig = {
         secondary: "Be Vietnam Pro, sans-serif"
     },
     /** **************************************
-     * Palette
+     * Palette - Heritage Pulse (Crimson & Clay)
      *************************************** */
     palette: {
         primary: {
-            lighter: "#FDE8E8",
-            light: "#F08A8A",
-            main: "#a83232",
-            dark: "#8a2828",
+            lighter: "#F4D9D9",
+            light: heritageColors.primaryLight,
+            main: heritageColors.primary,
+            dark: heritageColors.primaryDarker,
             darker: "#5C1515",
             contrastText: "#FFFFFF"
         },
         secondary: {
-            lighter: "#FDF5E6",
-            light: "#EAD09D",
-            main: "#d9a441",
-            dark: "#7a5230",
-            darker: "#3b291a",
+            lighter: "#E8DDD0",
+            light: heritageColors.secondaryLight,
+            main: heritageColors.secondary,
+            dark: heritageColors.secondaryDarker,
+            darker: "#4A2E1F",
             contrastText: "#FFFFFF"
         },
         info: {
             lighter: "#CAFDF5",
             light: "#61F3F3",
-            main: "#00B8D9",
+            main: heritageColors.info,
             dark: "#006C9C",
             darker: "#003768",
             contrastText: "#FFFFFF"
@@ -58,7 +59,7 @@ export const themeConfig: ThemeConfig = {
         success: {
             lighter: "#D3FCD2",
             light: "#77ED8B",
-            main: "#22C55E",
+            main: heritageColors.success,
             dark: "#118D57",
             darker: "#065E49",
             contrastText: "#ffffff"
@@ -66,7 +67,7 @@ export const themeConfig: ThemeConfig = {
         warning: {
             lighter: "#FFF5CC",
             light: "#FFD666",
-            main: "#FFAB00",
+            main: heritageColors.warning,
             dark: "#B76E00",
             darker: "#7A4100",
             contrastText: "#1C252E"
@@ -74,7 +75,7 @@ export const themeConfig: ThemeConfig = {
         error: {
             lighter: "#FFE9D5",
             light: "#FFAC82",
-            main: "#FF5630",
+            main: heritageColors.error,
             dark: "#B71D18",
             darker: "#7A0916",
             contrastText: "#FFFFFF"

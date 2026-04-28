@@ -3,6 +3,16 @@ import type { Theme, Components } from '@mui/material/styles';
 import { varAlpha } from 'minimal-shared/utils';
 
 import SvgIcon from '@mui/material/SvgIcon';
+import { heritageColors, heritageShadows, heritageBorderRadius } from '../heritage-pulse';
+
+// Helper to convert hex to rgba for MUI v6+ which no longer supports hex in alpha()
+export function hexAlpha(hex: string, opacity: number) {
+  const hexValue = hex.replace('#', '');
+  const r = parseInt(hexValue.substring(0, 2), 16);
+  const g = parseInt(hexValue.substring(2, 4), 16);
+  const b = parseInt(hexValue.substring(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
 
 // ----------------------------------------------------------------------
 
@@ -17,32 +27,91 @@ const MuiBackdrop: Components<Theme>['MuiBackdrop'] = {
   },
 };
 
+/**
+ * Heritage Pulse Button Style
+ * Pill-shaped buttons with Heritage Pulse colors and no Material ripple
+ */
 const MuiButton: Components<Theme>['MuiButton'] = {
   defaultProps: {
     disableElevation: true,
+    disableRipple: true,
   },
   styleOverrides: {
+    root: ({ theme }) => ({
+      fontFamily: theme.typography.fontFamily,
+      fontWeight: 500,
+      textTransform: 'none',
+      borderRadius: '4px', // Match the slight radius in the image
+      transition: `all ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeInOut}`,
+    }),
+    contained: () => ({
+      boxShadow: 'none', // Image shows flat buttons mostly
+      '&:hover': {
+        boxShadow: heritageShadows.sm,
+        transform: 'translateY(-1px)',
+      },
+    }),
+    containedPrimary: () => ({
+      backgroundColor: heritageColors.primary,
+      color: '#FFFFFF',
+      '&:hover': {
+        backgroundColor: heritageColors.primaryHover,
+      },
+    }),
+    containedSecondary: () => ({
+      backgroundColor: heritageColors.bgMain,
+      color: heritageColors.textMain,
+      '&:hover': {
+        backgroundColor: heritageColors.bgSurface,
+      },
+    }),
     containedInherit: ({ theme }) => ({
       color: theme.palette.common.white,
-      backgroundColor: theme.palette.grey[800],
+      backgroundColor: theme.palette.grey[800], // Inverted
       '&:hover': {
         color: theme.palette.common.white,
-        backgroundColor: theme.palette.grey[800],
+        backgroundColor: theme.palette.grey[900],
+      },
+    }),
+    outlined: () => ({
+      borderColor: heritageColors.secondary,
+      color: heritageColors.textMain,
+      backgroundColor: 'transparent',
+      '&:hover': {
+        backgroundColor: hexAlpha(heritageColors.secondary, 0.04),
+        borderColor: heritageColors.secondaryDarker,
       },
     }),
     sizeLarge: {
       minHeight: 48,
+      padding: '12px 32px',
+    },
+    sizeMedium: {
+      padding: '8px 24px',
+    },
+    sizeSmall: {
+      padding: '6px 16px',
     },
   },
 };
 
+/**
+ * Heritage Pulse Card
+ * Surface cards with Heritage background and subtle shadows
+ */
 const MuiCard: Components<Theme>['MuiCard'] = {
   styleOverrides: {
     root: ({ theme }) => ({
       zIndex: 0,
       position: 'relative',
-      boxShadow: theme.customShadows.card,
-      borderRadius: Number(theme.shape.borderRadius) * 2,
+      backgroundColor: heritageColors.bgSurface,
+      boxShadow: heritageShadows.md,
+      borderRadius: parseInt(heritageBorderRadius.lg.replace('px', '')) + 'px',
+      border: `1px solid ${hexAlpha(heritageColors.textMain, 0.08)}`,
+      transition: `all ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}`,
+      '&:hover': {
+        boxShadow: heritageShadows.lg,
+      },
     }),
   },
 };
@@ -59,20 +128,44 @@ const MuiCardHeader: Components<Theme>['MuiCardHeader'] = {
   },
 };
 
+/**
+ * Heritage Pulse Input
+ * Subtle borders with low-opacity outlines (15%)
+ */
 const MuiOutlinedInput: Components<Theme>['MuiOutlinedInput'] = {
   styleOverrides: {
+    root: () => ({
+      backgroundColor: heritageColors.bgMain,
+      color: heritageColors.textMain,
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: heritageColors.secondary,
+        borderWidth: 1,
+      },
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: heritageColors.secondary,
+      },
+    }),
     notchedOutline: ({ theme }) => ({
-      borderColor: varAlpha(theme.palette.grey['500Channel'], 0.2),
+      borderColor: hexAlpha(heritageColors.secondary, 0.2),
+      transition: `border-color ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}`,
     }),
   },
 };
 
+/**
+ * Heritage Pulse Paper
+ * Floating elements with subtle borders and controlled background
+ */
 const MuiPaper: Components<Theme>['MuiPaper'] = {
   defaultProps: { elevation: 0 },
   styleOverrides: {
-    root: { backgroundImage: 'none' },
-    outlined: ({ theme }) => ({
-      borderColor: varAlpha(theme.palette.grey['500Channel'], 0.16),
+    root: {
+      backgroundImage: 'none',
+      backgroundColor: heritageColors.bgSurface,
+    },
+    outlined: () => ({
+      borderColor: hexAlpha(heritageColors.textMain, 0.12),
+      border: `1px solid ${hexAlpha(heritageColors.textMain, 0.12)}`,
     }),
   },
 };
@@ -81,9 +174,14 @@ const MuiTableCell: Components<Theme>['MuiTableCell'] = {
   styleOverrides: {
     head: ({ theme }) => ({
       fontSize: theme.typography.pxToRem(14),
-      color: theme.palette.text.secondary,
-      fontWeight: theme.typography.fontWeightSemiBold,
-      backgroundColor: theme.palette.background.neutral,
+      color: heritageColors.textSub,
+      fontWeight: 600,
+      backgroundColor: heritageColors.bgContainer,
+      borderBottomColor: hexAlpha(heritageColors.textMain, 0.12),
+    }),
+    body: () => ({
+      color: heritageColors.textMain,
+      borderBottomColor: hexAlpha(heritageColors.textMain, 0.08),
     }),
   },
 };
@@ -92,22 +190,51 @@ const MuiMenuItem: Components<Theme>['MuiMenuItem'] = {
   styleOverrides: {
     root: ({ theme }) => ({
       ...theme.typography.body2,
+      color: heritageColors.textMain,
+      '&:hover': {
+        backgroundColor: hexAlpha(heritageColors.primary, 0.08),
+      },
+      '&.Mui-selected': {
+        backgroundColor: hexAlpha(heritageColors.primary, 0.12),
+        '&:hover': {
+          backgroundColor: hexAlpha(heritageColors.primary, 0.16),
+        },
+      },
     }),
   },
 };
 
+/**
+ * Heritage Pulse Link
+ * Links use primary red for strong visual hierarchy
+ */
 const MuiLink: Components<Theme>['MuiLink'] = {
   defaultProps: { underline: 'hover' },
+  styleOverrides: {
+    root: ({ theme }) => ({
+      color: heritageColors.primary,
+      cursor: 'pointer',
+      transition: `all ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}`,
+      '&:hover': {
+        color: heritageColors.primaryHover,
+      },
+    }),
+  },
 };
 
 const MuiFormControlLabel: Components<Theme>['MuiFormControlLabel'] = {
   styleOverrides: {
     label: ({ theme }) => ({
       ...theme.typography.body2,
+      color: heritageColors.textMain,
     }),
   },
 };
 
+/**
+ * Heritage Pulse Checkbox
+ * Custom icons aligned with Heritage Pulse aesthetic
+ */
 const MuiCheckbox: Components<Theme>['MuiCheckbox'] = {
   defaultProps: {
     size: 'small',
@@ -127,8 +254,20 @@ const MuiCheckbox: Components<Theme>['MuiCheckbox'] = {
       </SvgIcon>
     ),
   },
+  styleOverrides: {
+    root: () => ({
+      color: heritageColors.textSub,
+      '&.Mui-checked': {
+        color: heritageColors.primary,
+      },
+    }),
+  },
 };
 
+/**
+ * Heritage Pulse Radio
+ * Radio buttons with Heritage Pulse primary color
+ */
 const MuiRadio: Components<Theme>['MuiRadio'] = {
   defaultProps: {
     size: 'small',
@@ -150,6 +289,14 @@ const MuiRadio: Components<Theme>['MuiRadio'] = {
         />
       </SvgIcon>
     ),
+  },
+  styleOverrides: {
+    root: () => ({
+      color: heritageColors.textSub,
+      '&.Mui-checked': {
+        color: heritageColors.primary,
+      },
+    }),
   },
 };
 

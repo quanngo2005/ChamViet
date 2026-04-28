@@ -1,0 +1,103 @@
+html.home-page-active {
+  scroll-snap-type: none;
+}
+
+body.home-page-active section {
+  scroll-snap-align: unset;
+  scroll-snap-stop: normal;
+}
+
+.home-page {
+  overflow: clip;
+  background:
+    radial-gradient(circle at top left, rgba(198, 40, 40, 0.08), transparent 28%),
+    radial-gradient(circle at 85% 20%, rgba(212, 175, 55, 0.12), transparent 24%),
+    linear-gradient(180deg, rgba(253, 251, 247, 0.92), rgba(245, 239, 230, 0.98));
+}
+
+.home-page__glow,
+.home-page__grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+.home-page__section-shell {
+  position: relative;
+  z-index: 1;
+  overflow: clip;
+  padding-block: 40px;
+  margin-block: -40px;
+}
+
+.home-page__section-parallax {
+  position: relative;
+  will-change: transform;
+}
+
+.home-page__glow {
+  filter: blur(48px);
+  opacity: 0.75;
+}
+
+.home-page__glow--top {
+  inset: -120px auto auto -140px;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(198, 40, 40, 0.18) 0%, rgba(198, 40, 40, 0) 70%);
+  animation: homeGlowDrift 18s ease-in-out infinite;
+}
+
+.home-page__glow--middle {
+  inset: 34% -100px auto auto;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0) 72%);
+  animation: homeGlowDrift 22s ease-in-out infinite reverse;
+}
+
+.home-page__grain {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 94, 60, 0.04) 1px, transparent 1px);
+  background-size: 120px 120px;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+}
+
+@keyframes homeGlowDrift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(18px, 32px, 0) scale(1.08);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .home-page__section-shell {
+    padding-block: 0;
+    margin-block: 0;
+  }
+
+  .home-page__glow--top,
+  .home-page__glow--middle {
+    animation: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page__section-shell {
+    padding-block: 24px;
+    margin-block: -24px;
+  }
+}
