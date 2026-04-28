@@ -13,15 +13,16 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import { Search, Home, User } from "lucide-react";
 
 const navItems = [
-    { label: "Giới thiệu", to: "/about" },
-  { label: "Sản Phẩm", to: "/products" },
+  { label: "Giới thiệu", to: "/about" },
+  // { label: "Sản Phẩm", to: "/products" },
   { label: "Câu Chuyện", to: "/story" },
   { label: "Cách Chơi", to: "/how-to-play" },
   { label: "Quét Thẻ", to: "/scan" },
-  { label :"Giỏ Hàng", to: "/cart" },
-  { label: "Đăng Nhập", to: "/login" },
+  // { label: "Giỏ Hàng", to: "/cart" },
+  // { label: "Đăng Nhập", to: "/login" },
 ];
 
 export default function Header() {
@@ -40,10 +41,10 @@ export default function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        backgroundColor: "rgba(253, 251, 247, 0.92)",
-        backdropFilter: "blur(10px)",
-        borderBottom: "1px solid rgba(168, 50, 50, 0.08)",
-        color: "#7a5230",
+        backgroundColor: "rgba(245, 239, 230, 0.92)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid var(--border)",
+        color: "var(--text-sub)",
       }}
     >
       <Container maxWidth="lg">
@@ -58,22 +59,23 @@ export default function Header() {
           >
             <Box
               sx={{
-                backgroundColor: "#a83232",
-                borderRadius: "6px",
+                backgroundColor: "var(--primary)",
+                borderRadius: "8px",
                 width: 40,
                 height: 40,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#fdfbf7",
+                color: "white",
                 fontSize: "18px",
+                boxShadow: "var(--shadow-sm)"
               }}
             >
               🌿
             </Box>
             <Typography
               variant="h6"
-              sx={{ fontWeight: 800, color: "#a83232", display: { xs: "none", sm: "block" } }}
+              sx={{ fontWeight: 800, color: "var(--primary)", display: { xs: "none", sm: "block" }, letterSpacing: '-0.5px', textTransform: 'uppercase' }}
             >
               Chạm Việt
             </Typography>
@@ -88,6 +90,7 @@ export default function Header() {
             sx={{
               display: { xs: "none", md: "flex" },
               alignItems: "center",
+              mr: 4
             }}
           >
             {navItems.map((item) => (
@@ -99,12 +102,75 @@ export default function Header() {
                 sx={{
                   fontWeight: 600,
                   textTransform: "none",
-                  color: "#7a5230",
+                  color: "var(--text-sub)",
+                  "&:hover": {
+                    color: "var(--primary)",
+                    backgroundColor: "transparent"
+                  }
                 }}
               >
                 {item.label}
               </Button>
             ))}
+          </Stack>
+
+          {/* Action Icons matching Global Design */}
+          <Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center" }}>
+            <Box
+              component={RouterLink}
+              to="/"
+              sx={{
+                width: 40,
+                height: 40,
+                backgroundColor: "var(--primary)",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                textDecoration: "none",
+                transition: "all 0.2s",
+                "&:hover": { backgroundColor: "var(--primary-hover)" }
+              }}
+            >
+              <Home size={20} />
+            </Box>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                backgroundColor: "var(--bg)",
+                color: "var(--text-main)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                "&:hover": { backgroundColor: "var(--bg-container)" }
+              }}
+            >
+              <Search size={20} />
+            </Box>
+            <Box
+              component={RouterLink}
+              to="/login"
+              sx={{
+                width: 40,
+                height: 40,
+                backgroundColor: "var(--bg)",
+                color: "var(--text-main)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                textDecoration: "none",
+                transition: "all 0.2s",
+                "&:hover": { backgroundColor: "var(--bg-container)" }
+              }}
+            >
+              <User size={20} />
+            </Box>
           </Stack>
 
           {/* Mobile Hamburger Menu Button - Visible only on mobile */}
@@ -115,7 +181,7 @@ export default function Header() {
             onClick={handleMobileMenuToggle}
             sx={{
               display: { xs: "flex", md: "none" },
-              color: "#a83232",
+              color: "var(--primary)",
             }}
           >
             <MenuIcon />
@@ -132,6 +198,7 @@ export default function Header() {
           sx: {
             backgroundColor: "rgba(253, 251, 247, 0.98)",
             backdropFilter: "blur(10px)",
+            borderLeft: "1px solid var(--border)"
           },
         }}
       >
@@ -146,7 +213,7 @@ export default function Header() {
           <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
             <IconButton
               onClick={handleMobileMenuClose}
-              sx={{ color: "#a83232" }}
+              sx={{ color: "var(--primary)" }}
             >
               <CloseIcon />
             </IconButton>
@@ -171,12 +238,14 @@ export default function Header() {
                 sx={{
                   fontWeight: 600,
                   textTransform: "none",
-                  color: "#7a5230",
+                  color: "var(--text-sub)",
                   justifyContent: "flex-start",
                   fontSize: "1rem",
                   py: 1.5,
+                  borderRadius: '12px',
                   "&:hover": {
-                    backgroundColor: "rgba(168, 50, 50, 0.08)",
+                    backgroundColor: "rgba(198, 40, 40, 0.05)",
+                    color: "var(--primary)"
                   },
                 }}
               >
