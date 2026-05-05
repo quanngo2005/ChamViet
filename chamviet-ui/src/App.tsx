@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 
 import { GuestRoute, ProtectedRoute } from "./guards";
 import { ThemeProvider } from "./theme";
+import LenisProvider, { getLenis } from "./components/common/LenisProvider";
 import MainLayout from "./components/layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import AboutUsPage from "./pages/AboutUsPage";
@@ -19,7 +20,13 @@ function ScrollToTop() {
   const location = useLocation();
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Use Lenis for instant top-scroll — avoids fighting with smooth scroll
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, [location.pathname]);
 
   return null;
@@ -75,41 +82,43 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <ScrollToTop />
-      <Routes>
-        <Route element={<MainLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="about" element={<AboutUsPage />} />
-        <Route path="story" element={<StoryPage />} />
-        <Route path="how-to-play" element={<HowToPlayPage />} />
-        <Route path="products" element={<ProductListPage />} />
-        <Route path="products/:productId" element={<ProductDetailPage />} />
-        <Route path="scan" element={<ScanPage />} />
-        <Route path="story/:storySlug" element={<StoryPage />} />
+    <LenisProvider>
+      <ThemeProvider>
+        <ScrollToTop />
+        <Routes>
+          <Route element={<MainLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="about" element={<AboutUsPage />} />
+          <Route path="story" element={<StoryPage />} />
+          <Route path="how-to-play" element={<HowToPlayPage />} />
+          <Route path="products" element={<ProductListPage />} />
+          <Route path="products/:productId" element={<ProductDetailPage />} />
+          <Route path="scan" element={<ScanPage />} />
+          <Route path="story/:storySlug" element={<StoryPage />} />
 
-          <Route
-            path="dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="login"
-            element={
-              <GuestRoute redirectTo="/dashboard">
-                <LoginPage />
-              </GuestRoute>
-            }
-          />
+            <Route
+              path="login"
+              element={
+                <GuestRoute redirectTo="/dashboard">
+                  <LoginPage />
+                </GuestRoute>
+              }
+            />
 
-          <Route path="401" element={<UnauthorizedPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </ThemeProvider>
+            <Route path="401" element={<UnauthorizedPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </ThemeProvider>
+    </LenisProvider>
   );
 }

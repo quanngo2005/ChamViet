@@ -1,5 +1,4 @@
-html {
-  scroll-behavior: smooth;
+html {
   scroll-snap-type: y proximity;
 }
 
@@ -12,16 +11,25 @@ section, footer {
   --primary: #C62828;
   --primary-hover: #E53935;
   --secondary: #8B5E3C;
+  --accent: #D4AF37;
   --accent-color: #D4AF37;
   --bg: #F5EFE6;
   --bg-surface: #FDFBF7;
+  --bg-container: #F8F6F6;
   --text: #6D4C41;
+  --text-main: #4E342E;
+  --text-sub: #6D4C41;
   --text-h: #4E342E;
   --border: rgba(78, 52, 46, 0.12);
+  --accent-bg: rgba(212, 175, 55, 0.14);
+  --accent-border: rgba(212, 175, 55, 0.4);
+  --code-bg: rgba(78, 52, 46, 0.08);
+  --social-bg: rgba(255, 255, 255, 0.78);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.16);
   --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
+  --shadow: var(--shadow-md);
 
   --sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
   --heading: "Be Vietnam Pro", system-ui, 'Segoe UI', Roboto, sans-serif;

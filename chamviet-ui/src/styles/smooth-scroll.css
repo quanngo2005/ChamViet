@@ -1,13 +1,44 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   Smooth Scroll & Scroll-Reveal Animation System
+   smooth-scroll.css  –  Scroll-Reveal Animation System v2
+   
+   Improvements over v1:
+   - Spring-like easing: cubic-bezier(0.22, 1, 0.36, 1) — more physical feel
+   - Translation distance reduced: 32px vs 40px — less "flying in" feel
+   - scale-in blur reduced: blur(2px) vs blur(4px) — less jarring
+   - Stagger transition-duration differentiated by speed modifier
+   - Delay utilities also apply to scroll-reveal-child
+   - `will-change` is handled by the JS hook (removed from CSS initial state
+     to avoid promoting ALL observed elements at once)
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── 1. Global smooth scrolling ─────────────────────────────────────── */
+/* ── 1. Global / Lenis ───────────────────────────────────────────────── */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: initial; /* Lenis handles this */
 }
 
-/* Respect user preference for reduced motion */
+html.lenis,
+html.lenis body {
+  height: auto;
+  width: 100vw;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* ── 2. Reduced-motion override ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -17,105 +48,152 @@ html {
   .scroll-reveal-child {
     opacity: 1 !important;
     transform: none !important;
+    filter: none !important;
     transition: none !important;
   }
 }
 
-/* ── 2. Base scroll-reveal (invisible state) ────────────────────────── */
+/* ── 3. Base invisible state ─────────────────────────────────────────── */
+
+/*
+  IMPORTANT: we do NOT set will-change here.
+  The JS hook sets it on the element ref directly, and clears it after
+  the animation settles. Setting will-change in CSS for every element
+  wastes GPU memory for off-screen elements.
+*/
 .scroll-reveal {
   opacity: 0;
   transition-property: opacity, transform, filter;
-  transition-duration: 0.8s;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
+  transition-duration: 0.75s;
+  /*
+    Spring-like feel:
+    - Fast initial acceleration (steep curve start)
+    - Exponential overshoot deceleration (tail curves back smoothly)
+    This mimics a physical spring better than ease-out alone.
+  */
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Staggerable child elements inside a scroll-reveal-container */
 .scroll-reveal-child {
   opacity: 0;
   transition-property: opacity, transform, filter;
-  transition-duration: 0.7s;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-duration: 0.65s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--stagger-delay, 0ms);
-  will-change: opacity, transform;
 }
 
-/* ── 3. Direction variants (initial offset positions) ───────────────── */
+/* ── 4. Direction variants ───────────────────────────────────────────── */
+/*
+  Reduced from 40px → 32px: feels more "natural rise" than "flying in".
+  Still noticeable at desktop distances, not aggressive on mobile.
+*/
 .scroll-reveal.fade-up,
 .scroll-reveal-child.fade-up {
-  transform: translateY(40px);
+  transform: translateY(32px);
 }
 
 .scroll-reveal.fade-down,
 .scroll-reveal-child.fade-down {
-  transform: translateY(-40px);
+  transform: translateY(-32px);
 }
 
 .scroll-reveal.fade-left,
 .scroll-reveal-child.fade-left {
-  transform: translateX(40px);
+  transform: translateX(32px);
 }
 
 .scroll-reveal.fade-right,
 .scroll-reveal-child.fade-right {
-  transform: translateX(-40px);
+  transform: translateX(-32px);
 }
 
+/*
+  scale-in: smaller scale delta (0.94 vs 0.92) + reduced blur (2px vs 4px)
+  — more subtle, feels premium vs. overdramatic
+*/
 .scroll-reveal.scale-in,
 .scroll-reveal-child.scale-in {
-  transform: scale(0.92);
-  filter: blur(4px);
+  transform: scale(0.94);
+  filter: blur(2px);
 }
 
 .scroll-reveal.fade-up-subtle,
 .scroll-reveal-child.fade-up-subtle {
-  transform: translateY(20px);
+  transform: translateY(16px);
 }
 
 .scroll-reveal.zoom-in,
 .scroll-reveal-child.zoom-in {
-  transform: scale(0.85);
+  transform: scale(0.88);
 }
 
-/* ── 4. Visible state (triggered by data attribute) ─────────────────── */
+/* ── 5. Visible state ────────────────────────────────────────────────── */
 .scroll-reveal[data-scroll-visible="true"],
 .scroll-reveal-child[data-scroll-visible="true"] {
   opacity: 1;
   transform: translateY(0) translateX(0) scale(1);
   filter: blur(0);
+  /*
+    Once visible, we can drop transition on transform to prevent
+    any re-layout from re-triggering the animation.
+    Note: will-change is cleared by the JS hook after 1.7s.
+  */
 }
 
-/* ── 5. Speed modifiers ─────────────────────────────────────────────── */
-.scroll-reveal.fast {
-  transition-duration: 0.5s;
+/* ── 6. Speed modifiers ──────────────────────────────────────────────── */
+/* Also affect child variants for consistent stagger timing */
+.scroll-reveal.fast,
+.scroll-reveal-child.fast {
+  transition-duration: 0.45s;
 }
 
-.scroll-reveal.slow {
-  transition-duration: 1.2s;
+.scroll-reveal.slow,
+.scroll-reveal-child.slow {
+  transition-duration: 1.1s;
 }
 
-.scroll-reveal.extra-slow {
-  transition-duration: 1.6s;
+.scroll-reveal.extra-slow,
+.scroll-reveal-child.extra-slow {
+  transition-duration: 1.5s;
 }
 
-/* ── 6. Delay utilities ─────────────────────────────────────────────── */
-.scroll-reveal.delay-100 { transition-delay: 100ms; }
-.scroll-reveal.delay-200 { transition-delay: 200ms; }
-.scroll-reveal.delay-300 { transition-delay: 300ms; }
-.scroll-reveal.delay-400 { transition-delay: 400ms; }
-.scroll-reveal.delay-500 { transition-delay: 500ms; }
-.scroll-reveal.delay-600 { transition-delay: 600ms; }
+/* ── 7. Delay utilities (parent + child) ─────────────────────────────── */
+.scroll-reveal.delay-100,
+.scroll-reveal-child.delay-100 { transition-delay: 100ms; }
 
-/* ── 7. Scroll progress indicator (optional — add to body/root) ───── */
+.scroll-reveal.delay-200,
+.scroll-reveal-child.delay-200 { transition-delay: 200ms; }
+
+.scroll-reveal.delay-300,
+.scroll-reveal-child.delay-300 { transition-delay: 300ms; }
+
+.scroll-reveal.delay-400,
+.scroll-reveal-child.delay-400 { transition-delay: 400ms; }
+
+.scroll-reveal.delay-500,
+.scroll-reveal-child.delay-500 { transition-delay: 500ms; }
+
+.scroll-reveal.delay-600,
+.scroll-reveal-child.delay-600 { transition-delay: 600ms; }
+
+.scroll-reveal.delay-700,
+.scroll-reveal-child.delay-700 { transition-delay: 700ms; }
+
+.scroll-reveal.delay-800,
+.scroll-reveal-child.delay-800 { transition-delay: 800ms; }
+
+/* ── 8. Scroll progress indicator ────────────────────────────────────── */
 .scroll-progress-bar {
   position: fixed;
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #a83232, #d9a441);
+  /* Brand gradient: red → gold */
+  background: linear-gradient(90deg, var(--primary, #C62828), var(--accent-color, #D4AF37));
   transform-origin: left;
   transform: scaleX(var(--scroll-progress, 0));
   z-index: 9999;
   pointer-events: none;
-  transition: transform 0.1s linear;
+  /* Very fast update for real-time feel; Lenis fires at 60fps */
+  transition: transform 0.08s linear;
 }

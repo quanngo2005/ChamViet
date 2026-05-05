@@ -1,5 +1,5 @@
-import { motion } from 'motion/react';
 import { Hand, Eye, Volume2, MessageSquareText } from 'lucide-react';
+import { useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
 
 const functions = [
   {
@@ -37,6 +37,8 @@ const functions = [
 ];
 
 export default function CoreFunctions() {
+  const containerRef = useSmoothScrollStagger<HTMLDivElement>('.function-card', 150);
+
   return (
     <section style={{ 
       minHeight: '100vh', 
@@ -54,23 +56,18 @@ export default function CoreFunctions() {
           </p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '32px'
-        }}>
-          {functions.map((item, index) => (
-            <motion.div
+        <div 
+          ref={containerRef}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '32px'
+          }}
+        >
+          {functions.map((item) => (
+            <div
               key={item.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: index * 0.15, duration: 0.6, ease: "easeOut" }}
-              whileHover={{ 
-                y: -12, 
-                boxShadow: 'var(--shadow-xl)',
-                transition: { duration: 0.2, ease: "easeOut" }
-              }}
+              className="function-card scroll-reveal-child fade-up"
               style={{
                 position: 'relative',
                 overflow: 'hidden',
@@ -78,7 +75,17 @@ export default function CoreFunctions() {
                 padding: '40px 32px',
                 borderRadius: '24px',
                 border: '1px solid var(--border)',
-                boxShadow: 'var(--shadow-md)'
+                boxShadow: 'var(--shadow-md)',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-12px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-xl)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
               }}
             >
               <div style={{
@@ -117,7 +124,7 @@ export default function CoreFunctions() {
               <p style={{ color: 'var(--text)', fontSize: '16px', lineHeight: '1.6', position: 'relative', zIndex: 10 }}>
                 {item.description}
               </p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

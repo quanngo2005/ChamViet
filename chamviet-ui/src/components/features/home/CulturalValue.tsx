@@ -1,6 +1,8 @@
-import { motion } from 'motion/react';
+import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
 
 export default function CulturalValue() {
+  const scrollRef = useSmoothScroll<HTMLDivElement>();
+
   return (
     <section style={{ 
       minHeight: '100vh', 
@@ -15,11 +17,9 @@ export default function CulturalValue() {
       <div style={{ position: 'absolute', inset: 0, opacity: 0.05, backgroundImage: 'radial-gradient(var(--secondary) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
       <div className="container" style={{ maxWidth: '880px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+        <div
+          ref={scrollRef}
+          className="scroll-reveal fade-up"
           style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}
         >
           <div style={{ width: '120px', height: '4px', background: 'var(--primary)', margin: '0 auto 16px auto', opacity: 0.5, borderRadius: '4px' }} />
@@ -37,7 +37,7 @@ export default function CulturalValue() {
             <span style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--secondary)' }}>Di sản hiện đại</span>
             <div style={{ width: '80px', height: '1px', background: 'var(--secondary)', opacity: 0.3 }} />
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
