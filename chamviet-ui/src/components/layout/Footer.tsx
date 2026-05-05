@@ -1,145 +1,124 @@
-import { Link as RouterLink } from "react-router-dom";
-
-import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-
-const linkGroups = [
-  {
-    title: "Liên kết",
-    links: [
-      { label: "Trang chủ", to: "/" },
-      { label: "Giới thiệu", to: "/about" },
-      { label: "Dashboard", to: "/dashboard" },
-      { label: "Login", to: "/login" },
-    ],
-  },
-  {
-    title: "Thông tin",
-    links: [
-      { label: "Về chúng tôi", to: "/about" },
-      { label: "Chính sách bảo mật", to: "/401" },
-      { label: "Hỗ trợ khách hàng", to: "/login" },
-      { label: "Liên hệ", to: "/about" },
-    ],
-  },
-];
+import { Mail } from 'lucide-react';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 
 export default function Footer() {
   return (
-    <Box
-      component="footer"
-      sx={{
-        backgroundColor: "rgba(168, 50, 50, 0.05)",
-        borderTop: "1px solid rgba(168, 50, 50, 0.1)",
-        py: { xs: 5, md: 8 },
-        mt: "auto",
-      }}
-    >
-      <Container maxWidth="lg">
-        <Stack spacing={{ xs: 4, md: 6 }}>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr" },
-              gap: { xs: 4, md: 6 },
-              textAlign: { xs: "center", md: "left" },
-            }}
-          >
-            <Box>
-              <Stack spacing={3}>
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent={{ xs: "center", md: "flex-start" }}>
-                  <Box
-                    sx={{
-                      backgroundColor: "#a83232",
-                      borderRadius: "6px",
-                      width: { xs: 36, md: 40 },
-                      height: { xs: 36, md: 40 },
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "#fdfbf7",
-                      fontSize: "18px",
-                    }}
-                  >
-                    🌿
-                  </Box>
-                  <Typography
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: { xs: "20px", md: "24px" },
-                      color: "#a83232",
-                    }}
-                  >
-                    Chạm Việt
-                  </Typography>
-                </Stack>
+    <footer style={{ background: 'var(--bg-container)', padding: '100px 0 60px 0', borderTop: '1px solid var(--border)' }}>
+      <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '64px' }}>
 
-                <Typography
-                  sx={{
-                    fontSize: { xs: "14.5px", md: "16px" },
-                    color: "#475569",
-                    lineHeight: 1.5,
-                    maxWidth: { xs: "none", md: 384 },
-                    mx: { xs: "auto", md: 0 },
-                  }}
-                >
-                  Chúng tôi kiến tạo những giá trị giáo dục bền vững thông qua chất liệu gỗ tự
-                  nhiên và kho tàng văn hóa dân gian Việt Nam.
-                </Typography>
-              </Stack>
-            </Box>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{
+              fontSize: '24px',
+              fontWeight: 900,
+              color: 'var(--primary)',
+              textTransform: 'uppercase',
+              letterSpacing: '-1px'
+          }}>
+            Chạm Việt
+          </div>
+          <p style={{ color: 'var(--text)', fontSize: '15px', lineHeight: '1.6' }}>
+            Gìn giữ nét Việt trong từng món đồ chơi. Kết nối di sản qua công nghệ tương tác, đánh thức mọi giác quan.
+          </p>
+          <div style={{ display: 'flex', gap: '16px', color: 'var(--secondary)', marginTop: '8px' }}>
+            <FacebookIcon style={{ fontSize: 24, cursor: 'pointer', transition: 'color 0.3s ease' }} 
+                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--secondary)'}/>
+            <InstagramIcon style={{ fontSize: 24, cursor: 'pointer', transition: 'color 0.3s ease' }} 
+                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--secondary)'}/>
+            <YouTubeIcon style={{ fontSize: 24, cursor: 'pointer', transition: 'color 0.3s ease' }} 
+                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--secondary)'}/>
+          </div>
+        </div>
 
-            {linkGroups.map((group) => (
-              <Box key={group.title}>
-                <Stack spacing={3}>
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: "14px",
-                      color: "#0f172a",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.7px",
-                    }}
-                  >
-                    {group.title}
-                  </Typography>
-                  <Stack spacing={2} sx={{ alignItems: { xs: "center", md: "flex-start" } }}>
-                    {group.links.map((link) => (
-                      <Link
-                        key={link.label}
-                        component={RouterLink}
-                        to={link.to}
-                        underline="hover"
-                        sx={{
-                          color: "#475569",
-                          fontSize: "14px",
-                          width: "fit-content",
-                        }}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </Stack>
-                </Stack>
-              </Box>
+        <div>
+          <h4 style={{ fontSize: '14px', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 800, color: 'var(--text-h)' }}>Sản phẩm</h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {['Bộ Puzzle Gỗ 3D', 'App Chạm Việt', 'Phụ kiện', 'Quà tặng'].map((item) => (
+              <li key={item} style={{ color: 'var(--text)', fontSize: '15px', cursor: 'pointer', transition: 'color 0.3s ease' }}
+                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--text)'}>
+                {item}
+              </li>
             ))}
-          </Box>
+          </ul>
+        </div>
 
-          <Box
-            sx={{
-              borderTop: "1px solid rgba(168, 50, 50, 0.1)",
-              pt: { xs: 3, md: 4 },
+        <div>
+          <h4 style={{ fontSize: '14px', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 800, color: 'var(--text-h)' }}>Hỗ trợ</h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {['Hướng dẫn SD', 'Chính sách bảo hành', 'Vận chuyển', 'Liên hệ'].map((item) => (
+              <li key={item} style={{ color: 'var(--text)', fontSize: '15px', cursor: 'pointer', transition: 'color 0.3s ease' }}
+                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--text)'}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 800, color: 'var(--text-h)' }}>Bản tin</h4>
+          <p style={{ color: 'var(--text)', fontSize: '15px', lineHeight: '1.6' }}>Nhận thông báo về các bộ sưu tập mới nhất và câu chuyện di sản.</p>
+          <div style={{ display: 'flex', boxShadow: 'var(--shadow-sm)', borderRadius: '12px', overflow: 'hidden' }}>
+            <input
+              type="text"
+              placeholder="Email của bạn"
+              style={{
+                background: 'white',
+                border: 'none',
+                padding: '12px 16px',
+                width: '100%',
+                outline: 'none',
+                fontSize: '15px',
+                color: 'var(--text-h)'
+              }}
+            />
+            <button style={{
+              background: 'var(--primary)',
+              color: 'white',
+              padding: '12px 20px',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background 0.3s ease'
             }}
-          >
-            <Typography sx={{ fontSize: "12px", color: "#64748b", textAlign: { xs: "center", md: "left" } }}>
-              © 2024 Chạm Việt. Tất cả quyền được bảo lưu.
-            </Typography>
-          </Box>
-        </Stack>
-      </Container>
-    </Box>
+              onMouseOver={(e) => e.currentTarget.style.background = 'var(--primary-hover)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'var(--primary)'}>
+              <Mail size={20} />
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div className="container" style={{ 
+        marginTop: '80px', 
+        paddingTop: '32px', 
+        borderTop: '1px solid var(--border)', 
+        display: 'flex', 
+        flexWrap: 'wrap',
+        gap: '24px',
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        fontSize: '12px', 
+        fontWeight: 700, 
+        letterSpacing: '1px', 
+        color: 'var(--text-sub)',
+        opacity: 0.8
+      }}>
+        <span>© 2024 CHẠM VIỆT. ALL RIGHTS RESERVED.</span>
+        <div style={{ display: 'flex', gap: '32px' }}>
+          <a href="#" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 0.3s ease' }}
+             onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+             onMouseOut={(e) => e.currentTarget.style.color = 'inherit'}>PRIVACY POLICY</a>
+          <a href="#" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 0.3s ease' }}
+             onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+             onMouseOut={(e) => e.currentTarget.style.color = 'inherit'}>TERMS OF SERVICE</a>
+        </div>
+      </div>
+    </footer>
   );
 }
