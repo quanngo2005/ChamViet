@@ -36,7 +36,7 @@ dist-ssr
 **/.env.local
 **/.env.*.local
 
-.agent
+
 .venv
 chamviet-api/src/main/resources/application-prod.properties
 chamviet-ai/voice-service/.env.example

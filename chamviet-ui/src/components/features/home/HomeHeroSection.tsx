@@ -1,5 +1,6 @@
 import { Box, Typography, Stack, Button, Card } from '@mui/material';
 import { PageSection, ContentContainer } from '../../common/layout';
+import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
 
 export interface HomeHeroSectionProps {
   copy: any;
@@ -7,6 +8,12 @@ export interface HomeHeroSectionProps {
 }
 
 export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
+  const badgeRef = useSmoothScroll<HTMLDivElement>({ threshold: 0.1 });
+  const titleRef = useSmoothScroll<HTMLDivElement>({ threshold: 0.1 });
+  const descRef = useSmoothScroll<HTMLDivElement>({ threshold: 0.1 });
+  const ctaRef = useSmoothScroll<HTMLDivElement>({ threshold: 0.1 });
+  const imageRef = useSmoothScroll<HTMLDivElement>({ threshold: 0.1 });
+
   return (
     <PageSection
       sx={{
@@ -56,6 +63,8 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
           <Box>
             <Stack spacing={3}>
               <Box
+                ref={badgeRef}
+                className="scroll-reveal fade-up fast"
                 sx={{
                   display: 'inline-flex',
                   backgroundColor: 'rgba(217, 164, 65, 0.2)',
@@ -73,69 +82,75 @@ export function HomeHeroSection({ copy, images }: HomeHeroSectionProps) {
                 </Typography>
               </Box>
 
-              <Typography
-                variant="h3"
-                sx={{
-                  color: 'secondary.dark',
-                  fontWeight: 'bold',
-                  fontSize: { xs: '34px', sm: '42px', md: '60px' },
-                  lineHeight: 1.2,
-                }}
-              >
-                {copy.titleStart}
-                <Box component="span" sx={{ color: 'primary.main' }}>
-                  {copy.titleHighlight}
-                </Box>
-              </Typography>
-
-              <Typography
-                sx={{
-                  color: 'secondary.main',
-                  fontSize: { xs: '16px', sm: '18px', md: '20px' },
-                  lineHeight: 1.4,
-                  maxWidth: '512px',
-                }}
-              >
-                {copy.description}
-              </Typography>
-
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap" useFlexGap>
-                <Button
-                  variant="contained"
+              <Box ref={titleRef} className="scroll-reveal fade-up delay-100">
+                <Typography
+                  variant="h3"
                   sx={{
-                    backgroundColor: 'primary.main',
-                    color: 'common.white',
-                    padding: { xs: '12px 20px', sm: '16px 32px' },
-                    borderRadius: '12px',
-                    fontWeight: 'bold',
-                    fontSize: { xs: '16px', sm: '18px' },
-                    textTransform: 'none',
-                    width: { xs: '100%', sm: 'auto' },
-                    '&:hover': { backgroundColor: 'primary.dark' },
-                  }}
-                >
-                  {copy.primaryCta}
-                </Button>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    borderColor: 'rgba(168, 50, 50, 0.2)',
                     color: 'secondary.dark',
-                    padding: { xs: '12px 20px', sm: '16px 32px' },
-                    borderRadius: '12px',
                     fontWeight: 'bold',
-                    fontSize: { xs: '16px', sm: '18px' },
-                    textTransform: 'none',
-                    width: { xs: '100%', sm: 'auto' },
+                    fontSize: { xs: '34px', sm: '42px', md: '60px' },
+                    lineHeight: 1.2,
                   }}
                 >
-                  {copy.secondaryCta}
-                </Button>
-              </Stack>
+                  {copy.titleStart}
+                  <Box component="span" sx={{ color: 'primary.main' }}>
+                    {copy.titleHighlight}
+                  </Box>
+                </Typography>
+              </Box>
+
+              <Box ref={descRef} className="scroll-reveal fade-up delay-200">
+                <Typography
+                  sx={{
+                    color: 'secondary.main',
+                    fontSize: { xs: '16px', sm: '18px', md: '20px' },
+                    lineHeight: 1.4,
+                    maxWidth: '512px',
+                  }}
+                >
+                  {copy.description}
+                </Typography>
+              </Box>
+
+              <Box ref={ctaRef} className="scroll-reveal fade-up delay-300">
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} flexWrap="wrap" useFlexGap>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      backgroundColor: 'primary.main',
+                      color: 'common.white',
+                      padding: { xs: '12px 20px', sm: '16px 32px' },
+                      borderRadius: '12px',
+                      fontWeight: 'bold',
+                      fontSize: { xs: '16px', sm: '18px' },
+                      textTransform: 'none',
+                      width: { xs: '100%', sm: 'auto' },
+                      '&:hover': { backgroundColor: 'primary.dark' },
+                    }}
+                  >
+                    {copy.primaryCta}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      borderColor: 'rgba(168, 50, 50, 0.2)',
+                      color: 'secondary.dark',
+                      padding: { xs: '12px 20px', sm: '16px 32px' },
+                      borderRadius: '12px',
+                      fontWeight: 'bold',
+                      fontSize: { xs: '16px', sm: '18px' },
+                      textTransform: 'none',
+                      width: { xs: '100%', sm: 'auto' },
+                    }}
+                  >
+                    {copy.secondaryCta}
+                  </Button>
+                </Stack>
+              </Box>
             </Stack>
           </Box>
 
-          <Box>
+          <Box ref={imageRef} className="scroll-reveal scale-in delay-200">
             <Card
               sx={{
                 borderRadius: '16px',

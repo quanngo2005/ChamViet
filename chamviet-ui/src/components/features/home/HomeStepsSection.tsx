@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { PageSection, ContentContainer, StackWrapper, SectionHeader } from '../../common/layout';
 import { StepCard } from '../../common/ui';
+import { useSmoothScroll, useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
 
 export interface HomeStepsSectionProps {
   copy: any;
@@ -8,17 +9,23 @@ export interface HomeStepsSectionProps {
 }
 
 export function HomeStepsSection({ copy, images }: HomeStepsSectionProps) {
+  const headerRef = useSmoothScroll<HTMLDivElement>();
+  const gridRef = useSmoothScrollStagger<HTMLDivElement>('.step-card-item', 150);
+
   return (
     <PageSection id="how-to-play" sx={{ backgroundColor: 'grey.100' }}>
       <ContentContainer>
         <StackWrapper spacing={8}>
-          <SectionHeader
-            title={copy.title}
-            subtitle={copy.description}
-            titleColor="secondary.dark"
-          />
+          <Box ref={headerRef} className="scroll-reveal fade-up">
+            <SectionHeader
+              title={copy.title}
+              subtitle={copy.description}
+              titleColor="secondary.dark"
+            />
+          </Box>
 
           <Box
+            ref={gridRef}
             sx={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -41,14 +48,15 @@ export function HomeStepsSection({ copy, images }: HomeStepsSectionProps) {
             {copy.items.map((step: any, index: number) => {
               const stepImageKey = `step${index + 1}`;
               return (
-                <StepCard
-                  key={index}
-                  number={step.number}
-                  title={step.title}
-                  description={step.description}
-                  image={images[stepImageKey]}
-                  accentColor="primary.main"
-                />
+                <Box key={index} className="step-card-item scroll-reveal-child fade-up">
+                  <StepCard
+                    number={step.number}
+                    title={step.title}
+                    description={step.description}
+                    image={images[stepImageKey]}
+                    accentColor="primary.main"
+                  />
+                </Box>
               );
             })}
           </Box>

@@ -1,0 +1,121 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Smooth Scroll & Scroll-Reveal Animation System
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Global smooth scrolling ─────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .scroll-reveal,
+  .scroll-reveal-child {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── 2. Base scroll-reveal (invisible state) ────────────────────────── */
+.scroll-reveal {
+  opacity: 0;
+  transition-property: opacity, transform, filter;
+  transition-duration: 0.8s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+/* Staggerable child elements inside a scroll-reveal-container */
+.scroll-reveal-child {
+  opacity: 0;
+  transition-property: opacity, transform, filter;
+  transition-duration: 0.7s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--stagger-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+/* ── 3. Direction variants (initial offset positions) ───────────────── */
+.scroll-reveal.fade-up,
+.scroll-reveal-child.fade-up {
+  transform: translateY(40px);
+}
+
+.scroll-reveal.fade-down,
+.scroll-reveal-child.fade-down {
+  transform: translateY(-40px);
+}
+
+.scroll-reveal.fade-left,
+.scroll-reveal-child.fade-left {
+  transform: translateX(40px);
+}
+
+.scroll-reveal.fade-right,
+.scroll-reveal-child.fade-right {
+  transform: translateX(-40px);
+}
+
+.scroll-reveal.scale-in,
+.scroll-reveal-child.scale-in {
+  transform: scale(0.92);
+  filter: blur(4px);
+}
+
+.scroll-reveal.fade-up-subtle,
+.scroll-reveal-child.fade-up-subtle {
+  transform: translateY(20px);
+}
+
+.scroll-reveal.zoom-in,
+.scroll-reveal-child.zoom-in {
+  transform: scale(0.85);
+}
+
+/* ── 4. Visible state (triggered by data attribute) ─────────────────── */
+.scroll-reveal[data-scroll-visible="true"],
+.scroll-reveal-child[data-scroll-visible="true"] {
+  opacity: 1;
+  transform: translateY(0) translateX(0) scale(1);
+  filter: blur(0);
+}
+
+/* ── 5. Speed modifiers ─────────────────────────────────────────────── */
+.scroll-reveal.fast {
+  transition-duration: 0.5s;
+}
+
+.scroll-reveal.slow {
+  transition-duration: 1.2s;
+}
+
+.scroll-reveal.extra-slow {
+  transition-duration: 1.6s;
+}
+
+/* ── 6. Delay utilities ─────────────────────────────────────────────── */
+.scroll-reveal.delay-100 { transition-delay: 100ms; }
+.scroll-reveal.delay-200 { transition-delay: 200ms; }
+.scroll-reveal.delay-300 { transition-delay: 300ms; }
+.scroll-reveal.delay-400 { transition-delay: 400ms; }
+.scroll-reveal.delay-500 { transition-delay: 500ms; }
+.scroll-reveal.delay-600 { transition-delay: 600ms; }
+
+/* ── 7. Scroll progress indicator (optional — add to body/root) ───── */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #a83232, #d9a441);
+  transform-origin: left;
+  transform: scaleX(var(--scroll-progress, 0));
+  z-index: 9999;
+  pointer-events: none;
+  transition: transform 0.1s linear;
+}
