@@ -1,5 +1,6 @@
 package com.vn.chamviet.chamviet_api.user.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -9,5 +10,6 @@ import lombok.*;
 @Builder
 @ToString
 public class RefreshTokenRequest {
+    @NotBlank(message = "Refresh token is required")
     private String refreshToken;
 }

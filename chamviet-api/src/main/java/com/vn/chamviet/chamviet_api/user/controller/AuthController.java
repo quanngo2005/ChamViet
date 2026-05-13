@@ -1,5 +1,6 @@
 package com.vn.chamviet.chamviet_api.user.controller;
 
+import jakarta.validation.Valid;
 import com.vn.chamviet.chamviet_api.user.dto.*;
 import com.vn.chamviet.chamviet_api.user.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Authentication", description = "Authentication and authorization endpoints for user login, registration, and token management")
+@SuppressWarnings("rawtypes")
 public class AuthController {
 
     private final AuthService authService;
@@ -32,26 +34,26 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Login successful",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class))),
         @ApiResponse(responseCode = "401", description = "Invalid email or password",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class)))
     })
     @RequestBody(
         description = "Email and password credentials",
         required = true,
         content = @Content(schema = @Schema(implementation = LoginRequest.class))
     )
-    public ResponseEntity<?> login(@org.springframework.web.bind.annotation.RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @org.springframework.web.bind.annotation.RequestBody LoginRequest loginRequest) {
         try {
             log.info("Login request for email: {}", loginRequest.getEmail());
             LoginResponse response = authService.login(loginRequest);
             return ResponseEntity.ok(
-                    com.vn.chamviet.chamviet_api.user.dto.ApiResponse.success(response, "Login successful", HttpStatus.OK.value())
+                    com.vn.chamviet.chamviet_api.global.dto.ApiResponse.success(response, "Login successful", HttpStatus.OK.value())
             );
         } catch (Exception e) {
             log.error("Login error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(com.vn.chamviet.chamviet_api.user.dto.ApiResponse.error("Login failed", e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
+                    .body(com.vn.chamviet.chamviet_api.global.dto.ApiResponse.error("Login failed", e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
         }
     }
 
@@ -62,26 +64,26 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Token refreshed successfully",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class))),
         @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class)))
     })
     @RequestBody(
         description = "Refresh token",
         required = true,
         content = @Content(schema = @Schema(implementation = RefreshTokenRequest.class))
     )
-    public ResponseEntity<?> refreshToken(@org.springframework.web.bind.annotation.RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<?> refreshToken(@Valid @org.springframework.web.bind.annotation.RequestBody RefreshTokenRequest request) {
         try {
             log.info("Refresh token request");
             LoginResponse response = authService.refreshToken(request);
             return ResponseEntity.ok(
-                    com.vn.chamviet.chamviet_api.user.dto.ApiResponse.success(response, "Token refreshed successfully", HttpStatus.OK.value())
+                    com.vn.chamviet.chamviet_api.global.dto.ApiResponse.success(response, "Token refreshed successfully", HttpStatus.OK.value())
             );
         } catch (Exception e) {
             log.error("Refresh token error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(com.vn.chamviet.chamviet_api.user.dto.ApiResponse.error("Refresh token failed", e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
+                    .body(com.vn.chamviet.chamviet_api.global.dto.ApiResponse.error("Refresh token failed", e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
         }
     }
 
@@ -92,25 +94,25 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Registration successful",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class))),
         @ApiResponse(responseCode = "400", description = "Registration failed - email already exists or invalid data",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class)))
     })
     @RequestBody(
         description = "User registration details",
         required = true,
         content = @Content(schema = @Schema(implementation = RegisterRequest.class))
     )
-    public ResponseEntity<?> register(@org.springframework.web.bind.annotation.RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(@Valid @org.springframework.web.bind.annotation.RequestBody RegisterRequest registerRequest) {
         try {
             log.info("Register request for email: {}", registerRequest.getEmail());
             RegisterResponse response = authService.register(registerRequest);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(com.vn.chamviet.chamviet_api.user.dto.ApiResponse.success(response, "Registration successful", HttpStatus.CREATED.value()));
+                    .body(com.vn.chamviet.chamviet_api.global.dto.ApiResponse.success(response, "Registration successful", HttpStatus.CREATED.value()));
         } catch (Exception e) {
             log.error("Registration error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(com.vn.chamviet.chamviet_api.user.dto.ApiResponse.error("Registration failed", e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+                    .body(com.vn.chamviet.chamviet_api.global.dto.ApiResponse.error("Registration failed", e.getMessage(), HttpStatus.BAD_REQUEST.value()));
         }
     }
 
@@ -121,9 +123,9 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Account activated successfully",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class))),
         @ApiResponse(responseCode = "400", description = "Activation failed - invalid or expired token",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class)))
     })
     public ResponseEntity<?> activate(
         @Parameter(description = "Activation token from email", required = true, example = "550e8400-e29b-41d4-a716-446655440000")
@@ -131,11 +133,11 @@ public class AuthController {
         try {
             log.info("Activation request for token: {}", token);
             RegisterResponse response = authService.activateAccount(token);
-            return ResponseEntity.ok(com.vn.chamviet.chamviet_api.user.dto.ApiResponse.success(response, "Account activated", HttpStatus.OK.value()));
+            return ResponseEntity.ok(com.vn.chamviet.chamviet_api.global.dto.ApiResponse.success(response, "Account activated", HttpStatus.OK.value()));
         } catch (Exception e) {
             log.error("Activation error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(com.vn.chamviet.chamviet_api.user.dto.ApiResponse.error("Activation failed", e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+                    .body(com.vn.chamviet.chamviet_api.global.dto.ApiResponse.error("Activation failed", e.getMessage(), HttpStatus.BAD_REQUEST.value()));
         }
     }
 
@@ -146,9 +148,9 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Logout successful",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class))),
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class))),
         @ApiResponse(responseCode = "400", description = "Logout failed",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class)))
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class)))
     })
     public ResponseEntity<?> logout(
         @Parameter(description = "JWT token in Bearer format", example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
@@ -164,12 +166,12 @@ public class AuthController {
             authService.logout(token);
             
             return ResponseEntity.ok(
-                    com.vn.chamviet.chamviet_api.user.dto.ApiResponse.success(null, "Logout successful", HttpStatus.OK.value())
+                    com.vn.chamviet.chamviet_api.global.dto.ApiResponse.success(null, "Logout successful", HttpStatus.OK.value())
             );
         } catch (Exception e) {
             log.error("Logout error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(com.vn.chamviet.chamviet_api.user.dto.ApiResponse.error("Logout failed", e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+                    .body(com.vn.chamviet.chamviet_api.global.dto.ApiResponse.error("Logout failed", e.getMessage(), HttpStatus.BAD_REQUEST.value()));
         }
     }
 
@@ -179,10 +181,10 @@ public class AuthController {
         description = "Verifies that the authentication service is running"
     )
     @ApiResponse(responseCode = "200", description = "Service is healthy",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.user.dto.ApiResponse.class)))
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = com.vn.chamviet.chamviet_api.global.dto.ApiResponse.class)))
     public ResponseEntity<?> health() {
         return ResponseEntity.ok(
-                com.vn.chamviet.chamviet_api.user.dto.ApiResponse.success("Auth service is running", "OK", HttpStatus.OK.value())
+                com.vn.chamviet.chamviet_api.global.dto.ApiResponse.success("Auth service is running", "OK", HttpStatus.OK.value())
         );
     }
 }

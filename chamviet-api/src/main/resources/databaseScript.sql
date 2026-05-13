@@ -68,14 +68,11 @@ CREATE TABLE age_piece_rule (
 CREATE TABLE product (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     category_id INT NOT NULL,
-    age_range_id INT,
     name VARCHAR(255) NOT NULL,
     slug VARCHAR(255) UNIQUE,
     description TEXT,
-    video_url VARCHAR(500),
     status ENUM('ACTIVE','INACTIVE') DEFAULT 'ACTIVE',
-    FOREIGN KEY (category_id) REFERENCES category(id),
-    FOREIGN KEY (age_range_id) REFERENCES age_range(id)
+    FOREIGN KEY (category_id) REFERENCES category(id)
 );
 
 -- ========================
@@ -84,12 +81,46 @@ CREATE TABLE product (
 CREATE TABLE product_variant (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     product_id BIGINT NOT NULL,
+    age_range_id INT,
     sku VARCHAR(100) UNIQUE,
-    price INT NOT NULL CHECK (price >= 0),
-    stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
-    piece_count INT NOT NULL, -- SỐ MẢNH GHÉP
+    price DECIMAL(10,2) NOT NULL,
     attributes JSON,
-    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE,
+    FOREIGN KEY (age_range_id) REFERENCES age_range(id)
+);
+
+-- ========================
+-- COMPONENT ITEM
+-- ========================
+CREATE TABLE component_item (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    version BIGINT,
+    age_range_id INT,
+    sku VARCHAR(100) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    component_type ENUM('PUZZLE','PEPPER_GHOST') NOT NULL,
+    video_url VARCHAR(500),
+    story_title VARCHAR(255),
+    story_content TEXT,
+    story_qa_json TEXT,
+    piece_count INT,
+    stock_on_hand INT NOT NULL DEFAULT 0 CHECK (stock_on_hand >= 0),
+    reserved_stock INT NOT NULL DEFAULT 0 CHECK (reserved_stock >= 0),
+    status ENUM('ACTIVE','INACTIVE') DEFAULT 'ACTIVE',
+    FOREIGN KEY (age_range_id) REFERENCES age_range(id)
+);
+
+-- ========================
+-- PRODUCT VARIANT COMPONENT
+-- ========================
+CREATE TABLE product_variant_component (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_variant_id BIGINT NOT NULL,
+    component_item_id BIGINT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    sort_order INT NOT NULL DEFAULT 0 CHECK (sort_order >= 0),
+    FOREIGN KEY (product_variant_id) REFERENCES product_variant(id) ON DELETE CASCADE,
+    FOREIGN KEY (component_item_id) REFERENCES component_item(id)
 );
 
 -- ========================
@@ -145,7 +176,7 @@ CREATE TABLE orders (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     account_id BIGINT NOT NULL,
     voucher_id BIGINT,
-    status ENUM('PENDING','CONFIRMED','SHIPPING','COMPLETED','CANCELLED') DEFAULT 'PENDING',
+    status ENUM('PENDING','RESERVED','CONFIRMED','PACKING','SHIPPING','COMPLETED','CANCELLED') DEFAULT 'PENDING',
     total_price DECIMAL(15,2) NOT NULL,
     final_price DECIMAL(15,2) NOT NULL,
 
@@ -172,6 +203,9 @@ CREATE TABLE order_detail (
     product_variant_id BIGINT NOT NULL,
     quantity INT NOT NULL CHECK (quantity > 0),
     snapshot_price DECIMAL(15,2) NOT NULL,
+    snapshot_product_name VARCHAR(255) NOT NULL,
+    snapshot_variant_sku VARCHAR(100) NOT NULL,
+    snapshot_components_json TEXT,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_variant_id) REFERENCES product_variant(id)
 );
@@ -224,13 +258,13 @@ CREATE TABLE payment (
 -- ========================
 CREATE TABLE inventory_transaction (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    product_variant_id BIGINT,
-    type ENUM('IMPORT','EXPORT','ADJUST'),
+    component_item_id BIGINT,
+    type ENUM('IMPORT','RESERVE','RELEASE','CONSUME','ADJUST'),
     quantity INT NOT NULL,
     reference_id BIGINT,
     note TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_variant_id) REFERENCES product_variant(id)
+    FOREIGN KEY (component_item_id) REFERENCES component_item(id)
 );
 
 -- Activation tokens for account verification
@@ -247,13 +281,15 @@ CREATE TABLE activation_token (
 -- INDEXES
 -- ========================
 CREATE INDEX idx_product_category ON product(category_id);
-CREATE INDEX idx_product_age ON product(age_range_id);
-
 CREATE INDEX idx_variant_product ON product_variant(product_id);
+CREATE INDEX idx_variant_age ON product_variant(age_range_id);
+CREATE INDEX idx_component_age ON component_item(age_range_id);
+CREATE INDEX idx_variant_component_variant ON product_variant_component(product_variant_id);
+CREATE INDEX idx_variant_component_item ON product_variant_component(component_item_id);
 
 CREATE INDEX idx_orders_account ON orders(account_id);
 CREATE INDEX idx_orders_status ON orders(status);
 
 CREATE INDEX idx_order_detail_order ON order_detail(order_id);
 
-CREATE INDEX idx_inventory_variant ON inventory_transaction(product_variant_id);
+CREATE INDEX idx_inventory_component ON inventory_transaction(component_item_id);

@@ -19,6 +19,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.cache
 *.local
 
 # Editor directories and files
@@ -44,3 +45,5 @@ chamviet-api/.github/copilot-instructions.md
 *.md
 /chamviet-api/postman
 ChamViet_AI.postman_collection.json
+# Added by code-review-graph
+.code-review-graph/

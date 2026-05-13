@@ -2,6 +2,8 @@ package com.vn.chamviet.chamviet_api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,8 +25,8 @@ public class Payment {
     @Column(name = "method")
     private PaymentMethod method;
 
-    @Column(nullable = false)
-    private Integer amount;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

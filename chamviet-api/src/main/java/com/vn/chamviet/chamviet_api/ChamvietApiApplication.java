@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackages = "com.vn.chamviet.chamviet_api.user")
+@EnableJpaRepositories(basePackages = "com.vn.chamviet.chamviet_api")
 public class ChamvietApiApplication {
 
 	public static void main(String[] args) {

@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Analytics } from "@vercel/analytics/react"
 
+
 import Box from "@mui/material/Box";
 
 import Footer from "./Footer";

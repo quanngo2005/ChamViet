@@ -1,5 +1,7 @@
 package com.vn.chamviet.chamviet_api.entity;
 
+import com.vn.chamviet.chamviet_api.product.Category;
+import com.vn.chamviet.chamviet_api.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -8,16 +10,22 @@ import java.util.Set;
 
 @Entity
 @Table(name = "voucher")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class Voucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     @Column(unique = true, nullable = false, length = 50)
+    @ToString.Include
     private String code;
 
     @Enumerated(EnumType.STRING)

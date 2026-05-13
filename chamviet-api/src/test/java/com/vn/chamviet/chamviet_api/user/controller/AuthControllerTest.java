@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -19,7 +20,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 class AuthControllerTest {
 
     @Autowired
@@ -67,8 +69,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.statusCode").value(200))
                 .andExpect(jsonPath("$.data.accessToken").value(loginResponse.getAccessToken()))
                 .andExpect(jsonPath("$.data.refreshToken").value(loginResponse.getRefreshToken()))
                 .andExpect(jsonPath("$.data.tokenType").value("Bearer"))
@@ -86,8 +88,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.code").value(401))
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.statusCode").value(401))
                 .andExpect(jsonPath("$.message").value("Login failed"));
     }
 
@@ -124,7 +126,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.accessToken").value("new-access-token"))
                 .andExpect(jsonPath("$.data.refreshToken").value("refresh-token-value"))
                 .andExpect(jsonPath("$.message").value("Token refreshed successfully"));
@@ -143,8 +145,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(refreshRequest)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.code").value(401));
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.statusCode").value(401));
     }
 
     @Test
@@ -171,8 +173,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.code").value(201))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.statusCode").value(201))
                 .andExpect(jsonPath("$.data.email").value("newuser@example.com"))
                 .andExpect(jsonPath("$.data.status").value("INACTIVE"))
                 .andExpect(jsonPath("$.message").value("Registration successful"));
@@ -202,8 +204,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value("success"))
-                .andExpect(jsonPath("$.code").value(201))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.statusCode").value(201))
                 .andExpect(jsonPath("$.data.email").value("customer@example.com"))
                 .andExpect(jsonPath("$.data.status").value("INACTIVE"))
                 .andExpect(jsonPath("$.message").value("Registration successful"));
@@ -224,8 +226,8 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"))
-                .andExpect(jsonPath("$.code").value(400));
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.statusCode").value(400));
     }
 
     @Test
@@ -244,7 +246,7 @@ class AuthControllerTest {
         mockMvc.perform(get("/api/auth/activate")
                 .param("token", token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.message").value("Account activated"));
     }
@@ -259,7 +261,7 @@ class AuthControllerTest {
         mockMvc.perform(get("/api/auth/activate")
                 .param("token", invalidToken))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value("error"));
+                .andExpect(jsonPath("$.success").value(false));
     }
 
     @Test
@@ -269,7 +271,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/logout")
                 .header("Authorization", token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Logout successful"));
     }
 
@@ -277,7 +279,7 @@ class AuthControllerTest {
     void testLogoutWithoutToken() throws Exception {
         mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("Logout successful"));
     }
 
@@ -285,7 +287,7 @@ class AuthControllerTest {
     void testHealthCheck() throws Exception {
         mockMvc.perform(get("/api/auth/health"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"))
+                .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("OK"))
                 .andExpect(jsonPath("$.data").value("Auth service is running"));
     }

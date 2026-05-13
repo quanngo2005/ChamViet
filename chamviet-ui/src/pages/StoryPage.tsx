@@ -18,7 +18,6 @@ import YouTubeStopOverlayPlayer, {
   type VideoRegistry,
   type VideoStopConfig,
 } from "../components/video/YouTubeStopOverlayPlayer";
-import { STORY_REGISTRY } from "../data/video-story-qa";
 import mascotHac from "../assets/be-hac.png";
 
 
@@ -57,7 +56,6 @@ const VIDEO_REGISTRY: VideoRegistry = {
   Mb0RWyh3sqQ: {
     stopTime: 30,
     mascotAvatar: mascotHac,
-    storyConfig: STORY_REGISTRY["Mb0RWyh3sqQ"],
     dialogue: [],
   },
 };
