@@ -1,10 +1,15 @@
+import heroImage from '@assets/hero.png';
+import unboxingFlatlay from '@assets/unboxing-flatlay.png';
+import heroChildAr from '@assets/hero-child-ar.png';
+import videoThumbnail from '@assets/video-thumbnail.png';
+
 export const HOME_IMAGES = {
-  heroImage: 'https://www.figma.com/api/mcp/asset/5220edd4-2957-4ae3-81d3-e4e40de08253',
+  heroImage,
   howToPlay: {
-    step1: 'https://www.figma.com/api/mcp/asset/99bd7b97-d08a-4c57-94a6-56b5e5d4a432',
-    step2: 'https://www.figma.com/api/mcp/asset/99bd7b97-d08a-4c57-94a6-56b5e5d4a432',
-    step3: 'https://www.figma.com/api/mcp/asset/99bd7b97-d08a-4c57-94a6-56b5e5d4a432',
-    step4: 'https://www.figma.com/api/mcp/asset/99bd7b97-d08a-4c57-94a6-56b5e5d4a432',
+    step1: heroImage,
+    step2: videoThumbnail,
+    step3: unboxingFlatlay,
+    step4: heroChildAr,
   }
 };
 
@@ -13,7 +18,7 @@ export const HOME_COPY = {
     badge: 'Bộ sản phẩm kể chuyện văn hóa Việt',
     titleStart: 'Chạm ',
     titleHighlight: 'Việt',
-    description: 'Bộ sản phẩm kể chuyện văn hóa Việt bằng tranh lắp ghép, video và hộp Pepper\'s Ghost tạo hiệu ứng hologram mô phỏng như một sân khấu thu nhỏ.',
+    description: 'Bộ sản phẩm kể chuyện văn hóa Việt bằng tranh lắp ghép, video và hộp Pepper\'s Ghost để tạo hiệu ứng hologram như một sân khấu thu nhỏ.',
     primaryCta: 'Sở hữu bộ sản phẩm',
     secondaryCta: 'Xem câu chuyện',
     microText: 'Tranh lắp ghép | Video kể chuyện | Hộp Pepper\'s Ghost',
@@ -23,7 +28,7 @@ export const HOME_COPY = {
   },
   learning: {
     title: 'Học Hỏi Qua Mọi Giác Quan',
-    description: 'Phương pháp giáo dục đa giác quan kết hợp giữa đồ chơi truyền thống và công nghệ hiện đại giúp trẻ phát triển toàn diện.',
+    description: 'Phương pháp giáo dục đa giác quan kết hợp đồ chơi truyền thống và công nghệ hiện đại giúp trẻ phát triển toàn diện.',
     cards: [
       {
         icon: '👁️',
@@ -52,28 +57,52 @@ export const HOME_COPY = {
     ]
   },
   steps: {
-    title: 'Trải Nghiệm 4 Bước Kỳ Diệu',
-    description: 'Cách bé tương tác với đồ chơi Chạm Việt để mở ra thế giới truyện cổ tích.',
+    title: 'Hành Trình Trải Nghiệm 4 Bước',
+    description: 'Mỗi bước dùng một hình minh họa riêng để người xem hiểu ngay hành động cần làm.',
     items: [
       {
         number: '1',
-        title: 'Lắp Ghép',
-        description: 'Bé tự tay lắp ráp các mảnh ghép gỗ thành bức tranh hoàn chỉnh.',
+        title: 'Lắp ghép',
+        description: 'Các mảnh gỗ ghép vào nhau để dần hiện ra bức tranh văn hóa.',
+        screenLabel: 'Lắp ghép puzzle',
+        image: HOME_IMAGES.howToPlay.step1,
+        alt: 'Các mảnh puzzle gỗ đang được lắp ghép',
+        accentColor: 'var(--secondary)',
+        variant: 'puzzle',
+        fallbackLabel: 'Xem trước lắp ghép puzzle',
       },
       {
         number: '2',
-        title: 'Quét Mã',
-        description: 'Sử dụng điện thoại quét mã để mở khóa câu chuyện của bức tranh.',
+        title: 'Quét với AI Vision',
+        description: 'Đưa điện thoại vào màn hình quét của web để nhận diện bức tranh đã hoàn thành.',
+        screenLabel: 'AI Vision',
+        image: HOME_IMAGES.howToPlay.step2,
+        alt: 'Điện thoại đang quét bức tranh puzzle đã hoàn thiện',
+        accentColor: 'var(--primary)',
+        variant: 'scanner',
+        fallbackLabel: 'Khung xem trước thao tác quét',
       },
       {
         number: '3',
-        title: 'Xem Hologram',
-        description: 'Những hình ảnh 3D hiện lên trên mảnh ghép để kể chuyện sinh động.',
+        title: 'Đặt lên hộp và xem',
+        description: 'Đặt điện thoại lên hộp Pepper\'s Ghost để hiệu ứng phản chiếu hiện lên rõ hơn.',
+        screenLabel: 'Pepper Ghost',
+        image: HOME_IMAGES.howToPlay.step3,
+        alt: 'Điện thoại được đặt lên hộp Pepper Ghost',
+        accentColor: 'var(--accent-color)',
+        variant: 'ghost',
+        fallbackLabel: 'Khung xem trước chiếu Pepper Ghost',
       },
       {
         number: '4',
-        title: 'Lắng Nghe',
-        description: 'Nâng cổ những bậcphát triển toàn diện kỹ năng vận động tinh.',
+        title: 'Hỏi đáp và khám phá',
+        description: 'Đặt câu hỏi để khám phá câu chuyện qua giao diện trò chuyện AI tương tác.',
+        screenLabel: 'Hỏi đáp',
+        image: HOME_IMAGES.howToPlay.step4,
+        alt: 'Bé đang hỏi đáp trong giao diện trò chuyện tương tác',
+        accentColor: 'var(--text-h)',
+        variant: 'qa',
+        fallbackLabel: 'Khung xem trước hỏi đáp tương tác',
       },
     ]
   }
