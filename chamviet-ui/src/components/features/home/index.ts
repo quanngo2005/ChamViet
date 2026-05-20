@@ -5,3 +5,5 @@ export { default as Workflow } from './Workflow';
 export { default as CulturalValue } from './CulturalValue';
 export { default as VideoSection } from './VideoSection';
 export { default as Testimonials } from './Testimonials';
+export { default as PurchaseSection } from './PurchaseSection';
+export { default as NewsSection } from './NewsSection';

@@ -10,12 +10,13 @@ export const HOME_IMAGES = {
 
 export const HOME_COPY = {
   hero: {
-    badge: 'Đồ chơi giáo dục văn hóa',
-    titleStart: 'Chạm một câu chuyện, ',
-    titleHighlight: 'nhớ một Việt Nam',
-    description: 'Khơi dậy tình yêu văn hóa qua những mảnh ghép gỗ mộc mạc và ứng dụng kể chuyện sinh động, giúp trẻ em khám phá kho tàng dân gian Việt Nam.',
-    primaryCta: 'Khám phá ngay →',
-    secondaryCta: '▶ Xem video',
+    badge: 'Bộ sản phẩm kể chuyện văn hóa Việt',
+    titleStart: 'Chạm ',
+    titleHighlight: 'Việt',
+    description: 'Bộ sản phẩm kể chuyện văn hóa Việt bằng tranh lắp ghép, video và hộp Pepper\'s Ghost tạo hiệu ứng hologram mô phỏng như một sân khấu thu nhỏ.',
+    primaryCta: 'Sở hữu bộ sản phẩm',
+    secondaryCta: 'Xem câu chuyện',
+    microText: 'Tranh lắp ghép | Video kể chuyện | Hộp Pepper\'s Ghost',
     productBadge1: 'Mới',
     productBadge2: 'Bộ Bánh Chưng',
     productTitle: 'Khám phá sự tích Bánh Chưng Bánh Dày',

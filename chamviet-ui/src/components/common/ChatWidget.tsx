@@ -72,13 +72,20 @@ export default function ChatWidget() {
   };
 
   return (
-    <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1200 }}>
+    <Box
+      sx={{
+        position: 'fixed',
+        bottom: { xs: 20, md: 24 },
+        right: { xs: 16, md: 24 },
+        zIndex: 1200,
+      }}
+    >
       {open && (
         <Paper
           elevation={6}
           sx={{
-            width: 350,
-            height: 500,
+            width: { xs: 'min(340px, calc(100vw - 32px))', md: 350 },
+            height: { xs: 'min(68vh, 500px)', md: 500 },
             mb: 2,
             display: 'flex',
             flexDirection: 'column',

@@ -1,44 +1,108 @@
-html {
-  scroll-snap-type: y proximity;
-}
-
-section, footer {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-}
+/* ============================================================
+ * Global CSS Reset & Base Shell
+ * Heritage Pulse Design System – Runtime Tokens
+ *
+ * Source of truth for CSS custom properties.
+ * TypeScript tokens live in src/theme/heritage-pulse.ts.
+ * These variables MUST stay in sync with that file.
+ * ============================================================ */
 
 :root {
-  --primary: #C62828;
-  --primary-hover: #E53935;
-  --secondary: #8B5E3C;
-  --accent: #D4AF37;
-  --accent-color: #D4AF37;
-  --bg: #F5EFE6;
-  --bg-surface: #FDFBF7;
-  --bg-container: #F8F6F6;
-  --text: #6D4C41;
-  --text-main: #4E342E;
-  --text-sub: #6D4C41;
-  --text-h: #4E342E;
-  --border: rgba(78, 52, 46, 0.12);
-  --accent-bg: rgba(212, 175, 55, 0.14);
+  /* --- Color Tokens (Crimson & Clay) --- */
+  --color-primary:         #C62828;
+  --color-primary-hover:   #E53935;
+  --color-primary-light:   #EF5350;
+  --color-primary-darker:  #8B1A1A;
+
+  --color-secondary:         #8B5E3C;
+  --color-secondary-light:   #A0704D;
+  --color-secondary-darker:  #6B4423;
+
+  --color-accent:          #D4AF37;
+  --color-accent-light:    #E6C76B;
+  --color-accent-darker:   #A68A2F;
+
+  --color-bg-main:       #F5EFE6;
+  --color-bg-surface:    #FDFBF7;
+  --color-bg-container:  #F8F6F6;
+  --color-text-main:     #4E342E;
+  --color-text-sub:      #6D4C41;
+
+  --color-success: #2E7D32;
+  --color-error:   #B71C1C;
+  --color-warning: #ED6C02;
+  --color-info:    #0288D1;
+
+  /* --- Semantic aliases (used by components & HomePage.css) --- */
+  --primary:         var(--color-primary);
+  --primary-hover:   var(--color-primary-hover);
+  --secondary:       var(--color-secondary);
+  --accent:          var(--color-accent);
+  --bg:              var(--color-bg-main);
+  --bg-surface:      var(--color-bg-surface);
+  --bg-container:    var(--color-bg-container);
+  --text-main:       var(--color-text-main);
+  --text-sub:        var(--color-text-sub);
+  --text-h:          var(--color-text-main);
+
+  /* --- Derived surface tokens --- */
+  --border:        rgba(78, 52, 46, 0.12);
+  --accent-bg:     rgba(212, 175, 55, 0.14);
   --accent-border: rgba(212, 175, 55, 0.4);
-  --code-bg: rgba(78, 52, 46, 0.08);
-  --social-bg: rgba(255, 255, 255, 0.78);
+  --code-bg:       rgba(78, 52, 46, 0.08);
+  --social-bg:     rgba(255, 255, 255, 0.78);
+
+  /* --- Shadow Tokens --- */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.16);
   --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
-  --shadow: var(--shadow-md);
+  --shadow:    var(--shadow-md);
 
-  --sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
-  --heading: "Be Vietnam Pro", system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* --- Spacing Scale (8px base) --- */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
 
+  /* --- Border Radius --- */
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* --- Transition --- */
+  --duration-shortest: 150ms;
+  --duration-shorter:  200ms;
+  --duration-standard: 300ms;
+  --duration-longer:   500ms;
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:    cubic-bezier(0.0, 0, 0.2, 1);
+  --ease-in:     cubic-bezier(0.4, 0, 1, 1);
+
+  /* --- Z-index Scale --- */
+  --z-dropdown: 1000;
+  --z-sticky:   1020;
+  --z-fixed:    1030;
+  --z-modal:    1040;
+  --z-popover:  1050;
+  --z-tooltip:  1060;
+
+  /* --- Typography --- */
+  --sans:    "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --heading: "Be Vietnam Pro", system-ui, "Segoe UI", Roboto, sans-serif;
+  --mono:    ui-monospace, Consolas, monospace;
+
+  /* --- Base font --- */
   font: 18px/1.5 var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light;
-  color: var(--text);
+  color: var(--text-sub);
   background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -50,71 +114,61 @@ section, footer {
   }
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
+/* ── Reset ─────────────────────────────────────────────────── */
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(198, 40, 40, 0.06), transparent 28%),
+    radial-gradient(circle at 82% 18%, rgba(212, 175, 55, 0.09), transparent 26%),
+    linear-gradient(180deg, #fdfbf7 0%, #f5efe6 42%, #f8f4ec 100%);
 }
 
+/* ── Shell ──────────────────────────────────────────────────── */
+
 #root {
-  width: 1200px;
-  max-width: 100%;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 2vw, 32px);
 }
 
-@keyframes morph {
-  0% { border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%; }
-  33% { border-radius: 40% 60% 40% 50% / 60% 40% 50% 40%; }
-  66% { border-radius: 60% 40% 50% 40% / 40% 60% 40% 50%; }
-  100% { border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%; }
-}
+/* ── Base Typography ────────────────────────────────────────── */
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
+h1, h2 {
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin: 0 0 12px;
+  text-wrap: balance;
   color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
 
   @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-
-  @media (max-width: 1024px) {
-    font-size: 20px;
+    font-size: 28px;
+    letter-spacing: -0.5px;
   }
 }
 
 p {
   margin: 0;
+  max-width: 65ch;
+  text-wrap: pretty;
 }
 
-code,
-.counter {
+code, .counter {
   font-family: var(--mono);
   display: inline-flex;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text-h);
 }
 
@@ -123,4 +177,21 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* ── Animations ─────────────────────────────────────────────── */
+
+@keyframes morph {
+  0%   { border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%; }
+  33%  { border-radius: 40% 60% 40% 50% / 60% 40% 50% 40%; }
+  66%  { border-radius: 60% 40% 50% 40% / 40% 60% 40% 50%; }
+  100% { border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

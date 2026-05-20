@@ -1,5 +1,5 @@
 import './HomePage.css';
-import { useScroll, useSpring, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 
 import Hero from '../components/features/home/Hero';
@@ -9,33 +9,39 @@ import Unboxing from '../components/features/home/Unboxing';
 import Workflow from '../components/features/home/Workflow';
 import Testimonials from '../components/features/home/Testimonials';
 import CulturalValue from '../components/features/home/CulturalValue';
+import PurchaseSection from '../components/features/home/PurchaseSection';
+import NewsSection from '../components/features/home/NewsSection';
+
+/** Mobile-only sticky CTA — shown at bottom on small screens */
+function MobileStickyCtA() {
+  return (
+    <motion.div
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ delay: 1.2, duration: 0.45 }}
+      className="mobile-only"
+      style={{
+        position: 'fixed',
+        bottom: '92px',
+        left: '16px',
+        right: '16px',
+        zIndex: 40,
+      }}
+    >
+      <button
+        className="btn btn-primary"
+        style={{ width: '100%', justifyContent: 'center', gap: '8px', padding: '16px' }}
+      >
+        <span>Sở hữu ngay</span>
+        <ArrowRight size={18} />
+      </button>
+    </motion.div>
+  );
+}
 
 export default function HomePage() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
-
   return (
-    <div style={{ position: 'relative' }}>
-      {/* ── Scroll Progress Bar ── */}
-      <motion.div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '3px',
-          background: 'var(--primary)',
-          zIndex: 200,
-          originX: 0,
-          scaleX
-        }}
-      />
-
-      {/* ── Page Sections ── */}
+    <div className="home-page">
       <main>
         {/* 1. Hero – above-fold product showcase */}
         <Hero />
@@ -55,32 +61,18 @@ export default function HomePage() {
         {/* 6. Social Proof – testimonials + trust badges */}
         <Testimonials />
 
-        {/* 7. Brand Philosophy */}
+        {/* 7. Purchase/Preorder */}
+        <PurchaseSection />
+
+        {/* 8. News */}
+        <NewsSection />
+
+        {/* 9. Brand Philosophy */}
         <CulturalValue />
       </main>
 
-      {/* ── Mobile Sticky CTA ── */}
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        transition={{ delay: 2 }}
-        className="mobile-only"
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '16px',
-          right: '16px',
-          zIndex: 40
-        }}
-      >
-        <button
-          className="btn btn-primary"
-          style={{ width: '100%', justifyContent: 'center', gap: '8px', padding: '16px' }}
-        >
-          <span>Sở hữu ngay</span>
-          <ArrowRight size={18} />
-        </button>
-      </motion.div>
+      <MobileStickyCtA />
     </div>
   );
 }
+

@@ -5,25 +5,31 @@ export interface FeatureCardProps extends FeatureProps {
   iconBackgroundColor?: string;
 }
 
-export function FeatureCard({ title, description, icon, iconBackgroundColor = 'rgba(217, 164, 65, 0.2)' }: FeatureCardProps) {
+export function FeatureCard({
+  title,
+  description,
+  icon,
+  iconBackgroundColor = 'rgba(212, 175, 55, 0.18)',
+}: FeatureCardProps) {
   return (
     <Card
       sx={{
-        backgroundColor: 'background.paper',
+        backgroundColor: 'var(--bg-surface)',
         border: '1px solid',
-        borderColor: 'grey.100',
-        borderRadius: '8px',
+        borderColor: 'var(--border)',
+        borderRadius: 'var(--radius-md)',
         padding: 3,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
-        boxShadow: '0px 1px 2px 0px rgba(0,0,0,0.05)',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        boxShadow: 'var(--shadow-sm)',
+        transition: `transform var(--duration-shorter) var(--ease-out),
+                     box-shadow var(--duration-shorter) var(--ease-out)`,
         height: '100%',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: '0px 4px 12px 0px rgba(0,0,0,0.1)',
+          boxShadow: 'var(--shadow-lg)',
         },
       }}
     >
@@ -31,7 +37,7 @@ export function FeatureCard({ title, description, icon, iconBackgroundColor = 'r
         <Box
           sx={{
             backgroundColor: iconBackgroundColor,
-            borderRadius: '12px',
+            borderRadius: 'var(--radius-lg)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -46,7 +52,7 @@ export function FeatureCard({ title, description, icon, iconBackgroundColor = 'r
       )}
       <Typography
         sx={{
-          color: 'grey.900',
+          color: 'var(--text-h)',
           fontWeight: 'bold',
           fontSize: '20px',
           marginBottom: 1,
@@ -56,9 +62,9 @@ export function FeatureCard({ title, description, icon, iconBackgroundColor = 'r
       </Typography>
       <Typography
         sx={{
-          color: 'grey.700',
+          color: 'var(--text-sub)',
           fontSize: '14px',
-          lineHeight: 1.4,
+          lineHeight: 1.5,
         }}
       >
         {description}
@@ -66,3 +72,4 @@ export function FeatureCard({ title, description, icon, iconBackgroundColor = 'r
     </Card>
   );
 }
+

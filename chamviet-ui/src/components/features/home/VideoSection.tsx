@@ -18,11 +18,11 @@ export default function VideoSection() {
           <div className="video-section__header">
             <p className="video-section__eyebrow">Trải nghiệm thực tế</p>
             <h2 className="video-section__title">
-              Xem Chạm Việt<br />
-              <span style={{ color: 'var(--primary)' }}>hoạt động thế nào</span>
+              Xem câu chuyện hiện lên<br />
+              <span style={{ color: 'var(--primary)' }}>trong hộp Pepper's Ghost</span>
             </h2>
             <p className="video-section__sub">
-              Từ mảnh ghép gỗ đến rồng AR sống động — chỉ trong vài giây.
+              Sự kết hợp giữa video trên điện thoại và hộp phản chiếu tạo cảm giác như một sân khấu thu nhỏ.
             </p>
           </div>
 
@@ -39,7 +39,7 @@ export default function VideoSection() {
               <>
                 <img
                   src={videoThumbnail}
-                  alt="Xem trải nghiệm AR của Chạm Việt"
+                  alt="Xem trải nghiệm video trong hộp phản chiếu"
                   className="video-section__thumb"
                 />
                 {/* Overlay */}
