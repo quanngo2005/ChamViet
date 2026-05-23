@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { MIN_CONFIDENCE, ROUTE_MAP } from "../data/scanConstants";
+import { MIN_CONFIDENCE, resolveLegacyLabelRoute } from "../data/scanConstants";
 import { scanImage } from "../services/scanService";
 import { compressImage } from "../utils/compressImage";
-import type { PredictionData } from "../types/scan";
 
 import "./ScanPage.css";
 
@@ -160,35 +159,30 @@ export default function ScanPage() {
     setMessage(null);
 
     try {
-      const response = await scanImage(selectedFile, controller.signal);
+      const resolution = await scanImage(selectedFile, controller.signal);
 
-      if (
-        response.status !== "success" ||
-        !Array.isArray(response.data) ||
-        response.data.length === 0
-      ) {
-        setMessage({ text: "Không nhận diện được, vui lòng chụp lại", kind: "error" });
+      if (resolution.kind === "story") {
+        navigate(resolution.route);
         return;
       }
 
-      // Pick highest-confidence prediction
-      const sorted = [...response.data].sort(
-        (a: PredictionData, b: PredictionData) => b.confidence - a.confidence,
-      );
-      const best = sorted[0];
+      if (resolution.kind === "prediction") {
+        if (resolution.confidence < MIN_CONFIDENCE) {
+          setMessage({ text: "Vui lòng đưa camera lại gần hơn", kind: "warning" });
+          return;
+        }
 
-      if (best.confidence < MIN_CONFIDENCE) {
-        setMessage({ text: "Vui lòng đưa camera lại gần hơn", kind: "warning" });
+        const route = resolution.route ?? resolveLegacyLabelRoute(resolution.label);
+        if (!route) {
+          setMessage({ text: "Không nhận diện được, vui lòng chụp lại", kind: "error" });
+          return;
+        }
+
+        navigate(route);
         return;
       }
 
-      const route = ROUTE_MAP[best.label];
-      if (!route) {
-        setMessage({ text: "Không nhận diện được, vui lòng chụp lại", kind: "error" });
-        return;
-      }
-
-      navigate(route);
+      setMessage({ text: "Không nhận diện được, vui lòng chụp lại", kind: "error" });
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "CanceledError") return;
       setMessage({ text: "Có lỗi xảy ra, vui lòng thử lại", kind: "error" });
