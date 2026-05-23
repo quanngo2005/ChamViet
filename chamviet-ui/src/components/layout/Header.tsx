@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link as RouterLink, NavLink } from "react-router-dom";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -13,20 +13,28 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import { Search, Home, User } from "lucide-react";
+import { User } from "lucide-react";
 
 const navItems = [
   { label: "Giới thiệu", to: "/about" },
   // { label: "Sản Phẩm", to: "/products" },
   { label: "Câu Chuyện", to: "/story" },
   { label: "Cách Chơi", to: "/how-to-play" },
-  { label: "Quét Thẻ", to: "/scan" },
+  { label: "Mở câu chuyện", to: "/scan" },
   // { label: "Giỏ Hàng", to: "/cart" },
   // { label: "Đăng Nhập", to: "/login" },
 ];
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 18);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -41,14 +49,22 @@ export default function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        backgroundColor: "rgba(245, 239, 230, 0.92)",
-        backdropFilter: "blur(12px)",
-        borderBottom: "1px solid var(--border)",
+        backgroundColor: scrolled ? "rgba(253, 251, 247, 0.94)" : "rgba(245, 239, 230, 0.78)",
+        backdropFilter: scrolled ? "blur(18px)" : "blur(12px)",
+        borderBottom: scrolled ? "1px solid rgba(78, 52, 46, 0.14)" : "1px solid transparent",
         color: "var(--text-sub)",
+        transition: "background-color 180ms ease, backdrop-filter 180ms ease, border-color 180ms ease",
       }}
     >
-      <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ minHeight: { xs: 64, md: 72 }, gap: 2 }}>
+      <Container maxWidth="xl">
+        <Toolbar
+          disableGutters
+          sx={{
+            minHeight: { xs: 64, md: scrolled ? 68 : 76 },
+            gap: 2,
+            transition: "min-height 180ms ease",
+          }}
+        >
           {/* Logo - Always visible */}
           <Link
             component={RouterLink}
@@ -75,7 +91,13 @@ export default function Header() {
             </Box>
             <Typography
               variant="h6"
-              sx={{ fontWeight: 800, color: "var(--primary)", display: { xs: "none", sm: "block" }, letterSpacing: '-0.5px', textTransform: 'uppercase' }}
+              sx={{
+                fontWeight: 800,
+                color: "var(--primary)",
+                display: { xs: "none", sm: "block" },
+                letterSpacing: "-0.5px",
+                textTransform: "uppercase",
+              }}
             >
               Chạm Việt
             </Typography>
@@ -96,17 +118,47 @@ export default function Header() {
             {navItems.map((item) => (
               <Button
                 key={item.to}
-                component={RouterLink}
+                component={NavLink}
                 to={item.to}
                 color="inherit"
+                disableRipple
                 sx={{
                   fontWeight: 600,
                   textTransform: "none",
                   color: "var(--text-sub)",
+                  px: 1.75,
+                  py: 1,
+                  borderRadius: "999px",
+                  position: "relative",
+                  transition: "color 160ms ease, background-color 160ms ease, transform 160ms ease",
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    left: 14,
+                    right: 14,
+                    bottom: 7,
+                    height: 2,
+                    borderRadius: "999px",
+                    background: "linear-gradient(90deg, var(--primary), var(--accent))",
+                    transform: "scaleX(0)",
+                    transformOrigin: "center",
+                    transition: "transform 180ms ease",
+                  },
+                  "&.active": {
+                    color: "var(--primary)",
+                    backgroundColor: "rgba(198, 40, 40, 0.08)",
+                  },
+                  "&.active::after": {
+                    transform: "scaleX(1)",
+                  },
                   "&:hover": {
                     color: "var(--primary)",
-                    backgroundColor: "transparent"
-                  }
+                    backgroundColor: "rgba(198, 40, 40, 0.05)",
+                    transform: "translateY(-1px)",
+                  },
+                  "&:hover::after": {
+                    transform: "scaleX(1)",
+                  },
                 }}
               >
                 {item.label}
@@ -116,42 +168,6 @@ export default function Header() {
 
           {/* Action Icons matching Global Design */}
           <Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center" }}>
-            <Box
-              component={RouterLink}
-              to="/"
-              sx={{
-                width: 40,
-                height: 40,
-                backgroundColor: "var(--primary)",
-                color: "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-                textDecoration: "none",
-                transition: "all 0.2s",
-                "&:hover": { backgroundColor: "var(--primary-hover)" }
-              }}
-            >
-              <Home size={20} />
-            </Box>
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                backgroundColor: "var(--bg)",
-                color: "var(--text-main)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-                cursor: "pointer",
-                transition: "all 0.2s",
-                "&:hover": { backgroundColor: "var(--bg-container)" }
-              }}
-            >
-              <Search size={20} />
-            </Box>
             <Box
               component={RouterLink}
               to="/login"
@@ -166,7 +182,12 @@ export default function Header() {
                 borderRadius: "8px",
                 textDecoration: "none",
                 transition: "all 0.2s",
-                "&:hover": { backgroundColor: "var(--bg-container)" }
+                border: "1px solid rgba(78, 52, 46, 0.1)",
+                "&:hover": {
+                  backgroundColor: "white",
+                  borderColor: "rgba(198, 40, 40, 0.18)",
+                  color: "var(--primary)",
+                }
               }}
             >
               <User size={20} />
@@ -230,7 +251,7 @@ export default function Header() {
             {navItems.map((item) => (
               <Button
                 key={item.to}
-                component={RouterLink}
+                component={NavLink}
                 to={item.to}
                 onClick={handleMobileMenuClose}
                 fullWidth
@@ -243,6 +264,10 @@ export default function Header() {
                   fontSize: "1rem",
                   py: 1.5,
                   borderRadius: '12px',
+                  "&.active": {
+                    backgroundColor: "rgba(198, 40, 40, 0.08)",
+                    color: "var(--primary)",
+                  },
                   "&:hover": {
                     backgroundColor: "rgba(198, 40, 40, 0.05)",
                     color: "var(--primary)"

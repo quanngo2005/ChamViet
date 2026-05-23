@@ -12,8 +12,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import MicIcon from "@mui/icons-material/Mic";
 import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import { useVoiceAI } from "../../hooks/useVoiceAi";
-import { STORY_REGISTRY } from "../../data/video-story-qa";
-import type { StoryConfig } from "../../data/video-story-qa";
+import { fetchStoryConfigByVideoId, type StoryConfig } from "../../data/video-story-qa";
 import mascotHac from "../../assets/be-hac.png";
 
 
@@ -71,7 +70,6 @@ const DEFAULT_VIDEO_REGISTRY: VideoRegistry = {
   Mb0RWyh3sqQ: {
     stopTime: 8,
     mascotAvatar: mascotHac,
-    storyConfig: STORY_REGISTRY["Mb0RWyh3sqQ"],
     dialogue: [],
   },
 };
@@ -167,6 +165,7 @@ export default function YouTubeStopOverlayPlayer({
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [sessionInitiated, setSessionInitiated] = useState(false);
+  const [resolvedStoryConfig, setResolvedStoryConfig] = useState<StoryConfig | null>(null);
 
   // ── Refs ────────────────────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -178,9 +177,7 @@ export default function YouTubeStopOverlayPlayer({
 
   const activeRegistry = registry || DEFAULT_VIDEO_REGISTRY;
   const config = activeRegistry[videoId];
-
-  // Look up story config: from config, or from global STORY_REGISTRY
-  const storyConfig = config?.storyConfig || STORY_REGISTRY[videoId];
+  const storyConfig = config?.storyConfig ?? resolvedStoryConfig ?? undefined;
 
   // ── Message helpers ─────────────────────────────────────────────────────
   const addMessage = useCallback((role: "user" | "ai", content: string) => {
@@ -225,6 +222,33 @@ export default function YouTubeStopOverlayPlayer({
       document.head.appendChild(style);
     }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (config?.storyConfig) {
+      setResolvedStoryConfig(config.storyConfig);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    fetchStoryConfigByVideoId(videoId)
+      .then((payload) => {
+        if (!cancelled) {
+          setResolvedStoryConfig(payload);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setResolvedStoryConfig(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [config?.storyConfig, videoId]);
 
   // ── Auto-scroll chat to bottom ──────────────────────────────────────────
   useEffect(() => {

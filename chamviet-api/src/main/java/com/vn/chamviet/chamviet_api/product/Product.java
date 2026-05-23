@@ -1,4 +1,4 @@
-package com.vn.chamviet.chamviet_api.entity;
+package com.vn.chamviet.chamviet_api.product;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,37 +6,38 @@ import java.util.List;
 
 @Entity
 @Table(name = "product")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "age_range_id")
-    private AgeRange ageRange;
-
     @Column(nullable = false, length = 255)
+    @ToString.Include
     private String name;
 
     @Column(unique = true, length = 255)
+    @ToString.Include
     private String slug;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "video_url", length = 500)
-    private String videoUrl;
-
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "ENUM('ACTIVE','INACTIVE') DEFAULT 'ACTIVE'")
+    @ToString.Include
     private ProductStatus status = ProductStatus.ACTIVE;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

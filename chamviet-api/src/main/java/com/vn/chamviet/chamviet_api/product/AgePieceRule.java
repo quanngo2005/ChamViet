@@ -1,4 +1,4 @@
-package com.vn.chamviet.chamviet_api.entity;
+package com.vn.chamviet.chamviet_api.product;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -64,7 +64,7 @@ html.lenis body {
 .scroll-reveal {
   opacity: 0;
   transition-property: opacity, transform, filter;
-  transition-duration: 0.75s;
+  transition-duration: 0.55s;
   /*
     Spring-like feel:
     - Fast initial acceleration (steep curve start)
@@ -77,7 +77,7 @@ html.lenis body {
 .scroll-reveal-child {
   opacity: 0;
   transition-property: opacity, transform, filter;
-  transition-duration: 0.65s;
+  transition-duration: 0.5s;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--stagger-delay, 0ms);
 }
@@ -89,22 +89,22 @@ html.lenis body {
 */
 .scroll-reveal.fade-up,
 .scroll-reveal-child.fade-up {
-  transform: translateY(32px);
+  transform: translateY(20px);
 }
 
 .scroll-reveal.fade-down,
 .scroll-reveal-child.fade-down {
-  transform: translateY(-32px);
+  transform: translateY(-20px);
 }
 
 .scroll-reveal.fade-left,
 .scroll-reveal-child.fade-left {
-  transform: translateX(32px);
+  transform: translateX(20px);
 }
 
 .scroll-reveal.fade-right,
 .scroll-reveal-child.fade-right {
-  transform: translateX(-32px);
+  transform: translateX(-20px);
 }
 
 /*
@@ -113,13 +113,13 @@ html.lenis body {
 */
 .scroll-reveal.scale-in,
 .scroll-reveal-child.scale-in {
-  transform: scale(0.94);
-  filter: blur(2px);
+  transform: scale(0.97);
+  filter: blur(1px);
 }
 
 .scroll-reveal.fade-up-subtle,
 .scroll-reveal-child.fade-up-subtle {
-  transform: translateY(16px);
+  transform: translateY(10px);
 }
 
 .scroll-reveal.zoom-in,

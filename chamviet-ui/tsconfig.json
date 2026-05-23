@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+        "tsBuildInfoFile": "./.cache/tsconfig.tsbuildinfo",
         "target": "ES2022",
         "useDefineForClassFields": true,
         "module": "ESNext",

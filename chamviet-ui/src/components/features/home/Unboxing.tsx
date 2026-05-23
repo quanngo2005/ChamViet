@@ -12,15 +12,15 @@ const contents = [
   },
   {
     id: 2,
-    title: 'Sách Hướng Dẫn Nghệ Thuật',
-    description: 'Tranh minh họa văn hóa dân gian tuyệt đẹp kèm hướng dẫn lắp ráp và câu chuyện cổ tích.',
+    title: 'Kính phản chiếu (Pepper\'s Ghost)',
+    description: 'Tấm kính mica trong suốt đi kèm để bạn lắp ráp thành sân khấu nhỏ phản chiếu hình ảnh.',
     icon: <Palette size={22} />,
     tag: '02'
   },
   {
     id: 3,
-    title: 'Mã Kích Hoạt Nội Dung Độc Quyền',
-    description: 'Mở khóa thế giới AR, Hologram và AI tương tác ngay trong ứng dụng Chạm Việt.',
+    title: 'Mã QR & Thẻ câu chuyện',
+    description: 'Quét mã QR để mở video câu chuyện cổ tích, kết hợp với hộp kính để xem nhân vật nổi lên.',
     icon: <CreditCard size={22} />,
     tag: '03'
   }
@@ -87,7 +87,7 @@ export default function Unboxing() {
             </div>
 
             {/* Trust chips */}
-            <div className="unboxing-section__chips scroll-reveal fade-up delay-600">
+            <div className="unboxing-section__chips">
               <div className="chip chip--green">
                 <ShieldCheck size={15} />
                 <span>Gỗ tự nhiên an toàn</span>
@@ -99,7 +99,7 @@ export default function Unboxing() {
             </div>
 
             {/* CTA */}
-            <button className="btn btn-primary unboxing-section__cta scroll-reveal fade-up delay-700">
+            <button className="btn btn-primary unboxing-section__cta">
               <span>Đặt hàng ngay</span>
               <ArrowRight size={16} />
             </button>

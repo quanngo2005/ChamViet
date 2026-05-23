@@ -10,13 +10,18 @@ import com.vn.chamviet.chamviet_api.user.Account;
 
 @Entity
 @Table(name = "orders")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,7 +33,7 @@ public class Orders {
     private Voucher voucher;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('PENDING','CONFIRMED','SHIPPING','COMPLETED','CANCELLED') DEFAULT 'PENDING'")
+    @Column(columnDefinition = "ENUM('PENDING','RESERVED','CONFIRMED','PACKING','SHIPPING','COMPLETED','CANCELLED') DEFAULT 'PENDING'")
     private OrderStatus status = OrderStatus.PENDING;
 
     @Column(name = "total_price", nullable = false, precision = 15, scale = 2)
@@ -83,6 +88,6 @@ public class Orders {
     }
 
     public enum OrderStatus {
-        PENDING, CONFIRMED, SHIPPING, COMPLETED, CANCELLED
+        PENDING, RESERVED, CONFIRMED, PACKING, SHIPPING, COMPLETED, CANCELLED
     }
 }

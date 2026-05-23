@@ -1,4 +1,4 @@
-package com.vn.chamviet.chamviet_api.user.dto;
+package com.vn.chamviet.chamviet_api.global.dto;
 
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonInclude;

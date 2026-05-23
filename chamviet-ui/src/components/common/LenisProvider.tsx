@@ -29,17 +29,16 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
     if (prefersReducedMotion) return;
 
     const lenis = new Lenis({
-      // Slightly snappier than default 1.2 — still silky but not laggy
-      duration: 1.1,
+      // Keep smoothness, but reduce the "floating behind the cursor" feeling.
+      duration: 0.88,
       // Expo-out feel: fast start, buttery deceleration
       easing: (t) => 1 - Math.pow(1 - t, 4),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      // Slightly more resistance on wheel for premium feel
-      wheelMultiplier: 0.9,
-      // Generous touch multiplier for mobile
-      touchMultiplier: 1.8,
+      wheelMultiplier: 1,
+      // Calmer touch response so mobile scrolling feels precise.
+      touchMultiplier: 1.2,
     });
 
     lenisInstance = lenis;
