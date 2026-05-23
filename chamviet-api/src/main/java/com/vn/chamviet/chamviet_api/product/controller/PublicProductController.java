@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 @RequestMapping("/api/public")
 @RequiredArgsConstructor
 public class PublicProductController {

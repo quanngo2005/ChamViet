@@ -1,3 +1,5 @@
+import { buildApiUrl } from "../utils/apiBase";
+
 export interface StoryQA {
   question: string;
   answer: string;
@@ -23,10 +25,10 @@ interface StoryConfigApiResponse {
   error?: string;
 }
 
-const API_BASE = "http://localhost:8081/api/public";
-
 export async function fetchStoryConfigByVideoId(videoId: string): Promise<StoryConfig | null> {
-  const response = await fetch(`${API_BASE}/puzzle-stories/video/${videoId}`);
+  const response = await fetch(
+    buildApiUrl(import.meta.env.VITE_API_BASE_URL as string | undefined, `/api/public/puzzle-stories/video/${videoId}`),
+  );
   if (!response.ok) {
     return null;
   }
