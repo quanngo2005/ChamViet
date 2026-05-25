@@ -144,7 +144,7 @@ public class AuthService {
         if (accountRepo.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered");
         }
-       try {
+        try {
             Account account = accountMapper.toEntity(request);
             account.setPasswordHash(passwordEncrypt.encrypt(request.getPassword()));
             account.setStatus(Account.AccountStatus.INACTIVE);
@@ -170,7 +170,7 @@ public class AuthService {
             
             log.info("Registration successful for email: {}", request.getEmail());
           return accountMapper.toRegisterResponse(savedAccount);
-       } catch (Exception e) {
+        } catch (Exception e) {
             log.error("Registration failed for email: {}", request.getEmail(), e);
             throw new RuntimeException("Registration failed: " + e.getMessage());
         }
