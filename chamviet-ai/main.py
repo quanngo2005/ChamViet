@@ -85,13 +85,12 @@ async def transcribe_api(audio: UploadFile = File(...)):
 # ════════════════════════════════════════════════════════
 
 class TTSInput(BaseModel):
-    text : str
-    style: str = ""
+    text: str
 
 @app.post("/api/speak", tags=["tts"])
 async def speak_api(body: TTSInput):
     """Nhận text, trả về file WAV từ cache hoặc tạo mới bất đồng bộ."""
-    path = await synthesize_speech(body.text, style=body.style)
+    path = await synthesize_speech(body.text)
     if not path:
         raise HTTPException(500, "TTS thất bại")
     return FileResponse(path, media_type="audio/wav", filename="reply.wav")
@@ -138,7 +137,6 @@ async def classify_api(body: ClassifyInput):
 
 class ChatSpeakInput(BaseModel):
     message: str
-    style  : str = ""
 
 @app.post("/api/chat-speak", tags=["chat"])
 async def chat_speak_api(body: ChatSpeakInput):
@@ -151,7 +149,7 @@ async def chat_speak_api(body: ChatSpeakInput):
         reply = await get_answer(body.message, session.system_prompt, session.history)
         session.history = add_turn(session.history, body.message, reply)
         
-    path = await synthesize_speech(reply, style=body.style)
+    path = await synthesize_speech(reply)
     if not path:
         raise HTTPException(500, "TTS thất bại")
         

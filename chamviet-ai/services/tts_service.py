@@ -47,14 +47,16 @@ STYLE_MAP = {
     "sai"       : "gently and softly, like a teacher correcting a child without making them feel bad",
 }
 
+DEFAULT_TTS_STYLE = "chao"
 
-async def synthesize_speech(text: str, style: str = "") -> str:
+
+async def synthesize_speech(text: str) -> str:
     """
     Tổng hợp giọng nói từ text dùng Gemini TTS bất đồng bộ có kèm bộ đệm WAV thông minh.
 
     Args:
         text:  nội dung cần đọc (tiếng Việt)
-        style: key trong STYLE_MAP để điều chỉnh giọng đọc
+        style được cố định bên trong service để tránh bị FE/BE ghi đè
 
     Returns:
         Đường dẫn file WAV (đã cache hoặc mới tạo), hoặc "" nếu lỗi.
@@ -63,6 +65,7 @@ async def synthesize_speech(text: str, style: str = "") -> str:
         return ""
 
     # 1. Kiểm tra cache trước để trả về ngay lập tức (0ms latency!)
+    style = DEFAULT_TTS_STYLE
     cache_path = _get_cache_path(text, style)
     if os.path.exists(cache_path):
         return cache_path
@@ -103,13 +106,14 @@ async def synthesize_speech(text: str, style: str = "") -> str:
         return ""
 
 
-def synthesize_speech_sync(text: str, style: str = "") -> str:
+def synthesize_speech_sync(text: str) -> str:
     """
     Phiên bản đồng bộ để dự phòng hoặc tương thích ngược.
     """
     if not text.strip():
         return ""
 
+    style = DEFAULT_TTS_STYLE
     cache_path = _get_cache_path(text, style)
     if os.path.exists(cache_path):
         return cache_path
@@ -144,4 +148,4 @@ def synthesize_speech_sync(text: str, style: str = "") -> str:
 
     except Exception as e:
         print(f"TTS sync error: {e}")
-        return ""
+        return ""

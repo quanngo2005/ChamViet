@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2806f80e-c16d-41f2-a9b9-d8cf5a9c284b" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/chamviet-api/src/main/java/com/vn/chamviet/chamviet_api/product/ComponentItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/chamviet-api/src/main/java/com/vn/chamviet/chamviet_api/product/ComponentItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chamviet-api/src/main/java/com/vn/chamviet/chamviet_api/product/service/ProductStoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/chamviet-api/src/main/java/com/vn/chamviet/chamviet_api/product/service/ProductStoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chamviet-ui/src/data/scanConstants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/chamviet-ui/src/data/scanConstants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chamviet-ui/src/pages/ScanPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/chamviet-ui/src/pages/ScanPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chamviet-ui/src/services/scanService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/chamviet-ui/src/services/scanService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chamviet-ui/src/types/scan.ts" beforeDir="false" afterPath="$PROJECT_DIR$/chamviet-ui/src/types/scan.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="codex/front-end" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;quanngo2005&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/quanngo2005/ChamViet.git&quot;,
+    &quot;accountId&quot;: &quot;0f6a13d9-5a02-448a-88bc-0f0a79fa051f&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="3DeVHBYwsCanTMK6vCa0kLWpCXY" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.ChamvietApiApplication.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "codex/update-product-entities",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/Code/ChamViet",
+    "settings.editor.selected.configurable": "com.developer.deep.seek.settings.CodeAssistSettingsConfigurable"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2806f80e-c16d-41f2-a9b9-d8cf5a9c284b" name="Changes" comment="" />
+      <created>1778642431594</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778642431594</updated>
+    </task>
+    <servers />
+  </component>
+</project>
