@@ -1,0 +1,92 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: chamviet
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - chamviet-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ai-service:
+    image: chamviet-ai-service:latest
+    build:
+      context: ./chamviet-ai
+    restart: unless-stopped
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_LLM_MODEL: ${GROQ_LLM_MODEL:-llama-3.3-70b-versatile}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      TTS_VOICE: ${TTS_VOICE:-Kore}
+      MAX_HISTORY_TURNS: ${MAX_HISTORY_TURNS:-20}
+    ports:
+      - "${AI_SERVICE_PORT:-8000}:8000"
+    volumes:
+      - chamviet-ai-cache:/app/.cache
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=5).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  vision-service:
+    image: chamviet-vision-service:latest
+    build:
+      context: ./chamviet-ai/vision-service
+    restart: unless-stopped
+    environment:
+      MODEL_PATH: ${VISION_MODEL_PATH:-models/vision.pt}
+      DEVICE: ${VISION_DEVICE:-cpu}
+      CONFIDENCE_THRESHOLD: ${VISION_CONFIDENCE_THRESHOLD:-0.25}
+      MAX_CONCURRENT_PREDICTIONS: ${VISION_MAX_CONCURRENT_PREDICTIONS:-2}
+      MAX_UPLOAD_BYTES: ${VISION_MAX_UPLOAD_BYTES:-10485760}
+      TORCH_NUM_THREADS: ${VISION_TORCH_NUM_THREADS:-2}
+      TORCH_INTEROP_THREADS: ${VISION_TORCH_INTEROP_THREADS:-1}
+    ports:
+      - "${VISION_SERVICE_PORT:-5000}:5000"
+    volumes:
+      - ./chamviet-ai/vision-service/models:/app/models:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=5).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: chamviet-backend:latest
+    build:
+      context: ./chamviet-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+      vision-service:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/chamviet
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      AI_VOICE_BASE_URL: http://ai-service:8000
+      AI_VISION_BASE_URL: http://vision-service:5000
+      AI_VISION_TIMEOUT_SECONDS: ${VISION_TIMEOUT_SECONDS:-15}
+    ports:
+      - "${BACKEND_PORT:-8081}:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/v3/api-docs >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+volumes:
+  chamviet-db-data:
+  chamviet-ai-cache:

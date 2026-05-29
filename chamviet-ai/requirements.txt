@@ -6,6 +6,4 @@ python-dotenv==1.0.1
 groq==0.13.1
 # openai-whisper is not needed as STT is offloaded to Groq Whisper cloud API
 google-genai==1.7.0
-soundfile==0.12.1
 numpy==1.26.4
-httpx==0.28.1

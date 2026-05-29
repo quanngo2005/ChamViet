@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/api/public/**",
                                 "/api/v1/voice/**",
+                                "/api/v1/ai/**",
                                 "/api/v1/vision/**"
 
                         ).permitAll()

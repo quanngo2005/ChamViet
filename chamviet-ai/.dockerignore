@@ -1,0 +1,16 @@
+.cache/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+docs.txt
+test.py
+test_stt.py
+verify_api.py
+services_AIchamviet/
+vision-service/
+docker-compose.yml
+README.md

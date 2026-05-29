@@ -1,45 +1,109 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from ultralytics import YOLO
+import asyncio
 import io
+import logging
+import os
+import time
+
+import torch
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image
+from ultralytics import YOLO
 
-app = FastAPI()
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
+logger = logging.getLogger("chamviet-vision")
 
-# Tải mô hình vào bộ nhớ khi khởi chạy server
+MODEL_PATH = os.getenv("MODEL_PATH", "models/vision.pt")
+CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.25"))
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
+MAX_CONCURRENT_PREDICTIONS = int(os.getenv("MAX_CONCURRENT_PREDICTIONS", "2"))
+TORCH_NUM_THREADS = int(os.getenv("TORCH_NUM_THREADS", "2"))
+TORCH_INTEROP_THREADS = int(os.getenv("TORCH_INTEROP_THREADS", "1"))
+
+torch.set_num_threads(TORCH_NUM_THREADS)
 try:
-    model = YOLO("models/vision.pt")
+    torch.set_num_interop_threads(TORCH_INTEROP_THREADS)
+except RuntimeError:
+    logger.warning("Torch interop threads were already initialized; keeping current value")
+
+requested_device = os.getenv("DEVICE", "auto").lower()
+if requested_device == "auto":
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+else:
+    DEVICE = requested_device
+
+try:
+    model = YOLO(MODEL_PATH)
+    model.to(DEVICE)
 except Exception as e:
-    print(f"Lỗi tải mô hình: {e}")
+    raise RuntimeError(f"Cannot load vision model from {MODEL_PATH}: {e}") from e
+
+prediction_semaphore = asyncio.Semaphore(MAX_CONCURRENT_PREDICTIONS)
+app = FastAPI(title="ChamViet Vision Service")
+
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "ok",
+        "model_loaded": model is not None,
+        "model_path": MODEL_PATH,
+        "device": DEVICE,
+        "cuda_available": torch.cuda.is_available(),
+        "torch_num_threads": torch.get_num_threads(),
+        "max_concurrent_predictions": MAX_CONCURRENT_PREDICTIONS,
+    }
+
+
+def _predict(image: Image.Image):
+    with torch.inference_mode():
+        return model.predict(
+            source=image,
+            conf=CONFIDENCE_THRESHOLD,
+            device=DEVICE,
+            verbose=False,
+        )
+
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    # 1. Kiểm tra định dạng file
-    if not file.content_type.startswith("image/"):
+    if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File gửi lên phải là hình ảnh.")
 
     try:
-        # 2. Đọc ảnh trực tiếp từ bộ nhớ RAM
         contents = await file.read()
-        image = Image.open(io.BytesIO(contents))
+        if len(contents) > MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail="File ảnh vượt quá dung lượng cho phép.")
 
-        # 3. Thực hiện nhận diện (Inference)
-        # Sử dụng stream=True để tối ưu bộ nhớ nếu xử lý nhiều ảnh
-        results = model.predict(source=image, conf=0.25)
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"File ảnh không hợp lệ: {e}") from e
 
-        # 4. Trích xuất thông tin cần thiết
+    started = time.perf_counter()
+    try:
+        async with prediction_semaphore:
+            results = await asyncio.to_thread(_predict, image)
+
         predictions = []
         for result in results:
             for box in result.boxes:
                 predictions.append({
                     "label": result.names[int(box.cls)],
                     "confidence": round(float(box.conf), 2),
-                    "box": box.xyxy.tolist() # Tọa độ khung nhận diện
+                    "box": box.xyxy.tolist()
                 })
 
+        logger.info(
+            "prediction_complete count=%s elapsed_ms=%.1f device=%s",
+            len(predictions),
+            (time.perf_counter() - started) * 1000,
+            DEVICE,
+        )
         return {"status": "success", "data": predictions}
-
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        logger.exception("prediction_failed")
+        raise HTTPException(status_code=500, detail=f"Lỗi nhận diện ảnh: {e}") from e
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,42 +1,26 @@
-FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime AS builder
-
-WORKDIR /app
-
-COPY requirements.txt .
-
-ENV PYTHONDONTWRITEBYTECODE=1
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip && \
-    pip install --no-compile --prefix=/install -r requirements.txt && \
-    rm -rf /install/lib/python*/site-packages/torch* /install/lib/python*/site-packages/nvidia* /install/lib/python*/site-packages/triton* && \
-    find /install -name "*.pyc" -delete && \
-    find /install -type d -name "__pycache__" -empty -delete
-
-# --- Runtime stage ---
-FROM pytorch/pytorch:2.3.1-cuda12.1-cudnn8-runtime
+FROM python:3.11-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/install/lib/python3.10/site-packages \
-    PATH=/install/bin:$PATH \
-    NVIDIA_VISIBLE_DEVICES=all \
-    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    PIP_NO_CACHE_DIR=1 \
+    TORCH_NUM_THREADS=2 \
+    TORCH_INTEROP_THREADS=1 \
+    DEVICE=cpu
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    libgl1 \
-    libglib2.0-0 \
-    && apt-get clean \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/* \
-    && addgroup --system appgroup \
-    && adduser --system --ingroup appgroup appuser
+    && groupadd --system appgroup \
+    && useradd --system --gid appgroup --home-dir /app appuser
 
-COPY --from=builder /install /install
+COPY requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu \
+    && pip install -r requirements.txt
+
 COPY main.py ./
-
 
 USER appuser
 
