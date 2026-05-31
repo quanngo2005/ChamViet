@@ -17,7 +17,7 @@ RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
 COPY main.py config.py ./
-COPY services ./services
+COPY services_AIchamviet ./services_AIchamviet
 
 RUN mkdir -p /app/.cache/tts \
     && chown -R appuser:appgroup /app

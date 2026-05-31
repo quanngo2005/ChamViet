@@ -4,11 +4,12 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
 
-from services.content_service import load_content, build_system_prompt, estimate_token_count
-from services.stt_service     import transcribe_audio_file
-from services.llm_service     import get_answer, classify_intent
-from services.tts_service     import synthesize_speech
-from services.session_service import SessionManager, add_turn, clear_history, format_for_display
+# Prefer the ChamViet AI service implementation when duplicate modules exist.
+from services_AIchamviet.services.content_service import load_content, build_system_prompt, estimate_token_count
+from services_AIchamviet.services.stt_service     import transcribe_audio_file
+from services_AIchamviet.services.llm_service     import get_answer, classify_intent
+from services_AIchamviet.services.tts_service     import synthesize_speech
+from services_AIchamviet.services.session_service import SessionManager, add_turn, clear_history, format_for_display
 
 app = FastAPI(title="CoTich Voice Bot")
 app.add_middleware(

@@ -13,3 +13,8 @@ The root `chamviet-ai` FastAPI app is the voice AI service used by the backend. 
 - `chamviet-ai/vision-service/main.py`: exposes the matching FastAPI vision endpoint on port `5000`.
 - `chamviet-api/src/main/resources/application-dev.properties`: local database defaults use `jdbc:mysql://localhost:3306/chamviet`, root, password `1234`; Compose overrides these to use the `db` service name.
 - `docker-compose.yml`: defines the root stack for `db`, `ai-service`, `vision-service`, and `backend`. The MySQL container listens on `3306` inside the Compose network and maps to host port `3307` by default to avoid conflicts with a local MySQL install.
+- `chamviet-ai/main.py`: imports voice modules from `services_AIchamviet/services/*` when duplicate implementations exist; `chamviet-ai/services/*` is no longer the runtime source of truth.
+- `chamviet-ai/Dockerfile`: copies `services_AIchamviet/` into the image; `.dockerignore` must not exclude it.
+- `chamviet-ai/docker-compose.yml`: local compose entry builds from `.` and loads voice env from `services_AIchamviet/.env`; the old `./voice-service` path was stale.
+
+Updated: 2026-05-29

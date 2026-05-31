@@ -3,7 +3,7 @@ import numpy as np
 import io, wave, time, threading, os
 from dotenv import load_dotenv
 from groq import Groq
-from services.stt_service import transcribe_audio_file
+from services_AIchamviet.services.stt_service import transcribe_audio_file
 
 load_dotenv()
 
