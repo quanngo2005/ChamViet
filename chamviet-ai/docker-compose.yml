@@ -1,11 +1,11 @@
 services:
   voice-service:
     build:
-      context: ./voice-service
+      context: .
     ports:
       - "8000:8000"
     env_file:
-      - ./voice-service/.env
+      - ./services_AIchamviet/.env
     restart: unless-stopped
 
   vision-service:

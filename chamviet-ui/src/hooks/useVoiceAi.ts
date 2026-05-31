@@ -1,11 +1,31 @@
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { StoryConfig } from "../data/video-story-qa";
+import { buildApiUrl } from "../utils/apiBase";
 
-// ── Constants ────────────────────────────────────────────────────────────────
-const COSINE_CORRECT  = 0.6;
-const COSINE_UNCLEAR  = 0.35;
+const CORRECT_THRESHOLD = 0.75;
+const UNCLEAR_THRESHOLD = 0.4;
+const DEFAULT_SILENT_RETRY = "Cô chưa nghe rõ, con nói to hơn một chút nhé.";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+const FILLER_WORDS = new Set([
+  "a",
+  "ah",
+  "da",
+  "dạ",
+  "uh",
+  "uhm",
+  "um",
+  "u",
+  "vang",
+  "vâng",
+  "nhe",
+  "nhé",
+  "oi",
+  "ơi",
+  "co",
+  "cô",
+  "con",
+]);
+
 export type SessionPhase =
   | "idle"
   | "loading"
@@ -17,52 +37,113 @@ export type SessionPhase =
   | "done";
 
 interface UseVoiceAIOptions {
-  backendUrl: string;                               // Spring API base, e.g. "http://localhost:8081"
+  backendUrl: string;
   storyConfig?: StoryConfig;
-  onUserText?: (text: string) => void;              // STT returned user's speech
-  onAiMessage?: (text: string) => void;             // AI generated a response
-  onQuestionRead?: (questionText: string) => void;  // Next question was read
+  onUserText?: (text: string) => void;
+  onAiMessage?: (text: string) => void;
+  onQuestionRead?: (questionText: string) => void;
   onSessionEnd?: (score: number, total: number) => void;
   onError?: (error: unknown) => void;
 }
 
-// ── Helper: POST JSON ────────────────────────────────────────────────────────
+interface ChatResponse {
+  reply: string;
+}
+
+interface TextResponse {
+  text: string;
+}
+
+interface ClassifyResponse {
+  intent: string;
+}
+
 async function postJson<T>(url: string, body: Record<string, unknown>): Promise<T> {
-  const res = await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`${url} → ${res.status}`);
-  return res.json() as Promise<T>;
+
+  if (!response.ok) {
+    throw new Error(`${url} -> ${response.status}`);
+  }
+
+  return response.json() as Promise<T>;
 }
 
-// ── Helper: speak text via TTS ───────────────────────────────────────────────
-async function speakViaApi(backendUrl: string, text: string): Promise<void> {
-  const res = await fetch(`${backendUrl}/api/v1/voice/speak`, {
+async function fetchSpeechBlob(backendUrl: string, text: string): Promise<Blob | null> {
+  const response = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/speak"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),
   });
-  if (!res.ok) {
-    console.error(`TTS failed: ${res.status} for text: "${text.slice(0, 50)}..."`);
-    return;
+
+  if (!response.ok) {
+    return null;
   }
-  const blob = await res.blob();
+
+  const blob = await response.blob();
   if (blob.size === 0) {
-    console.error(`TTS returned empty audio for: "${text.slice(0, 50)}..."`);
-    return;
+    return null;
   }
-  const url = URL.createObjectURL(blob);
-  return new Promise<void>((resolve) => {
-    const audio = new Audio(url);
-    audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
-    audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
-    audio.play().catch(() => resolve());
-  });
+
+  return blob;
 }
 
-// ── Helper: encode raw PCM Float32 samples → WAV Blob ─────────────────────────
+async function warmSpeechCache(backendUrl: string, text: string): Promise<void> {
+  await fetchSpeechBlob(backendUrl, text);
+}
+
+async function prepareSpeechPlayback(
+  backendUrl: string,
+  text: string,
+): Promise<{ playToEnd: () => Promise<boolean> } | null> {
+  const blob = await fetchSpeechBlob(backendUrl, text);
+  if (!blob) {
+    return null;
+  }
+
+  const url = URL.createObjectURL(blob);
+  const audio = new Audio(url);
+
+  const isReady = await new Promise<boolean>((resolve) => {
+    let settled = false;
+
+    const finish = (value: boolean) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      resolve(value);
+    };
+
+    audio.oncanplaythrough = () => finish(true);
+    audio.onloadeddata = () => finish(true);
+    audio.onerror = () => finish(false);
+    audio.load();
+  });
+
+  if (!isReady) {
+    URL.revokeObjectURL(url);
+    return null;
+  }
+
+  return {
+    playToEnd: () =>
+      new Promise<boolean>((resolve) => {
+        const cleanup = (value: boolean) => {
+          URL.revokeObjectURL(url);
+          resolve(value);
+        };
+
+        audio.onended = () => cleanup(true);
+        audio.onerror = () => cleanup(false);
+        audio.play().catch(() => cleanup(false));
+      }),
+  };
+}
+
 function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   const numChannels = 1;
   const bitsPerSample = 16;
@@ -72,39 +153,162 @@ function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   const buffer = new ArrayBuffer(44 + dataSize);
   const view = new DataView(buffer);
 
-  // RIFF header
   writeString(view, 0, "RIFF");
   view.setUint32(4, 36 + dataSize, true);
   writeString(view, 8, "WAVE");
-  // fmt chunk
   writeString(view, 12, "fmt ");
-  view.setUint32(16, 16, true);           // chunk size
-  view.setUint16(20, 1, true);            // PCM
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
   view.setUint16(22, numChannels, true);
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, byteRate, true);
   view.setUint16(32, blockAlign, true);
   view.setUint16(34, bitsPerSample, true);
-  // data chunk
   writeString(view, 36, "data");
   view.setUint32(40, dataSize, true);
 
-  // Write PCM samples (float32 → int16)
   let offset = 44;
-  for (let i = 0; i < samples.length; i++, offset += 2) {
-    const s = Math.max(-1, Math.min(1, samples[i]));
-    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  for (let index = 0; index < samples.length; index += 1, offset += 2) {
+    const sample = Math.max(-1, Math.min(1, samples[index]));
+    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
   }
+
   return new Blob([buffer], { type: "audio/wav" });
 }
 
-function writeString(view: DataView, offset: number, str: string) {
-  for (let i = 0; i < str.length; i++) {
-    view.setUint8(offset + i, str.charCodeAt(i));
+function writeString(view: DataView, offset: number, value: string) {
+  for (let index = 0; index < value.length; index += 1) {
+    view.setUint8(offset + index, value.charCodeAt(index));
   }
 }
 
-// ── Hook ─────────────────────────────────────────────────────────────────────
+function normalizeText(value: string): string {
+  return value
+    .toLocaleLowerCase("vi-VN")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((token) => !FILLER_WORDS.has(token))
+    .join(" ")
+    .trim();
+}
+
+function scoreAnswer(userText: string, answer: string): number {
+  const normalizedUser = normalizeText(userText);
+  const normalizedAnswer = normalizeText(answer);
+
+  if (!normalizedUser || !normalizedAnswer) {
+    return 0;
+  }
+
+  if (normalizedUser === normalizedAnswer) {
+    return 1;
+  }
+
+  if (
+    normalizedAnswer.includes(normalizedUser) ||
+    normalizedUser.includes(normalizedAnswer)
+  ) {
+    return 0.82;
+  }
+
+  const userTokens = normalizedUser.split(" ").filter(Boolean);
+  const answerTokens = normalizedAnswer.split(" ").filter(Boolean);
+  if (userTokens.length === 0 || answerTokens.length === 0) {
+    return 0;
+  }
+
+  const answerSet = new Set(answerTokens);
+  const commonCount = userTokens.filter((token) => answerSet.has(token)).length;
+  const precision = commonCount / userTokens.length;
+  const recall = commonCount / answerTokens.length;
+  const f1 = precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall);
+
+  return Number(f1.toFixed(2));
+}
+
+function buildGreetingText(config: StoryConfig): string {
+  return `Chào con. Bây giờ mình cùng ôn lại câu chuyện ${config.storyTitle} bằng vài câu hỏi ngắn nhé.`;
+}
+
+function buildQuestionText(question: string, index: number, total: number): string {
+  return `Bây giờ là câu ${index + 1} trên ${total}. ${question}`;
+}
+
+function buildCorrectText(): string {
+  return "Giỏi quá, con trả lời đúng rồi.";
+}
+
+function buildUnclearText(): string {
+  return "Cô nghe chưa rõ ý lắm, con thử nói rõ hơn một chút nhé.";
+}
+
+function buildWrongText(answer: string): string {
+  return `Con đã rất cố gắng rồi. Cô gợi ý đáp án là: ${answer}. Mình sang câu tiếp theo nhé.`;
+}
+
+function buildEndingText(score: number, total: number): string {
+  if (score === total) {
+    return `Con làm rất tuyệt. Con trả lời đúng cả ${total} câu rồi.`;
+  }
+  if (score === 0) {
+    return `Hôm nay con đã rất chăm lắng nghe. Lần sau mình cùng cố gắng hơn nhé.`;
+  }
+  return `Con đã trả lời đúng ${score} trên ${total} câu. Cô khen con đã cố gắng lắm.`;
+}
+
+function buildQuestionPrompt(config: StoryConfig, question: string, childQuestion: string): string {
+  return [
+    `Con ${config.childAge} tuổi đang hỏi thêm về câu chuyện ${config.storyTitle}.`,
+    `Câu hỏi của bé là: "${childQuestion}".`,
+    `Hãy trả lời thật ngắn gọn, dễ hiểu cho trẻ em, tối đa 2 câu.`,
+    `Sau đó nhắc bé quay lại trả lời câu hỏi này: "${question}".`,
+    "Không dùng bullet points."
+  ].join(" ");
+}
+
+function buildConfusedPrompt(config: StoryConfig, question: string, answer: string): string {
+  return [
+    `Con ${config.childAge} tuổi đang chưa biết trả lời câu hỏi trong truyện ${config.storyTitle}.`,
+    `Câu hỏi là: "${question}".`,
+    `Đáp án đúng là: "${answer}".`,
+    "Hãy đưa ra một gợi ý ngắn, thân thiện, không nói nguyên văn toàn bộ đáp án nếu không cần thiết.",
+    "Không dùng bullet points."
+  ].join(" ");
+}
+
+function buildPrewarmTexts(config: StoryConfig): string[] {
+  const texts = new Set<string>();
+  const totalQuestions = config.qaList.length;
+
+  texts.add(buildGreetingText(config));
+  texts.add(buildCorrectText());
+  texts.add(buildUnclearText());
+
+  for (let index = 0; index < totalQuestions; index += 1) {
+    const qa = config.qaList[index];
+    texts.add(buildQuestionText(qa.question, index, totalQuestions));
+    texts.add(buildWrongText(qa.answer));
+  }
+
+  for (let currentScore = 0; currentScore <= totalQuestions; currentScore += 1) {
+    texts.add(buildEndingText(currentScore, totalQuestions));
+  }
+
+  return Array.from(texts);
+}
+
+function buildStoryCacheKey(config: StoryConfig): string {
+  return JSON.stringify({
+    title: config.storyTitle,
+    age: config.childAge,
+    qaList: config.qaList,
+  });
+}
+
 export function useVoiceAI({
   backendUrl,
   storyConfig,
@@ -114,375 +318,367 @@ export function useVoiceAI({
   onSessionEnd,
   onError,
 }: UseVoiceAIOptions) {
-  // ── State ────────────────────────────────────────────────────────────────
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAwaitingUserText, setIsAwaitingUserText] = useState(false);
   const [sessionPhase, setSessionPhase] = useState<SessionPhase>("idle");
   const [userText, setUserText] = useState("");
   const [aiText, setAiText] = useState("");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
 
-  // ── Refs ─────────────────────────────────────────────────────────────────
-  const audioCtxRef      = useRef<AudioContext | null>(null);
-  const processorRef     = useRef<ScriptProcessorNode | null>(null);
-  const streamRef        = useRef<MediaStream | null>(null);
-  const pcmChunksRef     = useRef<Float32Array[]>([]);
-  const configRef        = useRef(storyConfig);
-  configRef.current      = storyConfig;
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const pcmChunksRef = useRef<Float32Array[]>([]);
+  const prewarmedStoryKeyRef = useRef<string | null>(null);
+  const configRef = useRef(storyConfig);
+  configRef.current = storyConfig;
 
-  const base = `${backendUrl}/api/v1/voice`;
+  useEffect(() => {
+    if (!storyConfig) {
+      prewarmedStoryKeyRef.current = null;
+      return;
+    }
 
-  // ── speakAndNotify ──────────────────────────────────────────────────────
+    const storyKey = buildStoryCacheKey(storyConfig);
+    if (prewarmedStoryKeyRef.current === storyKey) {
+      return;
+    }
+
+    prewarmedStoryKeyRef.current = storyKey;
+
+    let cancelled = false;
+
+    void (async () => {
+      const texts = buildPrewarmTexts(storyConfig);
+      for (const text of texts) {
+        if (cancelled) {
+          return;
+        }
+
+        try {
+          await warmSpeechCache(backendUrl, text);
+        } catch {
+          return;
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [backendUrl, storyConfig]);
+
   const speakAndNotify = useCallback(
     async (text: string) => {
+      const preparedSpeech = await prepareSpeechPlayback(backendUrl, text);
+      if (!preparedSpeech) {
+        return;
+      }
+
       setAiText(text);
       onAiMessage?.(text);
-      await speakViaApi(backendUrl, text);
+      await preparedSpeech.playToEnd();
     },
     [backendUrl, onAiMessage],
   );
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // SESSION: init → greeting → first question
-  // ══════════════════════════════════════════════════════════════════════════
+  const askQuestion = useCallback(
+    async (questionIndex: number) => {
+      const config = configRef.current;
+      if (!config) {
+        return;
+      }
+
+      const qa = config.qaList[questionIndex];
+      if (!qa) {
+        return;
+      }
+
+      setCurrentQuestionIndex(questionIndex);
+      setSessionPhase("asking");
+      const questionText = buildQuestionText(qa.question, questionIndex, config.qaList.length);
+      onQuestionRead?.(questionText);
+      await speakAndNotify(questionText);
+      setSessionPhase("listening");
+    },
+    [onQuestionRead, speakAndNotify],
+  );
+
+  const finishSession = useCallback(
+    async (finalScore: number) => {
+      const config = configRef.current;
+      if (!config) {
+        return;
+      }
+
+      setSessionPhase("responding");
+      await speakAndNotify(buildEndingText(finalScore, config.qaList.length));
+      await fetch(buildApiUrl(backendUrl, "/api/v1/voice/reset"), { method: "POST" });
+      setSessionPhase("done");
+      onSessionEnd?.(finalScore, config.qaList.length);
+    },
+    [backendUrl, onSessionEnd, speakAndNotify],
+  );
+
+  const advanceToNext = useCallback(
+    async (nextIndex: number, currentScore: number) => {
+      const config = configRef.current;
+      if (!config) {
+        return;
+      }
+
+      if (nextIndex >= config.qaList.length) {
+        await finishSession(currentScore);
+        return;
+      }
+
+      await askQuestion(nextIndex);
+    },
+    [askQuestion, finishSession],
+  );
+
   const initSession = useCallback(async () => {
-    const cfg = configRef.current;
-    if (!cfg) return;
+    const config = configRef.current;
+    if (!config) {
+      return;
+    }
+
     try {
       setSessionPhase("loading");
       setCurrentQuestionIndex(0);
       setScore(0);
+      setIsAwaitingUserText(false);
+      setUserText("");
+      setAiText("");
 
-      // 1. Load story content
-      await postJson(`${base}/load-content`, { content: cfg.storyContent });
-
-      // 2. Greeting
-      setSessionPhase("greeting");
-      const { text: greetingText } = await postJson<{ text: string }>(
-        `${base}/greeting`,
-        { story_title: cfg.storyTitle, child_age: cfg.childAge },
+      await postJson<unknown>(
+        buildApiUrl(backendUrl, "/api/v1/voice/load-content"),
+        { content: config.storyContent },
       );
-      await speakAndNotify(greetingText);
 
-      // 3. Read first question
-      if (cfg.qaList.length > 0) {
-        setSessionPhase("asking");
-        const { text: qText } = await postJson<{ text: string }>(
-          `${base}/read-question`,
-          {
-            story_title: cfg.storyTitle,
-            child_age:   cfg.childAge,
-            question:    cfg.qaList[0].question,
-          },
-        );
-        onQuestionRead?.(qText);
-        await speakAndNotify(qText);
-        setSessionPhase("listening");
-      }
-    } catch (err) {
-      onError?.(err);
+      setSessionPhase("greeting");
+      await speakAndNotify(buildGreetingText(config));
+      await askQuestion(0);
+    } catch (error) {
+      setIsAwaitingUserText(false);
+      onError?.(error);
       setSessionPhase("idle");
     }
-  }, [base, speakAndNotify, onQuestionRead, onError]);
+  }, [askQuestion, backendUrl, onError, speakAndNotify]);
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // ADVANCE: read next question or end session
-  // ══════════════════════════════════════════════════════════════════════════
-  const advanceToNext = useCallback(
-    async (nextIndex: number, currentScore: number) => {
-      const cfg = configRef.current;
-      if (!cfg) return;
-
-      if (nextIndex >= cfg.qaList.length) {
-        // All questions done → ending
-        setSessionPhase("responding");
-        const { text: endText } = await postJson<{ text: string }>(
-          `${base}/ending`,
-          {
-            story_title: cfg.storyTitle,
-            child_age:   cfg.childAge,
-            score:       currentScore,
-            total:       cfg.qaList.length,
-          },
-        );
-        await speakAndNotify(endText);
-
-        // Reset session on server
-        await fetch(`${base}/reset`, { method: "POST" });
-
-        setSessionPhase("done");
-        onSessionEnd?.(currentScore, cfg.qaList.length);
+  const handleQuestionBranch = useCallback(
+    async (transcribed: string, question: string) => {
+      const config = configRef.current;
+      if (!config) {
         return;
       }
 
-      // Read next question
-      setSessionPhase("asking");
-      const { text: qText } = await postJson<{ text: string }>(
-        `${base}/read-question`,
-        {
-          story_title: cfg.storyTitle,
-          child_age:   cfg.childAge,
-          question:    cfg.qaList[nextIndex].question,
-        },
+      const { reply } = await postJson<ChatResponse>(
+        buildApiUrl(backendUrl, "/api/v1/voice/chat"),
+        { message: buildQuestionPrompt(config, question, transcribed) },
       );
-      onQuestionRead?.(qText);
-      await speakAndNotify(qText);
+
+      await speakAndNotify(reply);
       setSessionPhase("listening");
     },
-    [base, speakAndNotify, onQuestionRead, onSessionEnd],
+    [backendUrl, speakAndNotify],
   );
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // PROCESS: full classify → match → respond pipeline
-  // ══════════════════════════════════════════════════════════════════════════
+  const handleConfusedBranch = useCallback(
+    async (question: string, answer: string) => {
+      const config = configRef.current;
+      if (!config) {
+        return;
+      }
+
+      const { reply } = await postJson<ChatResponse>(
+        buildApiUrl(backendUrl, "/api/v1/voice/chat"),
+        { message: buildConfusedPrompt(config, question, answer) },
+      );
+
+      await speakAndNotify(reply);
+      setSessionPhase("listening");
+    },
+    [backendUrl, speakAndNotify],
+  );
+
   const processVoiceFlow = useCallback(
     async (audioBlob: Blob) => {
-      const cfg = configRef.current;
-      if (!cfg) return;
+      const config = configRef.current;
+      if (!config) {
+        setIsAwaitingUserText(false);
+        return;
+      }
 
       try {
         setIsProcessing(true);
         setSessionPhase("evaluating");
 
-        const qa = cfg.qaList[currentQuestionIndex];
-        if (!qa) return;
+        const qa = config.qaList[currentQuestionIndex];
+        if (!qa) {
+          return;
+        }
 
-        // 1. STT ─────────────────────────────────────────────────────────────
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.wav");
-        const sttRes = await fetch(`${base}/transcribe`, {
+
+        const sttResponse = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/transcribe"), {
           method: "POST",
           body: formData,
         });
-        const { text: transcribed } = await sttRes.json();
+        if (!sttResponse.ok) {
+          throw new Error(`Transcribe failed -> ${sttResponse.status}`);
+        }
 
-        if (!transcribed || transcribed.trim().length < 1) {
-          // Too short/empty → ask to retry
+        const { text: transcribed } = (await sttResponse.json()) as TextResponse;
+        if (!transcribed || transcribed.trim().length === 0) {
+          setIsAwaitingUserText(false);
           setSessionPhase("responding");
-          await speakAndNotify("Cô chưa nghe rõ, bé nói to hơn nhé!");
+          await speakAndNotify(DEFAULT_SILENT_RETRY);
           setSessionPhase("listening");
           return;
         }
 
+        setIsAwaitingUserText(false);
         setUserText(transcribed);
         onUserText?.(transcribed);
 
-        // 2. Classify intent ──────────────────────────────────────────────────
-        const { intent } = await postJson<{ intent: string }>(
-          `${base}/classify`,
+        const { intent } = await postJson<ClassifyResponse>(
+          buildApiUrl(backendUrl, "/api/v1/voice/classify"),
           { current_question: qa.question, user_text: transcribed },
         );
-        const intentUpper = (intent || "").trim().toUpperCase();
+        const normalizedIntent = (intent || "").trim().toUpperCase();
 
         setSessionPhase("responding");
 
-        // 3. Branch on intent ─────────────────────────────────────────────────
-        if (intentUpper.includes("QUESTION")) {
-          // Child asks about story content → explain + remind
-          const { text: explainText } = await postJson<{ text: string }>(
-            `${base}/explain`,
-            {
-              story_title:    cfg.storyTitle,
-              child_age:      cfg.childAge,
-              child_question: transcribed,
-            },
-          );
-          await speakAndNotify(explainText);
+        if (normalizedIntent.includes("QUESTION")) {
+          await handleQuestionBranch(transcribed, qa.question);
+          return;
+        }
 
-          // After explaining, remind child to answer original question
-          const { text: afterText } = await postJson<{ text: string }>(
-            `${base}/after-explain`,
-            { child_age: cfg.childAge, original_question: qa.question },
-          );
-          await speakAndNotify(afterText);
+        if (normalizedIntent.includes("CONFUSED")) {
+          await handleConfusedBranch(qa.question, qa.answer);
+          return;
+        }
+
+        const normalizedAnswer = normalizeText(transcribed);
+        const answerScore = scoreAnswer(transcribed, qa.answer);
+        if (answerScore >= CORRECT_THRESHOLD) {
+          const nextScore = score + 1;
+          setScore(nextScore);
+          await speakAndNotify(buildCorrectText());
+          await advanceToNext(currentQuestionIndex + 1, nextScore);
+          return;
+        }
+
+        if (
+          normalizedAnswer.length === 0 ||
+          normalizedIntent.includes("CONFIRM") ||
+          answerScore >= UNCLEAR_THRESHOLD
+        ) {
+          await speakAndNotify(buildUnclearText());
           setSessionPhase("listening");
           return;
         }
 
-        if (intentUpper.includes("CONFUSED")) {
-          // Child doesn't know → give hint
-          const { text: confusedText } = await postJson<{ text: string }>(
-            `${base}/confused`,
-            {
-              story_title:    cfg.storyTitle,
-              child_age:      cfg.childAge,
-              question:       qa.question,
-              correct_answer: qa.answer,
-            },
-          );
-          await speakAndNotify(confusedText);
-          setSessionPhase("listening");
-          return;
-        }
-
-        // ANSWER / CONFIRM → cosine match
-        const { score: cosineScore } = await postJson<{ score: number }>(
-          `${base}/match`,
-          { user_text: transcribed, correct_answer: qa.answer },
-        );
-
-        if (cosineScore >= COSINE_CORRECT) {
-          // ✅ Correct
-          const newScore = score + 1;
-          setScore(newScore);
-          const { text: correctText } = await postJson<{ text: string }>(
-            `${base}/correct`,
-            {
-              story_title:    cfg.storyTitle,
-              child_age:      cfg.childAge,
-              question:       qa.question,
-              child_answer:   transcribed,
-              correct_answer: qa.answer,
-            },
-          );
-          await speakAndNotify(correctText);
-
-          // Move to next question
-          const nextIdx = currentQuestionIndex + 1;
-          setCurrentQuestionIndex(nextIdx);
-          await advanceToNext(nextIdx, newScore);
-        } else if (cosineScore >= COSINE_UNCLEAR) {
-          // ❓ Unclear → ask child to clarify
-          const { text: unclearText } = await postJson<{ text: string }>(
-            `${base}/unclear`,
-            {
-              story_title: cfg.storyTitle,
-              child_age:   cfg.childAge,
-              question:    qa.question,
-            },
-          );
-          await speakAndNotify(unclearText);
-          setSessionPhase("listening");
-        } else {
-          // ❌ Wrong
-          const { text: wrongText } = await postJson<{ text: string }>(
-            `${base}/wrong`,
-            {
-              story_title:    cfg.storyTitle,
-              child_age:      cfg.childAge,
-              question:       qa.question,
-              child_answer:   transcribed,
-              correct_answer: qa.answer,
-            },
-          );
-          await speakAndNotify(wrongText);
-
-          // Move to next question (don't loop on wrong indefinitely)
-          const nextIdx = currentQuestionIndex + 1;
-          setCurrentQuestionIndex(nextIdx);
-          await advanceToNext(nextIdx, score);
-        }
-      } catch (err) {
-        onError?.(err);
+        await speakAndNotify(buildWrongText(qa.answer));
+        await advanceToNext(currentQuestionIndex + 1, score);
+      } catch (error) {
+        setIsAwaitingUserText(false);
+        onError?.(error);
         setSessionPhase("listening");
       } finally {
         setIsProcessing(false);
       }
     },
     [
-      base,
+      advanceToNext,
+      backendUrl,
       currentQuestionIndex,
+      handleConfusedBranch,
+      handleQuestionBranch,
+      onError,
+      onUserText,
       score,
       speakAndNotify,
-      advanceToNext,
-      onUserText,
-      onError,
     ],
   );
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // RECORDING: start / stop
-  // ══════════════════════════════════════════════════════════════════════════
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true, noiseSuppression: true },
+        audio: {
+          sampleRate: 16000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
       });
+
       streamRef.current = stream;
+      const audioContext = new AudioContext({ sampleRate: 16000 });
+      audioCtxRef.current = audioContext;
 
-      const audioCtx = new AudioContext({ sampleRate: 16000 });
-      audioCtxRef.current = audioCtx;
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
 
-      const source = audioCtx.createMediaStreamSource(stream);
-      const processor = audioCtx.createScriptProcessor(4096, 1, 1);
       processorRef.current = processor;
       pcmChunksRef.current = [];
 
-      processor.onaudioprocess = (e) => {
-        const channelData = e.inputBuffer.getChannelData(0);
+      processor.onaudioprocess = (event) => {
+        const channelData = event.inputBuffer.getChannelData(0);
         pcmChunksRef.current.push(new Float32Array(channelData));
       };
 
       source.connect(processor);
-      processor.connect(audioCtx.destination);
+      processor.connect(audioContext.destination);
       setIsRecording(true);
-    } catch (err) {
-      console.error("Không thể truy cập micro:", err);
-      onError?.(err);
+    } catch (error) {
+      setIsAwaitingUserText(false);
+      onError?.(error);
     }
-  }, [processVoiceFlow, onError]);
+  }, [onError]);
 
   const stopRecording = useCallback(() => {
-    if (!isRecording) return;
+    if (!isRecording) {
+      return;
+    }
+
     setIsRecording(false);
-    setIsProcessing(true);
-
-    // Stop processor & audio context
     processorRef.current?.disconnect();
-    audioCtxRef.current?.close();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    void audioCtxRef.current?.close();
 
-    // Release mic
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-
-    // Merge PCM chunks into one Float32Array
     const chunks = pcmChunksRef.current;
-    const totalLength = chunks.reduce((acc, c) => acc + c.length, 0);
+    const totalLength = chunks.reduce((length, chunk) => length + chunk.length, 0);
     const merged = new Float32Array(totalLength);
+
     let offset = 0;
     for (const chunk of chunks) {
       merged.set(chunk, offset);
       offset += chunk.length;
     }
 
-    // Encode to real WAV and process
-    const sampleRate = audioCtxRef.current?.sampleRate || 16000;
+    const sampleRate = audioCtxRef.current?.sampleRate ?? 16000;
     const wavBlob = encodeWav(merged, sampleRate);
-    processVoiceFlow(wavBlob);
+    setIsAwaitingUserText(true);
+    void processVoiceFlow(wavBlob);
   }, [isRecording, processVoiceFlow]);
 
-  // ==========================================================================
-  // PRELOAD
-  // =========================================================================
-  const preloadStory = useCallback(async () => {
-  const cfg = configRef.current;
-  if (!cfg) return;
-  try {
-    // Just the context loading, NO audio/greeting yet
-    await postJson(`${base}/load-content`, { content: cfg.storyContent });
-  } catch (err) {
-    console.warn("Preload failed", err);
-  }
-}, [base]);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // RETURN
-  // ══════════════════════════════════════════════════════════════════════════
   return {
-    // State
     isRecording,
     isProcessing,
+    isAwaitingUserText,
     sessionPhase,
     userText,
     aiText,
     currentQuestionIndex,
     score,
-
-    // Actions
     initSession,
     startRecording,
     stopRecording,
     resetAiText: () => setAiText(""),
-    preloadStory
   };
 }

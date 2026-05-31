@@ -1,6 +1,7 @@
 package com.vn.chamviet.chamviet_api.AI.service;
 
 import com.vn.chamviet.chamviet_api.AI.dto.AiResponseDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
@@ -9,14 +10,21 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Service
 public class AIService {
 
     private final WebClient webClient;
+    private final Duration visionTimeout;
 
-    public AIService(WebClient.Builder webClientBuilder) {
-        // Cấu hình URL của AI Service (Python FastAPI)
-        this.webClient = webClientBuilder.baseUrl("http://localhost:5000").build();
+    public AIService(
+            WebClient.Builder webClientBuilder,
+            @Value("${ai.vision.base-url:http://localhost:5000}") String visionBaseUrl,
+            @Value("${ai.vision.timeout-seconds:15}") long visionTimeoutSeconds
+    ) {
+        this.webClient = webClientBuilder.baseUrl(visionBaseUrl).build();
+        this.visionTimeout = Duration.ofSeconds(visionTimeoutSeconds);
     }
 
     public AiResponseDTO testAiConnection(MultipartFile file) {
@@ -36,7 +44,7 @@ public class AIService {
                     errorRes.setStatus("error");
                     return Mono.just(errorRes);
                 })
-                .block(); // Đợi kết quả trả về (Synchronous)
+                .block(visionTimeout);
     }
     
 }

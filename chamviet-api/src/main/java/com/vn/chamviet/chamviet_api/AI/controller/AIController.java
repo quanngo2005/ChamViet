@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @CrossOrigin(origins = "http://localhost:5174")
 @RestController
-@RequestMapping("/api/v1/ai")
+@RequestMapping({"/api/v1/ai", "/api/v1/vision"})
 public class AIController {
     @Autowired
     AIService aiService;
