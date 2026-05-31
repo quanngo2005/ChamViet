@@ -1,9 +1,8 @@
 package com.vn.chamviet.chamviet_api.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vn.chamviet.chamviet_api.entity.InventoryTransaction;
-import com.vn.chamviet.chamviet_api.entity.OrderDetail;
-import com.vn.chamviet.chamviet_api.entity.Orders;
+import com.vn.chamviet.chamviet_api.order.OrderDetail;
+import com.vn.chamviet.chamviet_api.order.Orders;
 import com.vn.chamviet.chamviet_api.entity.repository.InventoryTransactionRepo;
 import com.vn.chamviet.chamviet_api.entity.repository.OrdersRepo;
 import com.vn.chamviet.chamviet_api.product.dto.ProductDTO;

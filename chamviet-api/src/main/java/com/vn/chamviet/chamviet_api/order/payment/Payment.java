@@ -1,5 +1,6 @@
-package com.vn.chamviet.chamviet_api.entity;
+package com.vn.chamviet.chamviet_api.order.payment;
 
+import com.vn.chamviet.chamviet_api.order.Orders;
 import jakarta.persistence.*;
 import lombok.*;
 

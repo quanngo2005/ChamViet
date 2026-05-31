@@ -1,5 +1,7 @@
-package com.vn.chamviet.chamviet_api.entity;
+package com.vn.chamviet.chamviet_api.order;
 
+import com.vn.chamviet.chamviet_api.entity.*;
+import com.vn.chamviet.chamviet_api.order.payment.Payment;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;

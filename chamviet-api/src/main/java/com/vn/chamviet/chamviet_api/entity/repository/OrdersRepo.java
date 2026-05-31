@@ -1,6 +1,6 @@
 package com.vn.chamviet.chamviet_api.entity.repository;
 
-import com.vn.chamviet.chamviet_api.entity.Orders;
+import com.vn.chamviet.chamviet_api.order.Orders;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
