@@ -5,6 +5,7 @@ import videoThumbnail from '@assets/video-thumbnail.png';
 
 export const HOME_IMAGES = {
   heroImage,
+  videoThumbnail,
   howToPlay: {
     step1: heroImage,
     step2: videoThumbnail,
@@ -13,18 +14,39 @@ export const HOME_IMAGES = {
   }
 };
 
+export const HOME_PRODUCT = {
+  id: 'cham-viet-box-2-tranh',
+  price: '219.000đ',
+  ctaLabel: 'Mua ngay - 219.000đ',
+  boxLabel: '1 box - 2 tranh văn hóa Việt',
+  paintings: [
+    {
+      id: 'ho-guom',
+      title: 'Sự tích Hồ Gươm',
+      description: 'Cùng bé khám phá thanh gươm thần, vua Lê Lợi và biểu tượng hồ Hoàn Kiếm.',
+      status: 'Có trong hộp',
+    },
+    {
+      id: 'thanh-giong',
+      title: 'Sự tích Thánh Gióng',
+      description: 'Theo chân cậu bé làng Gióng vươn mình thành tráng sĩ bảo vệ quê hương.',
+      status: 'Có trong hộp',
+    },
+  ],
+};
+
 export const HOME_COPY = {
   hero: {
-    badge: 'Bộ sản phẩm kể chuyện văn hóa Việt',
+    badge: 'Puzzle gỗ + hologram + AI hỏi đáp',
     titleStart: 'Chạm ',
     titleHighlight: 'Việt',
-    description: 'Bộ sản phẩm kể chuyện văn hóa Việt bằng tranh lắp ghép, video và hộp Pepper\'s Ghost để tạo hiệu ứng hologram như một sân khấu thu nhỏ.',
-    primaryCta: 'Sở hữu bộ sản phẩm',
-    secondaryCta: 'Xem câu chuyện',
+    description: 'Bé lắp tranh gỗ, quét QR, đặt điện thoại lên hộp phản chiếu để xem câu chuyện hiện lên như sân khấu nhỏ, rồi hỏi AI để hiểu thêm.',
+    primaryCta: HOME_PRODUCT.ctaLabel,
+    secondaryCta: 'Xem demo 30s',
     microText: 'Tranh lắp ghép | Video kể chuyện | Hộp Pepper\'s Ghost',
     productBadge1: 'Mới',
-    productBadge2: 'Bộ Bánh Chưng',
-    productTitle: 'Khám phá sự tích Bánh Chưng Bánh Dày',
+    productBadge2: HOME_PRODUCT.boxLabel,
+    productTitle: 'Khám phá Sự tích Hồ Gươm và Sự tích Thánh Gióng',
   },
   learning: {
     title: 'Học Hỏi Qua Mọi Giác Quan',

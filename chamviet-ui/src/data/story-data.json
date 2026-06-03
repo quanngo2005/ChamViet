@@ -5,20 +5,20 @@
     "totalTime": "12:45"
   },
   "story": {
-    "category": "Truyện cổ tích",
-    "title": "Truyền Thuyết Lạc Long Quân Và Âu Cơ",
-    "meta": ["12 Phút", "Phát hành Tháng 3 2026", "Hà Nội, Việt Nam"],
+    "category": "Truyền thuyết",
+    "title": "Sự Tích Thánh Gióng",
+    "meta": ["12 Phút", "Có trong hộp", "Sóc Sơn, Việt Nam"],
     "paragraphs": [
-      "Hãy quay về thời kỳ khởi nguyên của dân tộc, khi đất trời còn giao hòa giữa biển cả và núi rừng. Chứng kiến truyền thuyết thiêng liêng về Lạc Long Quân và Âu Cơ – hai nguồn cội của người Việt.",
-      "Từ mối duyên kỳ diệu ấy, Âu Cơ sinh ra một bọc trăm trứng, nở thành một trăm người con. Nhưng vì kẻ thuộc về biển, người thuộc về núi, họ đã chia tay nhau: năm mươi người con theo cha xuống biển, năm mươi người con theo mẹ lên núi."
+      "Câu chuyện bắt đầu ở làng Gióng, khi đất nước đứng trước hiểm nguy. Một cậu bé tưởng như lặng im bỗng cất tiếng nói đầu tiên để xin áo giáp sắt, roi sắt và ngựa sắt ra trận.",
+      "Từ tình yêu quê hương và sức mạnh của cả cộng đồng, Gióng vươn mình thành tráng sĩ, đánh tan giặc ngoại xâm rồi bay về trời. Truyền thuyết nhắc bé về lòng dũng cảm và tinh thần bảo vệ xứ sở."
     ],
-    "closing": "Câu chuyện không chỉ kể về sự chia ly, mà còn là khởi nguồn của tinh thần đoàn kết – nhắc nhở rằng dù ở bất cứ nơi đâu, người Việt vẫn luôn chung một cội nguồn."
+    "closing": "Sự tích Thánh Gióng không chỉ là câu chuyện về một anh hùng nhỏ tuổi, mà còn là lời nhắc rằng sức mạnh lớn có thể bắt đầu từ tình yêu quê hương rất giản dị."
   },
   "cta": {
-    "title": "Sống lại truyền thuyết qua từng mảnh ghép",
-    "description": "Sở hữu phiên bản bộ xếp hình gỗ 20 mảnh được vẽ tay, lấy cảm hứng từ hoạt hình này.",
-    "buttonLabel": "Mua Hàng - 349.000 VNĐ",
-    "to": "/products"
+    "title": "Sẵn sàng mở 2 truyền thuyết trong một box",
+    "description": "Một box gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, kết hợp tranh lắp ghép, Pepper's Ghost và hỏi đáp sau câu chuyện.",
+    "buttonLabel": "Mua ngay - 219.000đ",
+    "to": "/products/cham-viet-box-2-tranh"
   },
   "explore": {
     "title": "Khám phá",
@@ -32,8 +32,8 @@
         "meta": "10 min • Adventure"
       },
       {
-        "title": "Thánh Gióng",
-        "meta": "18 min • Origins"
+        "title": "Sự tích Thánh Gióng",
+        "meta": "Có trong hộp • Truyền thuyết"
       }
     ]
   },

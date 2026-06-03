@@ -6,7 +6,8 @@ const functions = [
     id: 'cham',
     title: 'CHẠM',
     icon: <Hand size={32} />,
-    description: 'Lắp ráp thủ công các mảnh gỗ tinh xảo, rèn luyện vận động tinh và tư duy logic không gian.',
+    description: 'Bé tự tay lắp tranh gỗ trước khi xem truyện, nên không chỉ nhìn màn hình thụ động.',
+    outcome: 'Ngồi chơi tập trung 15-20 phút',
     color: 'rgba(139, 94, 60, 0.1)',
     iconColor: 'var(--secondary)'
   },
@@ -14,7 +15,8 @@ const functions = [
     id: 'nhin',
     title: 'NHÌN',
     icon: <Eye size={32} />,
-    description: 'Câu chuyện và nhân vật dân gian hiện lên sống động ngay trước mắt qua sân khấu phản chiếu.',
+    description: 'Đặt điện thoại lên hộp để nhân vật hiện lên như sân khấu nhỏ ngay trên bàn.',
+    outcome: 'Hiểu hologram bằng mắt thấy',
     color: 'rgba(198, 40, 40, 0.1)',
     iconColor: 'var(--primary)'
   },
@@ -22,7 +24,8 @@ const functions = [
     id: 'nghe',
     title: 'NGHE',
     icon: <Volume2 size={32} />,
-    description: 'Đắm chìm trong không gian âm nhạc dân gian và giọng kể chuyện truyền cảm ấm áp.',
+    description: 'Con nghe truyện theo từng cảnh, dễ bắt được nhân vật chính và bài học của câu chuyện.',
+    outcome: 'Kể lại được ý chính',
     color: 'rgba(212, 175, 55, 0.1)',
     iconColor: 'var(--accent-color)'
   },
@@ -30,7 +33,8 @@ const functions = [
     id: 'dap',
     title: 'ĐÁP',
     icon: <MessageSquareText size={32} />,
-    description: 'Cùng gia đình thảo luận và trả lời các câu đố vui để hiểu sâu hơn về ý nghĩa của từng tích truyện.',
+    description: 'Sau khi xem, bé hỏi AI những điều còn tò mò thay vì dừng lại ở một video xem xong là hết.',
+    outcome: 'Có câu hỏi để nói chuyện cùng bố mẹ',
     color: 'rgba(78, 52, 46, 0.1)',
     iconColor: 'var(--text-h)'
   }
@@ -43,10 +47,10 @@ export default function CoreFunctions() {
     <section className="core-functions-section">
       <div className="container">
         <div className="core-functions-section__header">
-          <p className="section-eyebrow">Hành trình 4 giác quan</p>
-          <h2 className="core-functions-section__title">Hành trình 4 Giác Quan</h2>
+          <p className="section-eyebrow">Cốt lõi sản phẩm</p>
+          <h2 className="core-functions-section__title">Một hộp chơi, bốn cách trẻ học văn hóa</h2>
           <p className="core-functions-section__sub">
-            Phát triển toàn diện qua phương pháp học tập tương tác đa chiều, kết nối truyền thống và tương lai.
+            Mỗi bước được thiết kế để phụ huynh thấy con đang làm gì, hiểu gì và có thể kể lại điều gì sau buổi chơi.
           </p>
         </div>
 
@@ -67,6 +71,7 @@ export default function CoreFunctions() {
 
               <h3 className="function-card__title">{item.title}</h3>
               <p className="function-card__desc">{item.description}</p>
+              <p className="function-card__outcome">{item.outcome}</p>
             </div>
           ))}
         </div>

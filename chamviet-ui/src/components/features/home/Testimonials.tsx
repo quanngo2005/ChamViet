@@ -9,7 +9,7 @@ const testimonials = [
     avatar: 'LA',
     quote: 'Con tôi không còn dán mắt vào điện thoại nữa. Thay vào đó, cháu tự lắp ghép hàng giờ rồi gọi cả nhà đến xem câu chuyện hiện lên trong hộp kính. Đây là món quà ý nghĩa nhất tôi từng tặng cháu.',
     stars: 5,
-    product: 'Bộ Rồng Lạc Long Quân'
+    product: 'Chạm Việt Box 2 Tranh'
   },
   {
     id: 2,
@@ -18,7 +18,7 @@ const testimonials = [
     avatar: 'MK',
     quote: 'Tôi đã tích hợp Chạm Việt vào giờ học văn hóa. Học sinh hứng thú hơn hẳn. Trải nghiệm sân khấu ảo giúp các em ghi nhớ câu chuyện cổ tích sâu hơn bất kỳ sách giáo khoa nào.',
     stars: 5,
-    product: 'Bộ Thánh Gióng'
+    product: 'Sự tích Thánh Gióng'
   },
   {
     id: 3,
@@ -27,14 +27,14 @@ const testimonials = [
     avatar: 'TH',
     quote: 'Chất lượng gỗ rất tốt, bề mặt mịn không lo trầy tay bé. Hộp phản chiếu kết hợp video rất mượt, và bé nhà tôi đã học được rất nhiều về văn hóa Việt Nam một cách vui vẻ.',
     stars: 5,
-    product: 'Bộ Sơn Tinh Thủy Tinh'
+    product: 'Sự tích Hồ Gươm'
   }
 ];
 
 const badges = [
-  { icon: <ShieldCheck size={18} />, label: 'An toàn cho trẻ', sub: 'Chứng nhận TCVN' },
-  { icon: <Award size={18} />, label: 'Giải thưởng EdTech', sub: 'Vietnam 2024' },
-  { icon: <Users size={18} />, label: '1.200+ gia đình', sub: 'Tin dùng toàn quốc' },
+  { id: 'safe', icon: <ShieldCheck size={18} />, label: 'An toàn cho trẻ', sub: 'Chứng nhận TCVN' },
+  { id: 'award', icon: <Award size={18} />, label: 'Giải thưởng EdTech', sub: 'Vietnam 2024' },
+  { id: 'parents', icon: <Users size={18} />, label: 'Phụ huynh dùng thử', sub: 'Phản hồi trải nghiệm' },
 ];
 
 export default function Testimonials() {
@@ -47,8 +47,8 @@ export default function Testimonials() {
         <div className="testimonials-section__header scroll-reveal fade-up">
           <p className="testimonials-section__eyebrow">Phụ huynh nói gì?</p>
           <h2 className="testimonials-section__title">
-            Hàng nghìn gia đình<br />
-            <span style={{ color: 'var(--primary)' }}>đã tin chọn</span>
+            Phản hồi từ phụ huynh<br />
+            <span style={{ color: 'var(--primary)' }}>trải nghiệm thử</span>
           </h2>
         </div>
 
@@ -58,8 +58,8 @@ export default function Testimonials() {
             <div key={t.id} className="testimonial-card scroll-reveal-child fade-up">
               {/* Stars */}
               <div className="testimonial-card__stars">
-                {[...Array(t.stars)].map((_, i) => (
-                  <Star key={i} size={14} fill="var(--accent)" color="var(--accent)" />
+                {Array.from({ length: t.stars }, (_, starIndex) => `${t.id}-star-${starIndex + 1}`).map((starKey) => (
+                  <Star key={starKey} size={14} fill="var(--accent)" color="var(--accent)" />
                 ))}
               </div>
 
@@ -85,8 +85,8 @@ export default function Testimonials() {
 
         {/* Trust badges */}
         <div className="testimonials-section__badges scroll-reveal fade-up delay-400">
-          {badges.map((b, i) => (
-            <div key={i} className="trust-badge">
+          {badges.map((b) => (
+            <div key={b.id} className="trust-badge">
               <div className="trust-badge__icon">{b.icon}</div>
               <div>
                 <p className="trust-badge__label">{b.label}</p>

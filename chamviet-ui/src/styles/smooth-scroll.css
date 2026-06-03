@@ -19,7 +19,7 @@ html {
 html.lenis,
 html.lenis body {
   height: auto;
-  width: 100vw;
+  width: 100%;
 }
 
 .lenis.lenis-smooth {

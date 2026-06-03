@@ -1,11 +1,10 @@
-import { ArrowRight } from 'lucide-react';
 import { useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
 
 const news = [
   {
     id: 1,
-    title: 'Bánh Chưng Bánh Dày và bài học về lòng hiếu thảo',
-    excerpt: 'Cùng con khám phá ý nghĩa sâu xa đằng sau sự tích ra đời của hai loại bánh truyền thống.',
+    title: 'Sự tích Hồ Gươm và biểu tượng của Hà Nội',
+    excerpt: 'Cùng con khám phá thanh gươm thần, vua Lê Lợi và câu chuyện gắn với hồ Hoàn Kiếm.',
     image: 'https://images.unsplash.com/photo-1596484552834-6a58f850d0d7?auto=format&fit=crop&q=80&w=400',
     date: '10 Tháng 4, 2024'
   },
@@ -18,8 +17,8 @@ const news = [
   },
   {
     id: 3,
-    title: 'Biến câu chuyện dân gian thành trải nghiệm gia đình',
-    excerpt: 'Cách công nghệ và đồ chơi vật lý giúp kết nối các thế hệ thông qua những câu chuyện cổ.',
+    title: 'Sự tích Thánh Gióng qua trải nghiệm gia đình',
+    excerpt: 'Cách tranh lắp ghép và kể chuyện tương tác giúp bé hiểu lòng dũng cảm bằng trải nghiệm gần gũi.',
     image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&q=80&w=400',
     date: '01 Tháng 4, 2024'
   }
@@ -46,9 +45,6 @@ export default function NewsSection() {
                 <p className="news-card__date">{item.date}</p>
                 <h3 className="news-card__title">{item.title}</h3>
                 <p className="news-card__excerpt">{item.excerpt}</p>
-                <button className="news-card__readmore">
-                  Đọc tiếp <ArrowRight size={16} />
-                </button>
               </div>
             </div>
           ))}

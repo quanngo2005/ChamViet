@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Camera, ImageUp, ScanLine } from "lucide-react";
 
 import { MIN_CONFIDENCE, resolveLegacyLabelRoute } from "../data/scanConstants";
 import { scanImage } from "../services/scanService";
@@ -226,7 +227,9 @@ export default function ScanPage() {
         {/* IDLE — placeholder graphic */}
         {mode === "idle" && (
           <div className="scan-page__placeholder">
-            <span className="scan-page__camera-icon" aria-hidden>📷</span>
+            <span className="scan-page__camera-icon" aria-hidden>
+              <ScanLine size={54} />
+            </span>
             <span className="scan-page__capture-text">Chọn phương thức bên dưới</span>
             <span className="scan-page__capture-hint">Đặt thẻ gỗ vào giữa khung hình</span>
           </div>
@@ -257,7 +260,7 @@ export default function ScanPage() {
             onClick={handleOpenCamera}
             type="button"
           >
-            <span className="scan-page__btn-icon">🎥</span>
+            <Camera size={20} />
             Mở Máy Ảnh
           </button>
           <button
@@ -265,7 +268,7 @@ export default function ScanPage() {
             onClick={handleGalleryClick}
             type="button"
           >
-            <span className="scan-page__btn-icon">🖼️</span>
+            <ImageUp size={20} />
             Tải Ảnh Lên
           </button>
         </div>
@@ -292,8 +295,9 @@ export default function ScanPage() {
             className="scan-page__btn scan-page__btn--secondary"
             onClick={handleGalleryClick}
             type="button"
+            aria-label="Tải ảnh lên"
           >
-            🖼️
+            <ImageUp size={20} />
           </button>
         </div>
       )}

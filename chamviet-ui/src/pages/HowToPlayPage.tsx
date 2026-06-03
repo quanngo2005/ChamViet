@@ -6,6 +6,7 @@ import Card from "@mui/material/Card";
 import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import { HOME_PRODUCT } from "../data/home";
 
 const COLORS = {
   bg: "#fdfbf7",
@@ -488,7 +489,7 @@ function FinalCtaSection() {
           >
             <Button
               component={RouterLink}
-              to="/products"
+              to={`/products/${HOME_PRODUCT.id}`}
               variant="contained"
               disableElevation
               sx={{
@@ -508,7 +509,7 @@ function FinalCtaSection() {
 
             <Button
               component={RouterLink}
-              to="/products"
+              to={`/products/${HOME_PRODUCT.id}`}
               variant="outlined"
               sx={{
                 borderColor: "rgba(255,255,255,0.4)",
@@ -525,7 +526,7 @@ function FinalCtaSection() {
                 width: { xs: "100%", sm: "auto" },
               }}
             >
-              Mua Hàng
+              {HOME_PRODUCT.ctaLabel}
             </Button>
           </Stack>
         </Stack>
@@ -544,4 +545,3 @@ export default function HowToPlayPage() {
     </Box>
   );
 }
-

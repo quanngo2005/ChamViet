@@ -1,9 +1,15 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { ContentContainer, PageSection } from '../../common/layout';
-import heroImage from '@assets/hero.png';
+import { ContentContainer } from '../../common/layout/ContentContainer';
+import { PageSection } from '../../common/layout/PageSection';
 import { PRODUCT_DETAIL_COPY } from '../../../data/productDetail';
+import heroImage from '../../../assets/hero.png';
+import heroChildAr from '../../../assets/hero-child-ar.png';
+import unboxingFlatlay from '../../../assets/unboxing-flatlay.png';
+import videoThumbnail from '../../../assets/video-thumbnail.png';
 
-function StepCard({ label }: { label: string }) {
+const stepImages = [unboxingFlatlay, heroImage, videoThumbnail, heroChildAr];
+
+function StepCard({ label, image, index }: { label: string; image: string; index: number }) {
   return (
     <Box
       sx={{
@@ -11,26 +17,33 @@ function StepCard({ label }: { label: string }) {
         overflow: 'hidden',
         position: 'relative',
         aspectRatio: '1 / 1',
+        boxShadow: '0 18px 36px rgba(78, 52, 46, 0.12)',
       }}
     >
       <Box
         component="img"
-        src={heroImage}
-        alt={label}
-        sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        src={image}
+        alt={`Bước ${index + 1}: ${label}`}
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'block',
+          objectFit: 'cover',
+          filter: 'saturate(0.9) contrast(1.05)',
+        }}
       />
       <Box
         sx={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(168, 50, 50, 0.20)',
+          background: 'linear-gradient(180deg, rgba(35, 15, 13, 0.08), rgba(35, 15, 13, 0.64))',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           p: 2,
         }}
       >
-        <Typography sx={{ fontWeight: 700, color: '#fdfbf7', fontSize: 16, textAlign: 'center' }}>
+        <Typography sx={{ fontWeight: 900, color: '#fdfbf7', fontSize: 16, textAlign: 'center' }}>
           {label}
         </Typography>
       </Box>
@@ -62,8 +75,8 @@ export function ProductHologramSection() {
               gap: '16px',
             }}
           >
-            {hologram.steps.map((step) => (
-              <StepCard key={step} label={step} />
+            {hologram.steps.map((step, index) => (
+              <StepCard key={step} label={step} image={stepImages[index]} index={index} />
             ))}
           </Box>
         </Stack>

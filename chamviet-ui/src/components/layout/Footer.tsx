@@ -1,124 +1,172 @@
+import { Link as RouterLink } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+
+const productLinks = [
+  { label: 'Chạm Việt Box', to: '/products' },
+  { label: 'Mở câu chuyện', to: '/story' },
+  { label: 'Quét tranh', to: '/scan' },
+  { label: 'Cách chơi', to: '/how-to-play' },
+];
+
+const supportLinks = [
+  { label: 'Giới thiệu', to: '/about' },
+  { label: 'Cách chơi', to: '/how-to-play' },
+  { label: 'Câu chuyện', to: '/story' },
+  { label: 'Liên hệ', to: '/about' },
+];
+
+const socialLinks = [
+  { id: 'facebook', label: 'Facebook', Icon: FacebookIcon },
+  { id: 'instagram', label: 'Instagram', Icon: InstagramIcon },
+  { id: 'youtube', label: 'YouTube', Icon: YouTubeIcon },
+];
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--bg-container)', padding: '100px 0 60px 0', borderTop: '1px solid var(--border)' }}>
-      <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '64px' }}>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div style={{
-              fontSize: '24px',
-              fontWeight: 900,
-              color: 'var(--primary)',
-              textTransform: 'uppercase',
-              letterSpacing: '-1px'
-          }}>
+    <Box
+      component="footer"
+      sx={{
+        background: 'linear-gradient(180deg, rgba(253, 251, 247, 0.82), var(--bg-container))',
+        borderTop: '1px solid var(--border)',
+        pt: { xs: 8, md: 12 },
+        pb: { xs: 5, md: 7 },
+      }}
+    >
+      <Box
+        className="container"
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1.2fr 0.8fr 0.8fr 1.1fr' },
+          gap: { xs: 5, md: 8 },
+          alignItems: 'start',
+        }}
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+          <Typography sx={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', letterSpacing: 0 }}>
             Chạm Việt
-          </div>
-          <p style={{ color: 'var(--text)', fontSize: '15px', lineHeight: '1.6' }}>
-            Gìn giữ nét Việt trong từng món đồ chơi. Kết nối di sản qua công nghệ tương tác, đánh thức mọi giác quan.
-          </p>
-          <div style={{ display: 'flex', gap: '16px', color: 'var(--secondary)', marginTop: '8px' }}>
-            <FacebookIcon style={{ fontSize: 24, cursor: 'pointer', transition: 'color 0.3s ease' }} 
-                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                onMouseOut={(e) => e.currentTarget.style.color = 'var(--secondary)'}/>
-            <InstagramIcon style={{ fontSize: 24, cursor: 'pointer', transition: 'color 0.3s ease' }} 
-                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                onMouseOut={(e) => e.currentTarget.style.color = 'var(--secondary)'}/>
-            <YouTubeIcon style={{ fontSize: 24, cursor: 'pointer', transition: 'color 0.3s ease' }} 
-                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                onMouseOut={(e) => e.currentTarget.style.color = 'var(--secondary)'}/>
-          </div>
-        </div>
-
-        <div>
-          <h4 style={{ fontSize: '14px', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 800, color: 'var(--text-h)' }}>Sản phẩm</h4>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {['Bộ Puzzle Gỗ 3D', 'App Chạm Việt', 'Phụ kiện', 'Quà tặng'].map((item) => (
-              <li key={item} style={{ color: 'var(--text)', fontSize: '15px', cursor: 'pointer', transition: 'color 0.3s ease' }}
-                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--text)'}>
-                {item}
-              </li>
+          </Typography>
+          <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7, maxWidth: 360 }}>
+            Gìn giữ nét Việt trong từng món đồ chơi. Kết nối di sản qua công nghệ tương tác, ánh sáng và câu chuyện.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {socialLinks.map(({ id, label, Icon }) => (
+              <IconButton
+                key={id}
+                aria-label={label}
+                sx={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: '8px',
+                  color: 'var(--secondary)',
+                  border: '1px solid rgba(78, 52, 46, 0.10)',
+                  '&:hover': { color: 'var(--primary)', backgroundColor: 'rgba(198, 40, 40, 0.06)' },
+                }}
+              >
+                <Icon fontSize="small" />
+              </IconButton>
             ))}
-          </ul>
-        </div>
+          </Box>
+        </Box>
 
-        <div>
-          <h4 style={{ fontSize: '14px', marginBottom: '24px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 800, color: 'var(--text-h)' }}>Hỗ trợ</h4>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {['Hướng dẫn SD', 'Chính sách bảo hành', 'Vận chuyển', 'Liên hệ'].map((item) => (
-              <li key={item} style={{ color: 'var(--text)', fontSize: '15px', cursor: 'pointer', transition: 'color 0.3s ease' }}
-                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--text)'}>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <FooterColumn title="Sản phẩm" links={productLinks} />
+        <FooterColumn title="Hỗ trợ" links={supportLinks} />
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 800, color: 'var(--text-h)' }}>Bản tin</h4>
-          <p style={{ color: 'var(--text)', fontSize: '15px', lineHeight: '1.6' }}>Nhận thông báo về các bộ sưu tập mới nhất và câu chuyện di sản.</p>
-          <div style={{ display: 'flex', boxShadow: 'var(--shadow-sm)', borderRadius: '12px', overflow: 'hidden' }}>
-            <input
-              type="text"
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography sx={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 900, color: 'var(--text-h)' }}>
+            Bản tin
+          </Typography>
+          <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7 }}>
+            Nhận thông báo về bộ sưu tập mới và các câu chuyện di sản cho trẻ.
+          </Typography>
+          <Box component="form" sx={{ display: 'flex', gap: 1 }}>
+            <TextField
+              size="small"
               placeholder="Email của bạn"
-              style={{
-                background: 'white',
-                border: 'none',
-                padding: '12px 16px',
-                width: '100%',
-                outline: 'none',
-                fontSize: '15px',
-                color: 'var(--text-h)'
+              aria-label="Email nhận bản tin"
+              sx={{
+                flex: 1,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                },
               }}
             />
-            <button style={{
-              background: 'var(--primary)',
-              color: 'white',
-              padding: '12px 20px',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'background 0.3s ease'
-            }}
-              onMouseOver={(e) => e.currentTarget.style.background = 'var(--primary-hover)'}
-              onMouseOut={(e) => e.currentTarget.style.background = 'var(--primary)'}>
-              <Mail size={20} />
-            </button>
-          </div>
-        </div>
+            <Button
+              type="submit"
+              variant="contained"
+              aria-label="Đăng ký bản tin"
+              sx={{ minWidth: 48, borderRadius: '8px', px: 1.5 }}
+            >
+              <Mail size={19} />
+            </Button>
+          </Box>
+        </Box>
+      </Box>
 
-      </div>
+      <Box
+        className="container"
+        sx={{
+          mt: { xs: 6, md: 10 },
+          pt: 4,
+          borderTop: '1px solid var(--border)',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          color: 'var(--text-sub)',
+        }}
+      >
+        <Typography sx={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em' }}>
+          © 2026 CHẠM VIỆT. ALL RIGHTS RESERVED.
+        </Typography>
+        <Box sx={{ display: 'flex', gap: { xs: 2, md: 4 } }}>
+          <FooterTextLink to="/about" label="Privacy Policy" />
+          <FooterTextLink to="/about" label="Terms of Service" />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 
-      <div className="container" style={{ 
-        marginTop: '80px', 
-        paddingTop: '32px', 
-        borderTop: '1px solid var(--border)', 
-        display: 'flex', 
-        flexWrap: 'wrap',
-        gap: '24px',
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        fontSize: '12px', 
-        fontWeight: 700, 
-        letterSpacing: '1px', 
-        color: 'var(--text-sub)',
-        opacity: 0.8
-      }}>
-        <span>© 2024 CHẠM VIỆT. ALL RIGHTS RESERVED.</span>
-        <div style={{ display: 'flex', gap: '32px' }}>
-          <a href="#" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 0.3s ease' }}
-             onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-             onMouseOut={(e) => e.currentTarget.style.color = 'inherit'}>PRIVACY POLICY</a>
-          <a href="#" style={{ textDecoration: 'none', color: 'inherit', transition: 'color 0.3s ease' }}
-             onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-             onMouseOut={(e) => e.currentTarget.style.color = 'inherit'}>TERMS OF SERVICE</a>
-        </div>
-      </div>
-    </footer>
+function FooterColumn({ title, links }: { title: string; links: Array<{ label: string; to: string }> }) {
+  return (
+    <Box>
+      <Typography sx={{ fontSize: 13, mb: 2.5, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 900, color: 'var(--text-h)' }}>
+        {title}
+      </Typography>
+      <Box component="nav" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        {links.map((item) => (
+          <FooterTextLink key={item.label} to={item.to} label={item.label} />
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
+function FooterTextLink({ to, label }: { to: string; label: string }) {
+  return (
+    <Box
+      component={RouterLink}
+      to={to}
+      sx={{
+        width: 'fit-content',
+        color: 'var(--text)',
+        fontSize: 15,
+        fontWeight: 600,
+        textDecoration: 'none',
+        '&:hover': { color: 'var(--primary)' },
+      }}
+    >
+      {label}
+    </Box>
   );
 }

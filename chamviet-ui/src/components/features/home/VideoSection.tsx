@@ -1,11 +1,12 @@
-import { useState } from 'react';
 import { PlayCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
 import videoThumbnail from '../../../assets/video-thumbnail.png';
 
 export default function VideoSection() {
-  const [playing, setPlaying] = useState(false);
   const sectionRef = useSmoothScroll<HTMLDivElement>();
+  const navigate = useNavigate();
+  const openStory = () => navigate('/story');
 
   return (
     <section id="video-section" className="video-section">
@@ -29,41 +30,24 @@ export default function VideoSection() {
           {/* Thumbnail / Player */}
           <div
             className="video-section__player"
-            onClick={() => setPlaying(true)}
+            onClick={openStory}
             role="button"
-            aria-label="Phát video giới thiệu Chạm Việt"
+            aria-label="Mở trang câu chuyện Chạm Việt"
             tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setPlaying(true)}
+            onKeyDown={(e) => e.key === 'Enter' && openStory()}
           >
-            {!playing ? (
-              <>
-                <img
-                  src={videoThumbnail}
-                  alt="Xem trải nghiệm video trong hộp phản chiếu"
-                  className="video-section__thumb"
-                />
-                {/* Overlay */}
-                <div className="video-section__overlay">
-                  <div className="video-section__play-btn">
-                    <PlayCircle size={56} color="white" />
-                  </div>
-                  <p className="video-section__play-label">Xem trải nghiệm</p>
-                </div>
-                {/* Duration badge */}
-                <span className="video-section__duration">2:34</span>
-              </>
-            ) : (
-              <div className="video-section__embed">
-                {/* Replace with actual video embed when available */}
-                <iframe
-                  title="Chạm Việt – Phygital Experience"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                  style={{ width: '100%', height: '100%', border: 0 }}
-                />
+            <img
+              src={videoThumbnail}
+              alt="Xem trải nghiệm video trong hộp phản chiếu"
+              className="video-section__thumb"
+            />
+            <div className="video-section__overlay">
+              <div className="video-section__play-btn">
+                <PlayCircle size={56} color="white" />
               </div>
-            )}
+              <p className="video-section__play-label">Mở câu chuyện</p>
+            </div>
+            <span className="video-section__duration">Trải nghiệm</span>
           </div>
         </div>
       </div>

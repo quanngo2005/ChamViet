@@ -13,7 +13,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import { User } from "lucide-react";
+import { Sprout, User } from "lucide-react";
 
 const navItems = [
   { label: "Giới thiệu", to: "/about" },
@@ -83,11 +83,10 @@ export default function Header() {
                 alignItems: "center",
                 justifyContent: "center",
                 color: "white",
-                fontSize: "18px",
                 boxShadow: "var(--shadow-sm)"
               }}
             >
-              🌿
+              <Sprout size={22} strokeWidth={2.4} />
             </Box>
             <Typography
               variant="h6"
@@ -95,7 +94,7 @@ export default function Header() {
                 fontWeight: 800,
                 color: "var(--primary)",
                 display: { xs: "none", sm: "block" },
-                letterSpacing: "-0.5px",
+                letterSpacing: 0,
                 textTransform: "uppercase",
               }}
             >
@@ -172,8 +171,8 @@ export default function Header() {
               component={RouterLink}
               to="/login"
               sx={{
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 backgroundColor: "var(--bg)",
                 color: "var(--text-main)",
                 display: "flex",
@@ -203,6 +202,8 @@ export default function Header() {
             sx={{
               display: { xs: "flex", md: "none" },
               color: "var(--primary)",
+              width: 44,
+              height: 44,
             }}
           >
             <MenuIcon />

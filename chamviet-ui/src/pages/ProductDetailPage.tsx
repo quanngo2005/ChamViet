@@ -1,14 +1,14 @@
+import { useState } from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { ContentContainer, PageSection } from '../components/common/layout';
-import {
-  ProductGallerySection,
-  ProductInfoSection,
-  ProductStorySection,
-  ProductIncludedSection,
-  ProductHologramSection,
-  ProductEducationSection,
-} from '../components/features/productDetail';
+import { ContentContainer } from '../components/common/layout/ContentContainer';
+import { PageSection } from '../components/common/layout/PageSection';
+import { ProductEducationSection } from '../components/features/productDetail/ProductEducationSection';
+import { ProductGallerySection } from '../components/features/productDetail/ProductGallerySection';
+import { ProductHologramSection } from '../components/features/productDetail/ProductHologramSection';
+import { ProductIncludedSection } from '../components/features/productDetail/ProductIncludedSection';
+import { ProductInfoSection } from '../components/features/productDetail/ProductInfoSection';
+import { ProductStorySection } from '../components/features/productDetail/ProductStorySection';
 import { useProductDetailData } from '../hooks/useProductDetailData';
 import { PRODUCT_DETAIL_COPY } from '../data/productDetail';
 import { useParams } from 'react-router-dom';
@@ -17,6 +17,7 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
   const { product, quantity, setQuantity } = useProductDetailData(productId);
+  const [purchaseMessage, setPurchaseMessage] = useState('');
 
   if (!product) {
     const { notFound } = PRODUCT_DETAIL_COPY;
@@ -32,7 +33,7 @@ export default function ProductDetailPage() {
             <Box>
               <Button
                 variant="contained"
-                onClick={() => navigate('/products')}
+                onClick={() => navigate('/')}
                 sx={{
                   backgroundColor: 'primary.main',
                   '&:hover': { backgroundColor: 'primary.dark' },
@@ -57,7 +58,7 @@ export default function ProductDetailPage() {
             {/* Breadcrumb */}
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
               <Button
-                onClick={() => navigate('/products')}
+                onClick={() => navigate('/')}
                 sx={{
                   textTransform: 'none',
                   color: 'grey.600',
@@ -66,7 +67,7 @@ export default function ProductDetailPage() {
                   '&:hover': { backgroundColor: 'transparent', color: 'grey.900' },
                 }}
               >
-                Sản phẩm
+                Trang chủ
               </Button>
               <Typography sx={{ color: 'grey.600' }}>/</Typography>
               <Typography sx={{ color: 'grey.900', fontWeight: 700 }}>{product.title}</Typography>
@@ -85,9 +86,10 @@ export default function ProductDetailPage() {
               <ProductInfoSection
                 product={product}
                 quantity={quantity}
+                purchaseMessage={purchaseMessage}
                 onQuantityChange={setQuantity}
                 onAddToCart={() => {
-                  // Placeholder for Add to Cart
+                  setPurchaseMessage(`Đã thêm ${quantity} box vào danh sách mua. Chúng tôi sẽ hoàn thiện thanh toán sau.`);
                 }}
               />
             </Box>

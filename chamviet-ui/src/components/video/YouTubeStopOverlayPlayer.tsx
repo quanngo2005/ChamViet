@@ -357,47 +357,36 @@ export default function YouTubeStopOverlayPlayer({
                 inset: 0,
                 zIndex: 9999,
                 display: "flex",
-                alignItems: "center",
+                alignItems: { xs: "flex-end", md: "center" },
                 justifyContent: "center",
-                p: { xs: 2, md: 4 },
+                p: { xs: 1, sm: 2, md: 4 },
                 background:
                   "linear-gradient(135deg, rgba(15,5,5,0.92) 0%, rgba(31,19,19,0.96) 100%)",
                 backdropFilter: "blur(18px)",
+                overflow: "hidden",
+                boxSizing: "border-box",
               }}
             >
-              {/* ── Skip button ──────────────────────────────────────────── */}
-              <Box sx={{ position: "absolute", top: 20, right: 20, zIndex: 10 }}>
-                <Button
-                  onClick={handleSkip}
-                  startIcon={<CloseIcon />}
-                  sx={{
-                    color: "rgba(255,255,255,0.7)",
-                    textTransform: "none",
-                    fontWeight: 600,
-                    "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.08)" },
-                    borderRadius: 3,
-                  }}
-                >
-                  Bỏ qua
-                </Button>
-              </Box>
-
               {/* ── Main content: mascot (L) + chat panel (R) ────────────── */}
               <Box
                 sx={{
                   display: "flex",
                   flexDirection: { xs: "column", md: "row" },
-                  alignItems: "center",
-                  gap: { xs: 3, md: 5 },
+                  alignItems: { xs: "stretch", md: "center" },
+                  justifyContent: "center",
+                  gap: { xs: 1.25, md: 5 },
                   width: "100%",
-                  maxWidth: 1000,
+                  maxWidth: 1040,
+                  maxHeight: "100%",
+                  minWidth: 0,
+                  boxSizing: "border-box",
                 }}
               >
                 {/* ── LEFT: Mascot ────────────────────────────────────────── */}
                 <Box
                   sx={{
                     flex: "0 0 auto",
-                    display: "flex",
+                    display: { xs: "none", md: "flex" },
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
@@ -466,77 +455,122 @@ export default function YouTubeStopOverlayPlayer({
                     flex: "1 1 auto",
                     display: "flex",
                     flexDirection: "column",
-                    height: { xs: "60vh", md: "72vh" },
-                    maxWidth: { xs: "100%", md: 540 },
+                    minWidth: 0,
+                    height: { xs: "min(calc(100dvh - 16px), 760px)", md: "72vh" },
+                    maxHeight: "calc(100dvh - 16px)",
+                    maxWidth: { xs: "100%", md: 560 },
                     width: "100%",
-                    borderRadius: "20px",
+                    borderRadius: { xs: "24px 24px 0 0", sm: "24px", md: "20px" },
                     overflow: "hidden",
                     bgcolor: "rgba(255,255,255,0.93)",
                     backdropFilter: "blur(20px)",
                     boxShadow:
                       "0 32px 80px rgba(0,0,0,0.45), 0 8px 24px rgba(168,50,50,0.12)",
                     border: "1px solid rgba(255,255,255,0.25)",
+                    boxSizing: "border-box",
+                    overscrollBehavior: "contain",
                   }}
+                  data-lenis-prevent
                 >
                   {/* Panel header */}
                   <Box
                     sx={{
-                      px: 3,
-                      py: 2,
+                      px: { xs: 2, sm: 2.5, md: 3 },
+                      py: { xs: 1.5, md: 2 },
                       borderBottom: "1px solid rgba(15,23,42,0.08)",
                       background:
                         "linear-gradient(to right, rgba(168,50,50,0.06), rgba(168,50,50,0.02))",
                       flexShrink: 0,
                       display: "flex",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       justifyContent: "space-between",
+                      gap: 1.25,
+                      flexWrap: "wrap",
                     }}
                   >
-                    <Box>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ fontWeight: 800, color: COLORS.titleDark, lineHeight: 1.2 }}
-                      >
-                        Hỏi đáp cùng Bé hạc
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: COLORS.mutedDark }}>
-                        {storyConfig ? "Nhấn giữ micro để trả lời" : "Chưa tải được dữ liệu câu hỏi"}
-                      </Typography>
-                    </Box>
-                    {progressText && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0, flex: "1 1 240px" }}>
                       <Box
+                        component="img"
+                        src={mascotSrc}
+                        alt="Bé hạc mascot"
                         sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 999,
-                          bgcolor: COLORS.accentSoft,
-                          color: COLORS.accent,
-                          fontSize: 12,
+                          display: { xs: "block", md: "none" },
+                          width: 44,
+                          height: 44,
+                          objectFit: "contain",
+                          flexShrink: 0,
+                          filter: "drop-shadow(0 8px 14px rgba(0,0,0,0.16))",
+                        }}
+                      />
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 800, color: COLORS.titleDark, lineHeight: 1.2 }}
+                        >
+                          Hỏi đáp cùng Bé hạc
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.mutedDark }}>
+                          {storyConfig ? "Nhấn giữ micro để trả lời" : "Chưa tải được dữ liệu câu hỏi"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1, flex: "0 1 auto", flexWrap: "wrap", ml: "auto" }}>
+                      {progressText && (
+                        <Box
+                          sx={{
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 999,
+                            bgcolor: COLORS.accentSoft,
+                            color: COLORS.accent,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {progressText}
+                        </Box>
+                      )}
+                      <Button
+                        onClick={handleSkip}
+                        startIcon={<CloseIcon />}
+                        size="small"
+                        sx={{
+                          color: COLORS.mutedDark,
+                          textTransform: "none",
                           fontWeight: 700,
-                          whiteSpace: "nowrap",
+                          borderRadius: 999,
+                          px: 1.5,
+                          minWidth: "auto",
+                          "&:hover": { color: COLORS.titleDark, bgcolor: "rgba(15,23,42,0.06)" },
                         }}
                       >
-                        {progressText}
-                      </Box>
-                    )}
+                        Bỏ qua
+                      </Button>
+                    </Box>
                   </Box>
 
                   {/* Messages area */}
                   <Box
                     sx={{
                       flex: 1,
+                      minHeight: 0,
                       overflowY: "auto",
-                      px: 2.5,
+                      px: { xs: 2, sm: 2.5 },
                       py: 2,
                       display: "flex",
                       flexDirection: "column",
                       gap: 1.5,
+                      WebkitOverflowScrolling: "touch",
+                      overscrollBehavior: "contain",
+                      touchAction: "pan-y",
                       "&::-webkit-scrollbar": { width: 5 },
                       "&::-webkit-scrollbar-thumb": {
                         bgcolor: "rgba(0,0,0,0.15)",
                         borderRadius: 4,
                       },
                     }}
+                    data-lenis-prevent
                   >
                     {!storyConfig && (
                       <Box
@@ -640,7 +674,7 @@ export default function YouTubeStopOverlayPlayer({
                   <Box
                     sx={{
                       flexShrink: 0,
-                      px: 2.5,
+                      px: { xs: 2, sm: 2.5 },
                       py: 2,
                       borderTop: "1px solid rgba(15,23,42,0.08)",
                       display: "flex",
@@ -692,7 +726,7 @@ export default function YouTubeStopOverlayPlayer({
                     </Box>
 
                     {/* Status hint */}
-                    <Box sx={{ flex: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography
                         variant="body2"
                         sx={{
@@ -715,8 +749,9 @@ export default function YouTubeStopOverlayPlayer({
                       flexShrink: 0,
                       display: "flex",
                       gap: 1,
-                      px: 2.5,
-                      pb: 2.5,
+                      flexDirection: { xs: "column-reverse", sm: "row" },
+                      px: { xs: 2, sm: 2.5 },
+                      pb: { xs: 2, sm: 2.5 },
                       pt: 0,
                     }}
                   >

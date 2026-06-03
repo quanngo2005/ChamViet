@@ -1,12 +1,14 @@
 import { Package, CreditCard, Palette, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useSmoothScroll, useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
 import unboxingImage from '../../../assets/unboxing-flatlay.png';
+import { HOME_PRODUCT } from '../../../data/home';
 
 const contents = [
   {
     id: 1,
-    title: '02 Bộ Puzzle Gỗ 3D',
-    description: 'Chế tác từ gỗ tự nhiên cao cấp, bề mặt nhẵn mịn, in UV bền màu, an toàn tuyệt đối cho trẻ.',
+    title: '02 tranh puzzle gỗ 3D',
+    description: 'Bao gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, sẵn sàng để bé lắp ghép và mở truyện.',
     icon: <Package size={22} />,
     tag: '01'
   },
@@ -60,11 +62,11 @@ export default function Unboxing() {
             <p className="section-eyebrow">Có gì trong hộp?</p>
 
             <h2 className="unboxing-section__title">
-              Mở hộp —<br />
-              <span style={{ color: 'var(--primary)' }}>Cả thế giới bên trong</span>
+              Mở hộp:<br />
+              <span style={{ color: 'var(--primary)' }}>2 tranh trong 1 box</span>
             </h2>
             <p className="unboxing-section__sub">
-              Mỗi chi tiết được thiết kế tỉ mỉ để tạo ra trải nghiệm phygital hoàn hảo.
+              Mỗi chi tiết được thiết kế để phụ huynh hiểu ngay trong hộp có gì và bé sẽ bắt đầu chơi như thế nào.
             </p>
 
             {/* Item list */}
@@ -99,10 +101,10 @@ export default function Unboxing() {
             </div>
 
             {/* CTA */}
-            <button className="btn btn-primary unboxing-section__cta">
-              <span>Đặt hàng ngay</span>
+            <Link to={`/products/${HOME_PRODUCT.id}`} className="btn btn-primary unboxing-section__cta">
+              <span>{HOME_PRODUCT.ctaLabel}</span>
               <ArrowRight size={16} />
-            </button>
+            </Link>
           </div>
 
         </div>

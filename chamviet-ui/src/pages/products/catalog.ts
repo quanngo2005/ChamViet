@@ -15,100 +15,20 @@ export type Product = {
 
 export const PRODUCT_CATALOG: Product[] = [
   {
-    id: 'banh-chung-banh-day',
-    collectionLabel: 'Heritage Collection',
-    title: 'Bánh Chưng Bánh Dầy Puzzle',
+    id: 'cham-viet-box-2-tranh',
+    collectionLabel: 'Chạm Việt Box',
+    title: 'Chạm Việt Box 2 Tranh',
     shortDescription:
-      'Trải nghiệm huyền thoại về Hoàng tử Lang Liêu qua bộ xếp hình bằng gỗ thủ công này. Một hành trình xúc giác kết hợp thần thoại Việt Nam cổ xưa với cách kể chuyện tương tác hiện đại.',
-    badgeLabel: 'SAVE 25%',
-    reviewsLabel: '(48 Reviews)',
-    priceLabel: '$300.000 VNĐ',
-    compareAtPriceLabel: '$59.00',
-    discountLabel: 'SAVE 25%',
-    listAgeLabel: '4-6 tuổi',
-    listTopicLabel: 'Cổ tích',
+      'Một box kể chuyện văn hóa Việt gồm 2 tranh lắp ghép: Sự tích Hồ Gươm và Sự tích Thánh Gióng. Bé lắp tranh, quét QR, xem hiệu ứng Pepper\'s Ghost và tiếp tục hỏi đáp sau câu chuyện.',
+    badgeLabel: 'Có sẵn 2 tranh',
+    reviewsLabel: 'Sẵn sàng mở bán',
+    priceLabel: '219.000đ',
+    compareAtPriceLabel: '',
+    discountLabel: '',
+    listAgeLabel: '4-8 tuổi',
+    listTopicLabel: 'Truyền thuyết',
     listCardDescription:
-      'Khám phá ý nghĩa của lòng hiếu thảo và\nsự trân trọng hạt gạo quê hương qua b…',
-  },
-  {
-    id: 'banh-chung-banh-day-02',
-    collectionLabel: 'Heritage Collection',
-    title: 'Bánh Chưng Bánh Dầy Puzzle',
-    shortDescription:
-      'Trải nghiệm huyền thoại về Hoàng tử Lang Liêu qua bộ xếp hình bằng gỗ thủ công này. Một hành trình xúc giác kết hợp thần thoại Việt Nam cổ xưa với cách kể chuyện tương tác hiện đại.',
-    badgeLabel: 'SAVE 25%',
-    reviewsLabel: '(48 Reviews)',
-    priceLabel: '$300.000 VNĐ',
-    compareAtPriceLabel: '$59.00',
-    discountLabel: 'SAVE 25%',
-    listAgeLabel: '4-6 tuổi',
-    listTopicLabel: 'Cổ tích',
-    listCardDescription:
-      'Khám phá ý nghĩa của lòng hiếu thảo và\nsự trân trọng hạt gạo quê hương qua b…',
-  },
-  {
-    id: 'banh-chung-banh-day-03',
-    collectionLabel: 'Heritage Collection',
-    title: 'Bánh Chưng Bánh Dầy Puzzle',
-    shortDescription:
-      'Trải nghiệm huyền thoại về Hoàng tử Lang Liêu qua bộ xếp hình bằng gỗ thủ công này. Một hành trình xúc giác kết hợp thần thoại Việt Nam cổ xưa với cách kể chuyện tương tác hiện đại.',
-    badgeLabel: 'SAVE 25%',
-    reviewsLabel: '(48 Reviews)',
-    priceLabel: '$300.000 VNĐ',
-    compareAtPriceLabel: '$59.00',
-    discountLabel: 'SAVE 25%',
-    listAgeLabel: '4-6 tuổi',
-    listTopicLabel: 'Cổ tích',
-    listCardDescription:
-      'Khám phá ý nghĩa của lòng hiếu thảo và\nsự trân trọng hạt gạo quê hương qua b…',
-  },
-  {
-    id: 'banh-chung-banh-day-04',
-    collectionLabel: 'Heritage Collection',
-    title: 'Bánh Chưng Bánh Dầy Puzzle',
-    shortDescription:
-      'Trải nghiệm huyền thoại về Hoàng tử Lang Liêu qua bộ xếp hình bằng gỗ thủ công này. Một hành trình xúc giác kết hợp thần thoại Việt Nam cổ xưa với cách kể chuyện tương tác hiện đại.',
-    badgeLabel: 'SAVE 25%',
-    reviewsLabel: '(48 Reviews)',
-    priceLabel: '$300.000 VNĐ',
-    compareAtPriceLabel: '$59.00',
-    discountLabel: 'SAVE 25%',
-    listAgeLabel: '4-6 tuổi',
-    listTopicLabel: 'Cổ tích',
-    listCardDescription:
-      'Khám phá ý nghĩa của lòng hiếu thảo và\nsự trân trọng hạt gạo quê hương qua b…',
-  },
-  {
-    id: 'banh-chung-banh-day-05',
-    collectionLabel: 'Heritage Collection',
-    title: 'Bánh Chưng Bánh Dầy Puzzle',
-    shortDescription:
-      'Trải nghiệm huyền thoại về Hoàng tử Lang Liêu qua bộ xếp hình bằng gỗ thủ công này. Một hành trình xúc giác kết hợp thần thoại Việt Nam cổ xưa với cách kể chuyện tương tác hiện đại.',
-    badgeLabel: 'SAVE 25%',
-    reviewsLabel: '(48 Reviews)',
-    priceLabel: '$300.000 VNĐ',
-    compareAtPriceLabel: '$59.00',
-    discountLabel: 'SAVE 25%',
-    listAgeLabel: '4-6 tuổi',
-    listTopicLabel: 'Cổ tích',
-    listCardDescription:
-      'Khám phá ý nghĩa của lòng hiếu thảo và\nsự trân trọng hạt gạo quê hương qua b…',
-  },
-  {
-    id: 'banh-chung-banh-day-06',
-    collectionLabel: 'Heritage Collection',
-    title: 'Bánh Chưng Bánh Dầy Puzzle',
-    shortDescription:
-      'Trải nghiệm huyền thoại về Hoàng tử Lang Liêu qua bộ xếp hình bằng gỗ thủ công này. Một hành trình xúc giác kết hợp thần thoại Việt Nam cổ xưa với cách kể chuyện tương tác hiện đại.',
-    badgeLabel: 'SAVE 25%',
-    reviewsLabel: '(48 Reviews)',
-    priceLabel: '$300.000 VNĐ',
-    compareAtPriceLabel: '$59.00',
-    discountLabel: 'SAVE 25%',
-    listAgeLabel: '4-6 tuổi',
-    listTopicLabel: 'Cổ tích',
-    listCardDescription:
-      'Khám phá ý nghĩa của lòng hiếu thảo và\nsự trân trọng hạt gạo quê hương qua b…',
+      '1 box gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, đi kèm trải nghiệm kể chuyện tương tác.',
   },
 ];
 
@@ -116,4 +36,3 @@ export function getProductById(productId: string | undefined) {
   if (!productId) return undefined;
   return PRODUCT_CATALOG.find((product) => product.id === productId);
 }
-

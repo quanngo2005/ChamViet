@@ -1,20 +1,20 @@
 export const PRODUCT_DETAIL_COPY = {
   included: [
-    { title: '20 mảnh ghép hình', description: 'Các mảnh gỗ cao cấp với các hoa văn truyền thống được khắc chi tiết bằng laser.' },
-    { title: 'Thẻ QR', description: 'Quét thẻ để mở khóa nội dung video hologram' },
-    { title: 'Hộp phản chiếu', description: 'Hộp được thiết kế đặc biệt có thể biến thành đế hiển thị holographic.' },
+    { title: '02 tranh puzzle gỗ 3D', description: 'Sự tích Hồ Gươm và Sự tích Thánh Gióng, sẵn sàng để bé lắp ghép và mở truyện.' },
+    { title: 'Thẻ QR truyện tương tác', description: 'Quét QR để mở video kể chuyện, audio và trải nghiệm hỏi đáp sau câu chuyện.' },
+    { title: 'Hộp phản chiếu Pepper\'s Ghost', description: 'Hộp được thiết kế để đặt điện thoại và tạo hiệu ứng phản chiếu như sân khấu nhỏ.' },
   ],
   story: {
-    heading: 'Truyền Thuyết',
+    heading: 'Hai truyền thuyết trong một box',
     paragraphs: [
-      'Trong thời gian trị vì của vị Vua Hùng thứ 6, ông muốn chọn người thừa kế. \nÔng đã nói với các con rằng ai mang đến món ăn ngon nhất và ý nghĩa nhất sẽ được truyền ngôi. \nTrong khi những người khác tìm kiếm những viên ngọc quý hiếm và thịt lạ, Lang Liêu, hoàng tử thứ 18, đã được một vị thần ghé thăm trong giấc mơ.',
-      'Dưới sự hướng dẫn của linh hồn, ông đã tạo ra hai chiếc bánh: một chiếc bánh vuông tượng trưng cho Trái Đất (Bánh Chưng) và một chiếc bánh tròn tượng trưng cho Trời (Bánh Dầy). Câu đố này thể hiện sự hài hòa của thiên nhiên và lòng hiếu thảo, cốt lõi của ngày Tết Việt Nam.',
+      'Sự tích Hồ Gươm đưa bé đến câu chuyện thanh gươm thần, vua Lê Lợi và biểu tượng hồ Hoàn Kiếm. Đây là chất liệu gần gũi để phụ huynh kể thêm về lòng yêu nước và ký ức văn hóa của Hà Nội.',
+      'Sự tích Thánh Gióng kể về cậu bé làng Gióng vươn mình thành tráng sĩ. Câu chuyện giúp bé cảm nhận tinh thần dũng cảm, bảo vệ quê hương và sức mạnh đoàn kết.',
     ],
   },
   hologram: {
     heading: 'Trải nghiệm phản chiếu hologram',
     description: 'Mang những huyền thoại đến cuộc sống với công nghệ chiếu hình hologram',
-    steps: ['Step 1: Assembly', 'Step 2: Scanning', 'Step 3: Placement', 'Step 4: Immerse'],
+    steps: ['Lắp tranh', 'Quét QR', 'Đặt lên hộp', 'Xem và hỏi đáp'],
   },
   sustainability: {
     heading: 'Giá trị bền vững',
@@ -41,6 +41,6 @@ export const PRODUCT_DETAIL_COPY = {
   notFound: {
     title: 'Không tìm thấy sản phẩm',
     description: 'Sản phẩm này không tồn tại hoặc đã bị thay đổi.',
-    backButton: 'Quay lại danh sách',
+    backButton: 'Quay về trang chủ',
   }
 };

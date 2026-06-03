@@ -1,7 +1,9 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { ContentContainer, PageSection } from '../../common/layout';
-import heroImage from '@assets/hero.png';
+import { ContentContainer } from '../../common/layout/ContentContainer';
+import { PageSection } from '../../common/layout/PageSection';
 import { PRODUCT_DETAIL_COPY } from '../../../data/productDetail';
+import { BookOpen } from 'lucide-react';
+import heroChildAr from '../../../assets/hero-child-ar.png';
 
 export function ProductStorySection() {
   const { story } = PRODUCT_DETAIL_COPY;
@@ -32,9 +34,7 @@ export function ProductStorySection() {
                   color: 'primary.main',
                 }}
               >
-                <svg width="22" height="19.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-                </svg>
+                <BookOpen size={22} />
               </Box>
               <Typography sx={{ fontWeight: 700, color: 'grey.900', fontSize: 30 }}>
                 {story.heading}
@@ -69,13 +69,13 @@ export function ProductStorySection() {
             >
               <Box
                 component="img"
-                src={heroImage}
-                alt={story.heading}
+                src={heroChildAr}
+                alt="Bé trải nghiệm câu chuyện văn hóa qua Chạm Việt"
                 sx={{
                   width: '100%',
                   aspectRatio: '16/9',
-                  objectFit: 'cover',
                   display: 'block',
+                  objectFit: 'cover',
                   borderRadius: '4px',
                 }}
               />

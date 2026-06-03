@@ -1,70 +1,113 @@
-import { Box, Card, Stack } from '@mui/material';
-import heroImage from '@assets/hero.png';
+import { useState } from 'react';
+import { Box, ButtonBase, Card, Stack, Typography } from '@mui/material';
+import heroImage from '../../../assets/hero.png';
+import heroChildAr from '../../../assets/hero-child-ar.png';
+import unboxingFlatlay from '../../../assets/unboxing-flatlay.png';
+import videoThumbnail from '../../../assets/video-thumbnail.png';
 
 export interface ProductGallerySectionProps {
   title: string;
 }
 
+const galleryItems = [
+  { label: 'Box Chạm Việt', image: heroImage },
+  { label: 'Tranh trong hộp', image: unboxingFlatlay },
+  { label: 'Hiệu ứng kể chuyện', image: videoThumbnail },
+  { label: 'Bé tương tác', image: heroChildAr },
+];
+
 export function ProductGallerySection({ title }: ProductGallerySectionProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const active = galleryItems[activeIndex];
+
   return (
     <Stack spacing={2}>
-      {/* Main large image */}
       <Card
         sx={{
           borderRadius: '8px',
-          border: '1px solid rgba(168, 50, 50, 0.05)',
-          boxShadow:
-            '0px 4px 6px -4px rgba(0,0,0,0.10), 0px 10px 15px -3px rgba(0,0,0,0.10)',
+          border: '1px solid rgba(78, 52, 46, 0.10)',
+          boxShadow: '0 24px 60px rgba(78, 52, 46, 0.14)',
           overflow: 'hidden',
+          backgroundColor: '#23100e',
         }}
       >
         <Box
-          component="img"
-          src={heroImage}
-          alt={title}
           sx={{
+            position: 'relative',
             width: '100%',
-            height: { xs: 340, md: 536 },
-            objectFit: 'cover',
-            display: 'block',
+            height: { xs: 360, md: 560 },
+            overflow: 'hidden',
           }}
-        />
+        >
+          <Box
+            component="img"
+            src={active.image}
+            alt={`${title} - ${active.label}`}
+            sx={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              objectFit: 'cover',
+              transition: 'transform 700ms ease',
+              '&:hover': { transform: 'scale(1.035)' },
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              left: 18,
+              right: 18,
+              bottom: 18,
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 2,
+              color: 'white',
+            }}
+          >
+            <Typography sx={{ fontSize: 13, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              {active.label}
+            </Typography>
+            <Typography sx={{ fontSize: 13, fontWeight: 800, opacity: 0.82 }}>
+              {activeIndex + 1}/{galleryItems.length}
+            </Typography>
+          </Box>
+        </Box>
       </Card>
 
-      {/* Thumbnails row — 4 equal columns */}
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 2,
+          gap: 1.5,
         }}
       >
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Box
-            key={index}
+        {galleryItems.map((item, index) => (
+          <ButtonBase
+            key={item.label}
+            onClick={() => setActiveIndex(index)}
+            aria-label={`Xem ảnh ${item.label}`}
             sx={{
-              borderRadius: '4px',
-              border: index === 0 ? '2px solid' : '1px solid',
-              borderColor:
-                index === 0 ? 'primary.main' : 'rgba(168, 50, 50, 0.10)',
+              borderRadius: '8px',
               overflow: 'hidden',
               aspectRatio: '1 / 1',
-              backgroundColor: 'common.white',
-              cursor: 'pointer',
+              border: index === activeIndex ? '2px solid' : '1px solid',
+              borderColor: index === activeIndex ? 'primary.main' : 'rgba(78, 52, 46, 0.12)',
+              display: 'block',
             }}
           >
             <Box
               component="img"
-              src={heroImage}
-              alt={`${title} ${index + 1}`}
+              src={item.image}
+              alt=""
               sx={{
                 width: '100%',
                 height: '100%',
-                objectFit: 'cover',
                 display: 'block',
+                objectFit: 'cover',
+                filter: index === activeIndex ? 'none' : 'saturate(0.75)',
               }}
             />
-          </Box>
+          </ButtonBase>
         ))}
       </Box>
     </Stack>

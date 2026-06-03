@@ -1,20 +1,21 @@
 import { useEffect } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-import { GuestRoute, ProtectedRoute } from "./guards";
-import { ThemeProvider } from "./theme";
+import { GuestRoute } from "./guards/GuestRoute";
+import { ProtectedRoute } from "./guards/ProtectedRoute";
+import { ThemeProvider } from "./theme/theme-provider";
 import LenisProvider, { getLenis } from "./components/common/LenisProvider";
 import MainLayout from "./components/layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import AboutUsPage from "./pages/AboutUsPage";
 import HowToPlayPage from "./pages/HowToPlayPage";
-import ProductListPage from "./pages/ProductListPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import StoryPage from "./pages/StoryPage";
 import ScanPage from "./pages/ScanPage";
+import { HOME_PRODUCT } from "./data/home";
 
 function ScrollToTop() {
   const location = useLocation();
@@ -91,7 +92,7 @@ export default function App() {
           <Route path="about" element={<AboutUsPage />} />
           <Route path="story" element={<StoryPage />} />
           <Route path="how-to-play" element={<HowToPlayPage />} />
-          <Route path="products" element={<ProductListPage />} />
+          <Route path="products" element={<Navigate to={`/products/${HOME_PRODUCT.id}`} replace />} />
           <Route path="products/:productId" element={<ProductDetailPage />} />
           <Route path="scan" element={<ScanPage />} />
           <Route path="story/:storySlug" element={<StoryPage />} />
