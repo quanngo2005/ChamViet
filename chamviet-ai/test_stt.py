@@ -1,9 +1,16 @@
 import sounddevice as sd
 import numpy as np
 import io, wave, time, threading, os
+import sys
+from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
-from services_AIchamviet.services.stt_service import transcribe_audio_file
+
+VOICE_SERVICE_DIR = Path(__file__).resolve().parent / "voice-service"
+if str(VOICE_SERVICE_DIR) not in sys.path:
+    sys.path.insert(0, str(VOICE_SERVICE_DIR))
+
+from services.stt_service import transcribe_audio_file
 
 load_dotenv()
 

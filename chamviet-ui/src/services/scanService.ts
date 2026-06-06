@@ -1,5 +1,6 @@
 import axiosClient from "../api/axiosClient";
 import { resolveLegacyLabelRoute, resolveStoryRoute } from "../data/scanConstants";
+import { resolveStoryRouteFromName } from "../data/storyVideoRegistry";
 import type {
   PredictionData,
   ScanResolution,
@@ -43,7 +44,10 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
 
   const storyPayload = extractStoryMatchData(payload);
   if (storyPayload) {
-    const route = storyPayload.route ?? (storyPayload.storySlug ? resolveStoryRoute(storyPayload.storySlug) : undefined);
+    const route =
+      storyPayload.route
+      ?? (storyPayload.storySlug ? resolveStoryRoute(storyPayload.storySlug) : undefined)
+      ?? resolveStoryRouteFromName(storyPayload.storyTitle);
     if (route) {
       return {
         kind: "story",

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useParams } from "react-router-dom";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -19,6 +19,7 @@ import YouTubeStopOverlayPlayer, {
   type VideoStopConfig,
 } from "../components/video/YouTubeStopOverlayPlayer";
 import mascotHac from "../assets/be-hac.png";
+import { getDefaultStoryVideoEntry, resolveStoryVideoId } from "../data/storyVideoRegistry";
 
 
 const COLORS = {
@@ -60,7 +61,13 @@ const VIDEO_REGISTRY: VideoRegistry = {
   },
 };
 
-function CinemaHero({ onCtaClick }: { onCtaClick?: (videoId: string, config: VideoStopConfig) => void }) {
+function CinemaHero({
+  videoId,
+  onCtaClick,
+}: {
+  videoId: string;
+  onCtaClick?: (videoId: string, config: VideoStopConfig) => void;
+}) {
   const isLandscapePhone = useMediaQuery("(orientation: landscape) and (max-height: 500px)", {
     noSsr: true,
   });
@@ -92,7 +99,7 @@ function CinemaHero({ onCtaClick }: { onCtaClick?: (videoId: string, config: Vid
             }}
           >
             <YouTubeStopOverlayPlayer
-              videoId="Mb0RWyh3sqQ"
+              videoId={videoId}
               registry={VIDEO_REGISTRY}
               colors={COLORS}
               onCtaClick={onCtaClick}
@@ -357,12 +364,17 @@ function ProjectIntro() {
 }
 
 export default function StoryPage() {
+  const { storySlug } = useParams<{ storySlug?: string }>();
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("Sắp ra mắt");
+  const videoId = storySlug
+    ? resolveStoryVideoId(storySlug)
+    : getDefaultStoryVideoEntry().videoId;
 
   return (
     <Box sx={{ backgroundColor: COLORS.bg }}>
       <CinemaHero
+        videoId={videoId}
         onCtaClick={(_videoId, _config) => {
           setToastOpen(true);
         }}

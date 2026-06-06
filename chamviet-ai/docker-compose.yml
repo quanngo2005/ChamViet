@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./services_AIchamviet/.env
+      - ./voice-service/.env
     restart: unless-stopped
 
   vision-service:

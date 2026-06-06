@@ -5,25 +5,20 @@ import { buildApiUrl } from "../utils/apiBase";
 const CORRECT_THRESHOLD = 0.75;
 const UNCLEAR_THRESHOLD = 0.4;
 const DEFAULT_SILENT_RETRY = "Cô chưa nghe rõ, con nói to hơn một chút nhé.";
+const MAX_TTS_CACHE_ITEMS = 48;
+const MAX_RECORDING_GAIN = 2.4;
+const TRIM_THRESHOLD_FLOOR = 0.01;
+const TRIM_PADDING_MS = 140;
+const FADE_MS = 12;
+const AUDIO_WORKLET_NAME = "pcm-capture-processor";
 
 const FILLER_WORDS = new Set([
   "a",
   "ah",
-  "da",
-  "dạ",
   "uh",
   "uhm",
   "um",
   "u",
-  "vang",
-  "vâng",
-  "nhe",
-  "nhé",
-  "oi",
-  "ơi",
-  "co",
-  "cô",
-  "con",
 ]);
 
 export type SessionPhase =
@@ -58,11 +53,14 @@ interface ClassifyResponse {
   intent: string;
 }
 
-async function postJson<T>(url: string, body: Record<string, unknown>): Promise<T> {
+const speechBlobCache = new Map<string, Blob>();
+
+async function postJson<T>(url: string, body: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    signal,
   });
 
   if (!response.ok) {
@@ -73,6 +71,12 @@ async function postJson<T>(url: string, body: Record<string, unknown>): Promise<
 }
 
 async function fetchSpeechBlob(backendUrl: string, text: string): Promise<Blob | null> {
+  const cacheKey = `${backendUrl}::${text.trim()}`;
+  const cached = speechBlobCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const response = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/speak"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -86,6 +90,14 @@ async function fetchSpeechBlob(backendUrl: string, text: string): Promise<Blob |
   const blob = await response.blob();
   if (blob.size === 0) {
     return null;
+  }
+
+  speechBlobCache.set(cacheKey, blob);
+  if (speechBlobCache.size > MAX_TTS_CACHE_ITEMS) {
+    const oldestKey = speechBlobCache.keys().next().value;
+    if (oldestKey) {
+      speechBlobCache.delete(oldestKey);
+    }
   }
 
   return blob;
@@ -182,7 +194,97 @@ function writeString(view: DataView, offset: number, value: string) {
   }
 }
 
+function preprocessRecordedSamples(samples: Float32Array, sampleRate: number): Float32Array {
+  if (samples.length === 0) {
+    return samples;
+  }
+
+  const centered = new Float32Array(samples.length);
+  let sum = 0;
+  for (let index = 0; index < samples.length; index += 1) {
+    sum += samples[index];
+  }
+
+  const mean = sum / samples.length;
+  let peak = 0;
+  for (let index = 0; index < samples.length; index += 1) {
+    const value = samples[index] - mean;
+    centered[index] = value;
+    const magnitude = Math.abs(value);
+    if (magnitude > peak) {
+      peak = magnitude;
+    }
+  }
+
+  if (peak === 0) {
+    return centered;
+  }
+
+  const threshold = Math.max(TRIM_THRESHOLD_FLOOR, peak * 0.08);
+  let start = 0;
+  while (start < centered.length && Math.abs(centered[start]) < threshold) {
+    start += 1;
+  }
+
+  let end = centered.length - 1;
+  while (end > start && Math.abs(centered[end]) < threshold) {
+    end -= 1;
+  }
+
+  const padding = Math.floor((sampleRate * TRIM_PADDING_MS) / 1000);
+  const trimmedStart = Math.max(0, start - padding);
+  const trimmedEnd = Math.min(centered.length, end + padding + 1);
+  const trimmed = centered.slice(trimmedStart, trimmedEnd);
+
+  let trimmedPeak = 0;
+  for (let index = 0; index < trimmed.length; index += 1) {
+    const magnitude = Math.abs(trimmed[index]);
+    if (magnitude > trimmedPeak) {
+      trimmedPeak = magnitude;
+    }
+  }
+
+  if (trimmedPeak === 0) {
+    return trimmed;
+  }
+
+  const gain = Math.min(MAX_RECORDING_GAIN, 0.88 / trimmedPeak);
+  const normalized = new Float32Array(trimmed.length);
+  for (let index = 0; index < trimmed.length; index += 1) {
+    normalized[index] = Math.max(-1, Math.min(1, trimmed[index] * gain));
+  }
+
+  const fadeSamples = Math.min(
+    Math.floor((sampleRate * FADE_MS) / 1000),
+    Math.floor(normalized.length / 2),
+  );
+  if (fadeSamples === 0 || normalized.length < 2 * fadeSamples) {
+    return normalized;
+  }
+  for (let index = 0; index < fadeSamples; index += 1) {
+    const fadeIn = index / Math.max(fadeSamples, 1);
+    const fadeOut = (fadeSamples - index) / Math.max(fadeSamples, 1);
+    normalized[index] *= fadeIn;
+    normalized[normalized.length - 1 - index] *= fadeOut;
+  }
+
+  return normalized;
+}
+
 function normalizeText(value: string): string {
+  const tokens = value
+    .toLocaleLowerCase("vi-VN")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (tokens.length === 1 && FILLER_WORDS.has(tokens[0])) {
+    return "";
+  }
+
   return value
     .toLocaleLowerCase("vi-VN")
     .normalize("NFD")
@@ -194,6 +296,43 @@ function normalizeText(value: string): string {
     .filter((token) => !FILLER_WORDS.has(token))
     .join(" ")
     .trim();
+}
+
+async function createPcmCaptureNode(
+  audioContext: AudioContext,
+  onChunk: (chunk: Float32Array) => void,
+): Promise<AudioWorkletNode> {
+  const workletSource = `
+    class PcmCaptureProcessor extends AudioWorkletProcessor {
+      process(inputs) {
+        const input = inputs[0];
+        const channel = input && input[0];
+        if (channel && channel.length) {
+          this.port.postMessage(channel.slice(0));
+        }
+        return true;
+      }
+    }
+
+    registerProcessor("${AUDIO_WORKLET_NAME}", PcmCaptureProcessor);
+  `;
+
+  const blobUrl = URL.createObjectURL(new Blob([workletSource], { type: "text/javascript" }));
+  try {
+    await audioContext.audioWorklet.addModule(blobUrl);
+  } finally {
+    URL.revokeObjectURL(blobUrl);
+  }
+
+  const node = new AudioWorkletNode(audioContext, AUDIO_WORKLET_NAME, {
+    numberOfInputs: 1,
+    numberOfOutputs: 1,
+    outputChannelCount: [1],
+  });
+  node.port.onmessage = (event: MessageEvent<Float32Array>) => {
+    onChunk(new Float32Array(event.data));
+  };
+  return node;
 }
 
 function scoreAnswer(userText: string, answer: string): number {
@@ -329,11 +468,55 @@ export function useVoiceAI({
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const silenceGainRef = useRef<GainNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pcmChunksRef = useRef<Float32Array[]>([]);
   const prewarmedStoryKeyRef = useRef<string | null>(null);
+  const currentQuestionIndexRef = useRef(0);
+  const scoreRef = useRef(0);
+  const sessionPhaseRef = useRef<SessionPhase>("idle");
+  const processAbortRef = useRef<AbortController | null>(null);
   const configRef = useRef(storyConfig);
   configRef.current = storyConfig;
+
+  useEffect(() => {
+    currentQuestionIndexRef.current = currentQuestionIndex;
+  }, [currentQuestionIndex]);
+
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
+
+  useEffect(() => {
+    sessionPhaseRef.current = sessionPhase;
+  }, [sessionPhase]);
+
+  const cleanupAudioResources = useCallback(() => {
+    processorRef.current?.disconnect();
+    processorRef.current = null;
+    workletNodeRef.current?.disconnect();
+    workletNodeRef.current = null;
+    silenceGainRef.current?.disconnect();
+    silenceGainRef.current = null;
+    sourceRef.current?.disconnect();
+    sourceRef.current = null;
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    const audioContext = audioCtxRef.current;
+    audioCtxRef.current = null;
+    if (audioContext) {
+      void audioContext.close();
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      processAbortRef.current?.abort();
+      cleanupAudioResources();
+    };
+  }, [cleanupAudioResources]);
 
   useEffect(() => {
     if (!storyConfig) {
@@ -397,6 +580,7 @@ export function useVoiceAI({
       }
 
       setCurrentQuestionIndex(questionIndex);
+      currentQuestionIndexRef.current = questionIndex;
       setSessionPhase("asking");
       const questionText = buildQuestionText(qa.question, questionIndex, config.qaList.length);
       onQuestionRead?.(questionText);
@@ -441,14 +625,17 @@ export function useVoiceAI({
 
   const initSession = useCallback(async () => {
     const config = configRef.current;
-    if (!config) {
+    if (!config || (sessionPhaseRef.current !== "idle" && sessionPhaseRef.current !== "done")) {
       return;
     }
 
     try {
       setSessionPhase("loading");
+      sessionPhaseRef.current = "loading";
       setCurrentQuestionIndex(0);
+      currentQuestionIndexRef.current = 0;
       setScore(0);
+      scoreRef.current = 0;
       setIsAwaitingUserText(false);
       setUserText("");
       setAiText("");
@@ -459,17 +646,19 @@ export function useVoiceAI({
       );
 
       setSessionPhase("greeting");
+      sessionPhaseRef.current = "greeting";
       await speakAndNotify(buildGreetingText(config));
       await askQuestion(0);
     } catch (error) {
       setIsAwaitingUserText(false);
       onError?.(error);
       setSessionPhase("idle");
+      sessionPhaseRef.current = "idle";
     }
   }, [askQuestion, backendUrl, onError, speakAndNotify]);
 
   const handleQuestionBranch = useCallback(
-    async (transcribed: string, question: string) => {
+    async (transcribed: string, question: string, signal?: AbortSignal) => {
       const config = configRef.current;
       if (!config) {
         return;
@@ -478,6 +667,7 @@ export function useVoiceAI({
       const { reply } = await postJson<ChatResponse>(
         buildApiUrl(backendUrl, "/api/v1/voice/chat"),
         { message: buildQuestionPrompt(config, question, transcribed) },
+        signal,
       );
 
       await speakAndNotify(reply);
@@ -487,7 +677,7 @@ export function useVoiceAI({
   );
 
   const handleConfusedBranch = useCallback(
-    async (question: string, answer: string) => {
+    async (question: string, answer: string, signal?: AbortSignal) => {
       const config = configRef.current;
       if (!config) {
         return;
@@ -496,6 +686,7 @@ export function useVoiceAI({
       const { reply } = await postJson<ChatResponse>(
         buildApiUrl(backendUrl, "/api/v1/voice/chat"),
         { message: buildConfusedPrompt(config, question, answer) },
+        signal,
       );
 
       await speakAndNotify(reply);
@@ -512,11 +703,18 @@ export function useVoiceAI({
         return;
       }
 
+      processAbortRef.current?.abort();
+      const controller = new AbortController();
+      processAbortRef.current = controller;
+
       try {
         setIsProcessing(true);
         setSessionPhase("evaluating");
+        sessionPhaseRef.current = "evaluating";
 
-        const qa = config.qaList[currentQuestionIndex];
+        const questionIndex = currentQuestionIndexRef.current;
+        const currentScore = scoreRef.current;
+        const qa = config.qaList[questionIndex];
         if (!qa) {
           return;
         }
@@ -527,6 +725,7 @@ export function useVoiceAI({
         const sttResponse = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/transcribe"), {
           method: "POST",
           body: formData,
+          signal: controller.signal,
         });
         if (!sttResponse.ok) {
           throw new Error(`Transcribe failed -> ${sttResponse.status}`);
@@ -536,8 +735,10 @@ export function useVoiceAI({
         if (!transcribed || transcribed.trim().length === 0) {
           setIsAwaitingUserText(false);
           setSessionPhase("responding");
+          sessionPhaseRef.current = "responding";
           await speakAndNotify(DEFAULT_SILENT_RETRY);
           setSessionPhase("listening");
+          sessionPhaseRef.current = "listening";
           return;
         }
 
@@ -548,28 +749,31 @@ export function useVoiceAI({
         const { intent } = await postJson<ClassifyResponse>(
           buildApiUrl(backendUrl, "/api/v1/voice/classify"),
           { current_question: qa.question, user_text: transcribed },
+          controller.signal,
         );
         const normalizedIntent = (intent || "").trim().toUpperCase();
 
         setSessionPhase("responding");
+        sessionPhaseRef.current = "responding";
 
         if (normalizedIntent.includes("QUESTION")) {
-          await handleQuestionBranch(transcribed, qa.question);
+          await handleQuestionBranch(transcribed, qa.question, controller.signal);
           return;
         }
 
         if (normalizedIntent.includes("CONFUSED")) {
-          await handleConfusedBranch(qa.question, qa.answer);
+          await handleConfusedBranch(qa.question, qa.answer, controller.signal);
           return;
         }
 
         const normalizedAnswer = normalizeText(transcribed);
         const answerScore = scoreAnswer(transcribed, qa.answer);
         if (answerScore >= CORRECT_THRESHOLD) {
-          const nextScore = score + 1;
+          const nextScore = currentScore + 1;
           setScore(nextScore);
+          scoreRef.current = nextScore;
           await speakAndNotify(buildCorrectText());
-          await advanceToNext(currentQuestionIndex + 1, nextScore);
+          await advanceToNext(questionIndex + 1, nextScore);
           return;
         }
 
@@ -580,28 +784,34 @@ export function useVoiceAI({
         ) {
           await speakAndNotify(buildUnclearText());
           setSessionPhase("listening");
+          sessionPhaseRef.current = "listening";
           return;
         }
 
         await speakAndNotify(buildWrongText(qa.answer));
-        await advanceToNext(currentQuestionIndex + 1, score);
+        await advanceToNext(questionIndex + 1, currentScore);
       } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
         setIsAwaitingUserText(false);
         onError?.(error);
         setSessionPhase("listening");
+        sessionPhaseRef.current = "listening";
       } finally {
         setIsProcessing(false);
+        if (processAbortRef.current === controller) {
+          processAbortRef.current = null;
+        }
       }
     },
     [
       advanceToNext,
       backendUrl,
-      currentQuestionIndex,
       handleConfusedBranch,
       handleQuestionBranch,
       onError,
       onUserText,
-      score,
       speakAndNotify,
     ],
   );
@@ -610,30 +820,53 @@ export function useVoiceAI({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          sampleRate: 16000,
-          channelCount: 1,
+          channelCount: { ideal: 1 },
+          sampleRate: { ideal: 48000 },
+          sampleSize: { ideal: 16 },
           echoCancellation: true,
           noiseSuppression: true,
+          autoGainControl: true,
         },
       });
 
       streamRef.current = stream;
-      const audioContext = new AudioContext({ sampleRate: 16000 });
+      const audioContext = new AudioContext();
       audioCtxRef.current = audioContext;
 
       const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-
-      processorRef.current = processor;
+      sourceRef.current = source;
+      const silenceGain = audioContext.createGain();
+      silenceGain.gain.value = 0;
+      silenceGainRef.current = silenceGain;
       pcmChunksRef.current = [];
+      let captureNodeConnected = false;
 
-      processor.onaudioprocess = (event) => {
-        const channelData = event.inputBuffer.getChannelData(0);
-        pcmChunksRef.current.push(new Float32Array(channelData));
-      };
+      if ("audioWorklet" in audioContext) {
+        try {
+          const workletNode = await createPcmCaptureNode(audioContext, (chunk) => {
+            pcmChunksRef.current.push(chunk);
+          });
+          workletNodeRef.current = workletNode;
+          source.connect(workletNode);
+          workletNode.connect(silenceGain);
+          captureNodeConnected = true;
+        } catch {
+          workletNodeRef.current = null;
+        }
+      }
 
-      source.connect(processor);
-      processor.connect(audioContext.destination);
+      if (!captureNodeConnected) {
+        const processor = audioContext.createScriptProcessor(4096, 1, 1);
+        processorRef.current = processor;
+        processor.onaudioprocess = (event) => {
+          const channelData = event.inputBuffer.getChannelData(0);
+          pcmChunksRef.current.push(new Float32Array(channelData));
+        };
+        source.connect(processor);
+        processor.connect(silenceGain);
+      }
+
+      silenceGain.connect(audioContext.destination);
       setIsRecording(true);
     } catch (error) {
       setIsAwaitingUserText(false);
@@ -647,9 +880,8 @@ export function useVoiceAI({
     }
 
     setIsRecording(false);
-    processorRef.current?.disconnect();
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    void audioCtxRef.current?.close();
+    const sampleRate = audioCtxRef.current?.sampleRate ?? 16000;
+    cleanupAudioResources();
 
     const chunks = pcmChunksRef.current;
     const totalLength = chunks.reduce((length, chunk) => length + chunk.length, 0);
@@ -661,8 +893,8 @@ export function useVoiceAI({
       offset += chunk.length;
     }
 
-    const sampleRate = audioCtxRef.current?.sampleRate ?? 16000;
-    const wavBlob = encodeWav(merged, sampleRate);
+    const processed = preprocessRecordedSamples(merged, sampleRate);
+    const wavBlob = encodeWav(processed, sampleRate);
     setIsAwaitingUserText(true);
     void processVoiceFlow(wavBlob);
   }, [isRecording, processVoiceFlow]);
