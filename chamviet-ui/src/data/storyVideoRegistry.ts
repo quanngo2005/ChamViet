@@ -6,14 +6,20 @@ export interface StoryVideoEntry {
 }
 
 const DEFAULT_VIDEO_ID = "Mb0RWyh3sqQ";
-const DEFAULT_STORY_SLUG = "sample";
+const DEFAULT_STORY_SLUG = "con-rong-chau-tien";
 
 const STORY_VIDEO_ENTRIES: StoryVideoEntry[] = [
   {
     slug: DEFAULT_STORY_SLUG,
-    title: "Sample Story",
+    title: "Con Rồng Cháu Tiên",
     videoId: DEFAULT_VIDEO_ID,
-    aliases: ["sample", "default", "demo"],
+    aliases: [
+      "con rong chau tien",
+      "con-rong-chau-tien",
+      "sample",
+      "default",
+      "demo",
+    ],
   },
   {
     slug: "su-tich-ho-guom",

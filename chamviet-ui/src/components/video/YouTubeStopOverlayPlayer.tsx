@@ -81,6 +81,7 @@ interface YouTubeStopOverlayPlayerProps {
   videoId: string;
   autoplay?: boolean;
   registry?: VideoRegistry;
+  storyConfig?: StoryConfig;
   onCtaClick?: (videoId: string, config: VideoStopConfig) => void;
   colors?: any;
 }
@@ -172,6 +173,7 @@ export default function YouTubeStopOverlayPlayer({
   videoId,
   autoplay: _autoplay = false,
   registry,
+  storyConfig: storyConfigOverride,
   onCtaClick: _onCtaClick,
 }: YouTubeStopOverlayPlayerProps) {
   // ── State ───────────────────────────────────────────────────────────────
@@ -187,7 +189,7 @@ export default function YouTubeStopOverlayPlayer({
 
   const activeRegistry = registry || DEFAULT_VIDEO_REGISTRY;
   const config = activeRegistry[videoId];
-  const storyConfig = config?.storyConfig ?? resolvedStoryConfig ?? undefined;
+  const storyConfig = storyConfigOverride ?? config?.storyConfig ?? resolvedStoryConfig ?? undefined;
 
   // ── Message helpers ─────────────────────────────────────────────────────
   const addMessage = useCallback((role: "user" | "ai", content: string) => {
@@ -236,6 +238,13 @@ export default function YouTubeStopOverlayPlayer({
   useEffect(() => {
     let cancelled = false;
 
+    if (storyConfigOverride) {
+      setResolvedStoryConfig(storyConfigOverride);
+      return () => {
+        cancelled = true;
+      };
+    }
+
     if (config?.storyConfig) {
       setResolvedStoryConfig(config.storyConfig);
       return () => {
@@ -258,7 +267,7 @@ export default function YouTubeStopOverlayPlayer({
     return () => {
       cancelled = true;
     };
-  }, [config?.storyConfig, videoId]);
+  }, [config?.storyConfig, storyConfigOverride, videoId]);
 
   // ── Auto-scroll chat to bottom ──────────────────────────────────────────
   useEffect(() => {

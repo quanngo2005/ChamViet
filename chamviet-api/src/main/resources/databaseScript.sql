@@ -119,6 +119,7 @@ CREATE TABLE product_variant_component (
     component_item_id BIGINT NOT NULL,
     quantity INT NOT NULL CHECK (quantity > 0),
     sort_order INT NOT NULL DEFAULT 0 CHECK (sort_order >= 0),
+    CONSTRAINT uq_product_variant_component UNIQUE (product_variant_id, component_item_id),
     FOREIGN KEY (product_variant_id) REFERENCES product_variant(id) ON DELETE CASCADE,
     FOREIGN KEY (component_item_id) REFERENCES component_item(id)
 );
@@ -229,7 +230,7 @@ CREATE TABLE order_log (
 -- ========================
 CREATE TABLE delivery (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    order_id BIGINT NOT NULL,
+    order_id BIGINT NOT NULL UNIQUE,
     provider VARCHAR(100),
     tracking_code VARCHAR(100),
     shipping_fee DECIMAL(15,2),
@@ -246,7 +247,7 @@ CREATE TABLE payment (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     order_id BIGINT,
     method ENUM('COD','BANK_TRANSFER','MOMO'),
-    amount INT,
+    amount DECIMAL(10,2) NOT NULL,
     status ENUM('PENDING','SUCCESS','FAILED'),
     transaction_ref VARCHAR(255),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

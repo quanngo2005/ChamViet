@@ -11,6 +11,11 @@ import java.util.List;
 public class AiResponseDTO {
     private String status;
     private List<PredictionData> data;
+    private Long productId;
+    private Long variantId;
+    private Long componentId;
+    private String componentSku;
+    private String route;
 
     @Data
     @NoArgsConstructor

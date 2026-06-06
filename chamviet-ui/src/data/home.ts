@@ -15,10 +15,10 @@ export const HOME_IMAGES = {
 };
 
 export const HOME_PRODUCT = {
-  id: 'cham-viet-box-2-tranh',
-  price: '219.000đ',
-  ctaLabel: 'Mua ngay - 219.000đ',
-  boxLabel: '1 box - 2 tranh văn hóa Việt',
+  id: 'box-tuong-tac-ke-chuyen',
+  price: '229.000đ',
+  ctaLabel: 'Mua ngay - 229.000đ',
+  boxLabel: 'Box tương tác kể chuyện',
   paintings: [
     {
       id: 'ho-guom',

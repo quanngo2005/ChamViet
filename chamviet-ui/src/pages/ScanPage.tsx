@@ -162,6 +162,11 @@ export default function ScanPage() {
     try {
       const resolution = await scanImage(selectedFile, controller.signal);
 
+      if (resolution.kind === "product") {
+        navigate(resolution.route);
+        return;
+      }
+
       if (resolution.kind === "story") {
         navigate(resolution.route);
         return;

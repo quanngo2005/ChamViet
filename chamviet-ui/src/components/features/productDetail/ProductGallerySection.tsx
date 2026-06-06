@@ -7,6 +7,7 @@ import videoThumbnail from '../../../assets/video-thumbnail.png';
 
 export interface ProductGallerySectionProps {
   title: string;
+  imageUrls?: string[];
 }
 
 const galleryItems = [
@@ -16,9 +17,16 @@ const galleryItems = [
   { label: 'Bé tương tác', image: heroChildAr },
 ];
 
-export function ProductGallerySection({ title }: ProductGallerySectionProps) {
+export function ProductGallerySection({ title, imageUrls }: ProductGallerySectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const active = galleryItems[activeIndex];
+  const resolvedGalleryItems = imageUrls && imageUrls.length > 0
+    ? imageUrls.map((image, index) => ({
+      label: index === 0 ? title : `Hình ảnh ${index + 1}`,
+      image,
+    }))
+    : galleryItems;
+  const safeActiveIndex = Math.min(activeIndex, Math.max(resolvedGalleryItems.length - 1, 0));
+  const active = resolvedGalleryItems[safeActiveIndex];
 
   return (
     <Stack spacing={2}>
@@ -68,7 +76,7 @@ export function ProductGallerySection({ title }: ProductGallerySectionProps) {
               {active.label}
             </Typography>
             <Typography sx={{ fontSize: 13, fontWeight: 800, opacity: 0.82 }}>
-              {activeIndex + 1}/{galleryItems.length}
+              {safeActiveIndex + 1}/{resolvedGalleryItems.length}
             </Typography>
           </Box>
         </Box>
@@ -81,7 +89,7 @@ export function ProductGallerySection({ title }: ProductGallerySectionProps) {
           gap: 1.5,
         }}
       >
-        {galleryItems.map((item, index) => (
+        {resolvedGalleryItems.map((item, index) => (
           <ButtonBase
             key={item.label}
             onClick={() => setActiveIndex(index)}
@@ -90,8 +98,8 @@ export function ProductGallerySection({ title }: ProductGallerySectionProps) {
               borderRadius: '8px',
               overflow: 'hidden',
               aspectRatio: '1 / 1',
-              border: index === activeIndex ? '2px solid' : '1px solid',
-              borderColor: index === activeIndex ? 'primary.main' : 'rgba(78, 52, 46, 0.12)',
+              border: index === safeActiveIndex ? '2px solid' : '1px solid',
+              borderColor: index === safeActiveIndex ? 'primary.main' : 'rgba(78, 52, 46, 0.12)',
               display: 'block',
             }}
           >
@@ -104,7 +112,7 @@ export function ProductGallerySection({ title }: ProductGallerySectionProps) {
                 height: '100%',
                 display: 'block',
                 objectFit: 'cover',
-                filter: index === activeIndex ? 'none' : 'saturate(0.75)',
+                filter: index === safeActiveIndex ? 'none' : 'saturate(0.75)',
               }}
             />
           </ButtonBase>

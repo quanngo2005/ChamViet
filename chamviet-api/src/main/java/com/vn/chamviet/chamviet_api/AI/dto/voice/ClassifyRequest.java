@@ -14,4 +14,7 @@ public class ClassifyRequest {
 
     @JsonProperty("user_text")
     private String userText;
+
+    @JsonProperty("session_id")
+    private String sessionId;
 }

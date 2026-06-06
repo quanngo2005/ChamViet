@@ -11,4 +11,7 @@ import lombok.NoArgsConstructor;
 public class ChatRequest {
     @JsonProperty("message")
     private String message;
+
+    @JsonProperty("session_id")
+    private String sessionId;
 }

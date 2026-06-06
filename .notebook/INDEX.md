@@ -17,3 +17,4 @@
 
 - [Scanner product to AI QA flow](scanner-product-to-ai-qa-flow.md): end-to-end runtime path from `/scan` through vision recognition, story routing, story-config loading, and voice Q&A.
 - [Product domain logic and concepts](product-domain-logic-and-concepts.md): entity relations, business meaning, variant/component composition, inventory flow, and story/AI linkage.
+- [Product scan to QA implementation report](product-scan-to-qa-implementation-report.md): implemented backend/frontend/session changes that move scan routing onto the real product domain.

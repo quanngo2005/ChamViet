@@ -5,8 +5,15 @@ import { PRODUCT_DETAIL_COPY } from '../../../data/productDetail';
 import { BookOpen } from 'lucide-react';
 import heroChildAr from '../../../assets/hero-child-ar.png';
 
-export function ProductStorySection() {
+export interface ProductStorySectionProps {
+  heading?: string;
+  paragraphs?: string[];
+}
+
+export function ProductStorySection({ heading, paragraphs }: ProductStorySectionProps) {
   const { story } = PRODUCT_DETAIL_COPY;
+  const storyHeading = heading?.trim() || story.heading;
+  const storyParagraphs = paragraphs && paragraphs.length > 0 ? paragraphs : story.paragraphs;
 
   return (
     <PageSection sx={{ py: { xs: 8, md: 10 } }}>
@@ -37,12 +44,12 @@ export function ProductStorySection() {
                 <BookOpen size={22} />
               </Box>
               <Typography sx={{ fontWeight: 700, color: 'grey.900', fontSize: 30 }}>
-                {story.heading}
+                {storyHeading}
               </Typography>
             </Stack>
 
             <Stack spacing={4}>
-              {story.paragraphs.map((p) => (
+              {storyParagraphs.map((p) => (
                 <Typography
                   key={p}
                   sx={{ color: '#475569', fontSize: 16, lineHeight: 2, whiteSpace: 'pre-line' }}

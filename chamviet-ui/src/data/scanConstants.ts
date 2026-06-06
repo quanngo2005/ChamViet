@@ -1,13 +1,18 @@
 /**
- * Maps AI labels to application routes.
- * Keys must match labels produced by the YOLO model.
+ * Fallback maps for legacy development flows.
+ * Production scan routing should prefer backend-enriched `productId` values.
  */
-export const ROUTE_MAP: Record<string, string> = {
-  auco_laclongquan: "/story/auco-laclongquan",
+export const PRODUCT_ID_MAP: Record<string, string> = {
+  auco_laclongquan: "1",
 };
 
+export function resolveLegacyLabelProductId(label: string): string | undefined {
+  return PRODUCT_ID_MAP[label];
+}
+
 export function resolveLegacyLabelRoute(label: string): string | undefined {
-  return ROUTE_MAP[label];
+  const productId = resolveLegacyLabelProductId(label);
+  return productId ? `/products/${productId}` : undefined;
 }
 
 export function resolveStoryRoute(storySlug: string): string {

@@ -16,8 +16,33 @@ import { useParams } from 'react-router-dom';
 export default function ProductDetailPage() {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
-  const { product, quantity, setQuantity } = useProductDetailData(productId);
+  const {
+    product,
+    quantity,
+    setQuantity,
+    includedItems,
+    storySection,
+    isLoading,
+    errorMessage,
+  } = useProductDetailData(productId);
   const [purchaseMessage, setPurchaseMessage] = useState('');
+
+  if (isLoading) {
+    return (
+      <Box sx={{ backgroundColor: 'background.default', py: { xs: 6, md: 8 } }}>
+        <ContentContainer>
+          <Stack spacing={2}>
+            <Typography variant="h4" sx={{ fontWeight: 900, color: 'grey.900' }}>
+              Đang tải sản phẩm
+            </Typography>
+            <Typography sx={{ color: 'grey.600' }}>
+              Chúng tôi đang lấy dữ liệu thật từ hệ thống sản phẩm.
+            </Typography>
+          </Stack>
+        </ContentContainer>
+      </Box>
+    );
+  }
 
   if (!product) {
     const { notFound } = PRODUCT_DETAIL_COPY;
@@ -29,7 +54,9 @@ export default function ProductDetailPage() {
             <Typography variant="h4" sx={{ fontWeight: 900, color: 'grey.900' }}>
               {notFound.title}
             </Typography>
-            <Typography sx={{ color: 'grey.600' }}>{notFound.description}</Typography>
+            <Typography sx={{ color: 'grey.600' }}>
+              {errorMessage || notFound.description}
+            </Typography>
             <Box>
               <Button
                 variant="contained"
@@ -82,7 +109,7 @@ export default function ProductDetailPage() {
                 alignItems: 'start',
               }}
             >
-              <ProductGallerySection title={product.title} />
+              <ProductGallerySection title={product.title} imageUrls={product.imageUrls} />
               <ProductInfoSection
                 product={product}
                 quantity={quantity}
@@ -97,8 +124,11 @@ export default function ProductDetailPage() {
         </ContentContainer>
       </PageSection>
 
-      <ProductStorySection />
-      <ProductIncludedSection />
+      <ProductStorySection
+        heading={storySection.heading}
+        paragraphs={storySection.paragraphs}
+      />
+      <ProductIncludedSection items={includedItems} />
       <ProductHologramSection />
       <ProductEducationSection />
 

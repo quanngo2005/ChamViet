@@ -24,6 +24,18 @@ export interface NormalizedPredictionResult {
   raw: PredictionData;
 }
 
+export interface NormalizedProductResult {
+  kind: "product";
+  status: string;
+  productId: string;
+  route: string;
+  variantId?: string;
+  componentId?: string;
+  componentSku?: string;
+  confidence?: number;
+  raw: unknown;
+}
+
 export interface NormalizedStoryResult {
   kind: "story";
   status: string;
@@ -42,4 +54,8 @@ export interface NormalizedErrorResult {
   raw: unknown;
 }
 
-export type ScanResolution = NormalizedPredictionResult | NormalizedStoryResult | NormalizedErrorResult;
+export type ScanResolution =
+  | NormalizedPredictionResult
+  | NormalizedProductResult
+  | NormalizedStoryResult
+  | NormalizedErrorResult;

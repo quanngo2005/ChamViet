@@ -1,5 +1,9 @@
 import axiosClient from "../api/axiosClient";
-import { resolveLegacyLabelRoute, resolveStoryRoute } from "../data/scanConstants";
+import {
+  resolveLegacyLabelProductId,
+  resolveLegacyLabelRoute,
+  resolveStoryRoute,
+} from "../data/scanConstants";
 import { resolveStoryRouteFromName } from "../data/storyVideoRegistry";
 import type {
   PredictionData,
@@ -42,6 +46,21 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
   const payload = raw as Record<string, unknown>;
   const status = typeof payload.status === "string" ? payload.status : "unknown";
 
+  const productPayload = extractProductMatchData(payload);
+  if (productPayload?.productId) {
+    return {
+      kind: "product",
+      status,
+      productId: productPayload.productId,
+      route: productPayload.route ?? `/products/${productPayload.productId}`,
+      variantId: productPayload.variantId,
+      componentId: productPayload.componentId,
+      componentSku: productPayload.componentSku,
+      confidence: productPayload.confidence,
+      raw,
+    };
+  }
+
   const storyPayload = extractStoryMatchData(payload);
   if (storyPayload) {
     const route =
@@ -65,7 +84,19 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
   const predictions = extractPredictions(payload.data);
   if (predictions.length > 0) {
     const best = [...predictions].sort((a, b) => b.confidence - a.confidence)[0];
+    const productId = resolveLegacyLabelProductId(best.label);
     const route = resolveLegacyLabelRoute(best.label);
+
+    if (productId && route) {
+      return {
+        kind: "product",
+        status,
+        productId,
+        route,
+        confidence: best.confidence,
+        raw,
+      };
+    }
 
     return {
       kind: "prediction",
@@ -137,9 +168,51 @@ function extractStoryMatchData(payload: Record<string, unknown>): StoryMatchData
   return null;
 }
 
+function extractProductMatchData(payload: Record<string, unknown>) {
+  const candidates = [payload, payload.data, payload.result, payload.story, payload.payload];
+
+  for (const candidate of candidates) {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+
+    const record = candidate as Record<string, unknown>;
+    const productId = readIdentifier(record, "productId", "product_id");
+    const variantId = readIdentifier(record, "variantId", "variant_id");
+    const componentId = readIdentifier(record, "componentId", "component_id");
+    const componentSku = readString(record, "componentSku", "component_sku");
+    const route = readString(record, "route", "redirectTo", "redirect_to");
+    const confidence = readNumber(record, "confidence", "score");
+
+    if (productId) {
+      return {
+        productId,
+        variantId,
+        componentId,
+        componentSku,
+        route,
+        confidence,
+      };
+    }
+  }
+
+  return null;
+}
+
 function readString(record: Record<string, unknown>, ...keys: string[]): string | undefined {
   for (const key of keys) {
     const value = record[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+  return undefined;
+}
+
+function readIdentifier(record: Record<string, unknown>, ...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return String(value);
+    }
     if (typeof value === "string" && value.trim().length > 0) {
       return value.trim();
     }

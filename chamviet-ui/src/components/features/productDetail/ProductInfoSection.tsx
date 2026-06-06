@@ -1,7 +1,7 @@
 import { Box, Button, Divider, Stack, Typography } from '@mui/material';
 import { CheckCircle2, FileText, ShoppingBag, Star, Truck } from 'lucide-react';
 import { QuantitySelector } from './QuantitySelector';
-import type { Product } from '../../../pages/products/catalog';
+import type { Product } from '../../../types/product';
 
 export interface ProductInfoSectionProps {
   product: Product;

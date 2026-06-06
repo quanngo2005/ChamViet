@@ -15,14 +15,14 @@ export type Product = {
 
 export const PRODUCT_CATALOG: Product[] = [
   {
-    id: 'cham-viet-box-2-tranh',
+    id: 'box-tuong-tac-ke-chuyen',
     collectionLabel: 'Chạm Việt Box',
-    title: 'Chạm Việt Box 2 Tranh',
+    title: 'Box tương tác kể chuyện',
     shortDescription:
       'Một box kể chuyện văn hóa Việt gồm 2 tranh lắp ghép: Sự tích Hồ Gươm và Sự tích Thánh Gióng. Bé lắp tranh, quét QR, xem hiệu ứng Pepper\'s Ghost và tiếp tục hỏi đáp sau câu chuyện.',
     badgeLabel: 'Có sẵn 2 tranh',
     reviewsLabel: 'Sẵn sàng mở bán',
-    priceLabel: '219.000đ',
+    priceLabel: '229.000đ',
     compareAtPriceLabel: '',
     discountLabel: '',
     listAgeLabel: '4-8 tuổi',

@@ -1,5 +1,6 @@
 package com.vn.chamviet.chamviet_api.AI.dto.voice;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,4 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TextRequest {
     private String text;
+
+    @JsonProperty("session_id")
+    private String sessionId;
 }

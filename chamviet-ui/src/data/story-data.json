@@ -6,34 +6,34 @@
   },
   "story": {
     "category": "Truyền thuyết",
-    "title": "Sự Tích Thánh Gióng",
-    "meta": ["12 Phút", "Có trong hộp", "Sóc Sơn, Việt Nam"],
+    "title": "Con Rồng Cháu Tiên",
+    "meta": ["10 Phút", "Bản demo /story", "Nguồn cội người Việt"],
     "paragraphs": [
-      "Câu chuyện bắt đầu ở làng Gióng, khi đất nước đứng trước hiểm nguy. Một cậu bé tưởng như lặng im bỗng cất tiếng nói đầu tiên để xin áo giáp sắt, roi sắt và ngựa sắt ra trận.",
-      "Từ tình yêu quê hương và sức mạnh của cả cộng đồng, Gióng vươn mình thành tráng sĩ, đánh tan giặc ngoại xâm rồi bay về trời. Truyền thuyết nhắc bé về lòng dũng cảm và tinh thần bảo vệ xứ sở."
+      "Con Rồng Cháu Tiên kể về Lạc Long Quân và Âu Cơ gặp nhau, nên duyên và sinh ra bọc trăm trứng. Từ đó một trăm người con lớn lên khỏe mạnh, mở đầu cho hình ảnh cộng đồng người Việt cùng chung một cội nguồn.",
+      "Khi các con khôn lớn, năm mươi người theo cha xuống biển, năm mươi người theo mẹ lên núi để cùng dựng xây non sông. Câu chuyện giúp bé hiểu về tinh thần đoàn kết, tình thân và niềm tự hào dân tộc."
     ],
-    "closing": "Sự tích Thánh Gióng không chỉ là câu chuyện về một anh hùng nhỏ tuổi, mà còn là lời nhắc rằng sức mạnh lớn có thể bắt đầu từ tình yêu quê hương rất giản dị."
+    "closing": "Con Rồng Cháu Tiên là lời nhắc nhẹ nhàng rằng người Việt luôn gắn kết với nhau bởi chung một nguồn cội và trách nhiệm cùng nhau gìn giữ đất nước."
   },
   "cta": {
-    "title": "Sẵn sàng mở 2 truyền thuyết trong một box",
-    "description": "Một box gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, kết hợp tranh lắp ghép, Pepper's Ghost và hỏi đáp sau câu chuyện.",
-    "buttonLabel": "Mua ngay - 219.000đ",
-    "to": "/products/cham-viet-box-2-tranh"
+    "title": "Sẵn sàng mở box kể chuyện tương tác",
+    "description": "Box tương tác kể chuyện gồm 2 puzzle Sự tích Hồ Gươm, Sự tích Thánh Gióng và 1 Pepper's Ghost để bé lắp ghép, xem và hỏi đáp.",
+    "buttonLabel": "Mua ngay - 229.000đ",
+    "to": "/products/box-tuong-tac-ke-chuyen"
   },
   "explore": {
     "title": "Khám phá",
     "items": [
       {
-        "title": "Sơn Tinh, Thủy Tinh: Thần Núi và Thần Biển",
-        "meta": "15 min • Mythology"
-      },
-      {
-        "title": "Truyền Thuyết Dưa Hấu: Mai An Tiêm",
-        "meta": "10 min • Adventure"
+        "title": "Sự tích Hồ Gươm",
+        "meta": "Có trong box • Truyền thuyết"
       },
       {
         "title": "Sự tích Thánh Gióng",
-        "meta": "Có trong hộp • Truyền thuyết"
+        "meta": "Có trong box • Truyền thuyết"
+      },
+      {
+        "title": "Con Rồng Cháu Tiên",
+        "meta": "Demo trên /story • Truyền thuyết"
       }
     ]
   },

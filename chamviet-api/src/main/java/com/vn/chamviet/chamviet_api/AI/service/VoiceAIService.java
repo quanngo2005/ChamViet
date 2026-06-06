@@ -22,6 +22,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @Service
@@ -46,7 +47,7 @@ public class VoiceAIService {
             .block());
     }
 
-    public TextResponse transcribe(MultipartFile audio) {
+    public TextResponse transcribe(MultipartFile audio, String sessionId) {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         try {
             builder.part("audio", new ByteArrayResource(audio.getBytes()) {
@@ -59,6 +60,9 @@ public class VoiceAIService {
             }).contentType(MediaType.parseMediaType(
                 audio.getContentType() != null ? audio.getContentType() : "audio/wav"
             ));
+            if (sessionId != null && !sessionId.isBlank()) {
+                builder.part("session_id", sessionId);
+            }
         } catch (Exception exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot read uploaded audio", exception);
         }
@@ -108,20 +112,33 @@ public class VoiceAIService {
         return audioBytes;
     }
 
-    public Map<String, Object> history() {
+    public Map<String, Object> history(String sessionId) {
         return execute("get history", () -> voiceClient.get()
-            .uri("/api/history")
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/history")
+                .queryParamIfPresent("session_id", Optional.ofNullable(blankToNull(sessionId)))
+                .build())
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() { })
             .block());
     }
 
-    public Map<String, Object> reset() {
+    public Map<String, Object> reset(String sessionId) {
         return execute("reset session", () -> voiceClient.post()
-            .uri("/api/reset")
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/reset")
+                .queryParamIfPresent("session_id", Optional.ofNullable(blankToNull(sessionId)))
+                .build())
             .retrieve()
             .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() { })
             .block());
+    }
+
+    private String blankToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value;
     }
 
     private <T> T execute(String action, Supplier<T> supplier) {

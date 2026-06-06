@@ -40,8 +40,11 @@ public class VoiceAIController {
     }
 
     @PostMapping(value = "/transcribe", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<TextResponse> transcribe(@RequestParam("audio") MultipartFile audio) {
-        return ResponseEntity.ok(voiceAIService.transcribe(audio));
+    public ResponseEntity<TextResponse> transcribe(
+        @RequestParam("audio") MultipartFile audio,
+        @RequestParam(value = "session_id", required = false) String sessionId
+    ) {
+        return ResponseEntity.ok(voiceAIService.transcribe(audio, sessionId));
     }
 
     @PostMapping("/chat")
@@ -64,12 +67,16 @@ public class VoiceAIController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<Map<String, Object>> history() {
-        return ResponseEntity.ok(voiceAIService.history());
+    public ResponseEntity<Map<String, Object>> history(
+        @RequestParam(value = "session_id", required = false) String sessionId
+    ) {
+        return ResponseEntity.ok(voiceAIService.history(sessionId));
     }
 
     @PostMapping("/reset")
-    public ResponseEntity<Map<String, Object>> reset() {
-        return ResponseEntity.ok(voiceAIService.reset());
+    public ResponseEntity<Map<String, Object>> reset(
+        @RequestParam(value = "session_id", required = false) String sessionId
+    ) {
+        return ResponseEntity.ok(voiceAIService.reset(sessionId));
     }
 }

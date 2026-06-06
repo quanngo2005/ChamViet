@@ -34,6 +34,7 @@ export type SessionPhase =
 interface UseVoiceAIOptions {
   backendUrl: string;
   storyConfig?: StoryConfig;
+  sessionId?: string;
   onUserText?: (text: string) => void;
   onAiMessage?: (text: string) => void;
   onQuestionRead?: (questionText: string) => void;
@@ -55,6 +56,16 @@ interface ClassifyResponse {
 
 const speechBlobCache = new Map<string, Blob>();
 
+function createSessionId(seed?: string): string {
+  const normalizedSeed = (seed ?? "").trim().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  const uniquePart =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+  return normalizedSeed ? `${normalizedSeed}-${uniquePart}` : `voice-${uniquePart}`;
+}
+
 async function postJson<T>(url: string, body: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
@@ -70,7 +81,11 @@ async function postJson<T>(url: string, body: Record<string, unknown>, signal?: 
   return response.json() as Promise<T>;
 }
 
-async function fetchSpeechBlob(backendUrl: string, text: string): Promise<Blob | null> {
+async function fetchSpeechBlob(
+  backendUrl: string,
+  text: string,
+  sessionId: string,
+): Promise<Blob | null> {
   const cacheKey = `${backendUrl}::${text.trim()}`;
   const cached = speechBlobCache.get(cacheKey);
   if (cached) {
@@ -80,7 +95,7 @@ async function fetchSpeechBlob(backendUrl: string, text: string): Promise<Blob |
   const response = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/speak"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, session_id: sessionId }),
   });
 
   if (!response.ok) {
@@ -103,15 +118,16 @@ async function fetchSpeechBlob(backendUrl: string, text: string): Promise<Blob |
   return blob;
 }
 
-async function warmSpeechCache(backendUrl: string, text: string): Promise<void> {
-  await fetchSpeechBlob(backendUrl, text);
+async function warmSpeechCache(backendUrl: string, text: string, sessionId: string): Promise<void> {
+  await fetchSpeechBlob(backendUrl, text, sessionId);
 }
 
 async function prepareSpeechPlayback(
   backendUrl: string,
   text: string,
+  sessionId: string,
 ): Promise<{ playToEnd: () => Promise<boolean> } | null> {
-  const blob = await fetchSpeechBlob(backendUrl, text);
+  const blob = await fetchSpeechBlob(backendUrl, text, sessionId);
   if (!blob) {
     return null;
   }
@@ -451,6 +467,7 @@ function buildStoryCacheKey(config: StoryConfig): string {
 export function useVoiceAI({
   backendUrl,
   storyConfig,
+  sessionId,
   onUserText,
   onAiMessage,
   onQuestionRead,
@@ -480,6 +497,9 @@ export function useVoiceAI({
   const processAbortRef = useRef<AbortController | null>(null);
   const configRef = useRef(storyConfig);
   configRef.current = storyConfig;
+  const sessionIdRef = useRef(
+    sessionId || createSessionId(storyConfig?.componentSku || storyConfig?.videoId || "story"),
+  );
 
   useEffect(() => {
     currentQuestionIndexRef.current = currentQuestionIndex;
@@ -541,7 +561,7 @@ export function useVoiceAI({
         }
 
         try {
-          await warmSpeechCache(backendUrl, text);
+          await warmSpeechCache(backendUrl, text, sessionIdRef.current);
         } catch {
           return;
         }
@@ -555,7 +575,7 @@ export function useVoiceAI({
 
   const speakAndNotify = useCallback(
     async (text: string) => {
-      const preparedSpeech = await prepareSpeechPlayback(backendUrl, text);
+      const preparedSpeech = await prepareSpeechPlayback(backendUrl, text, sessionIdRef.current);
       if (!preparedSpeech) {
         return;
       }
@@ -599,7 +619,10 @@ export function useVoiceAI({
 
       setSessionPhase("responding");
       await speakAndNotify(buildEndingText(finalScore, config.qaList.length));
-      await fetch(buildApiUrl(backendUrl, "/api/v1/voice/reset"), { method: "POST" });
+      await fetch(
+        `${buildApiUrl(backendUrl, "/api/v1/voice/reset")}?session_id=${encodeURIComponent(sessionIdRef.current)}`,
+        { method: "POST" },
+      );
       setSessionPhase("done");
       onSessionEnd?.(finalScore, config.qaList.length);
     },
@@ -642,7 +665,7 @@ export function useVoiceAI({
 
       await postJson<unknown>(
         buildApiUrl(backendUrl, "/api/v1/voice/load-content"),
-        { content: config.storyContent },
+        { content: config.storyContent, session_id: sessionIdRef.current },
       );
 
       setSessionPhase("greeting");
@@ -666,7 +689,10 @@ export function useVoiceAI({
 
       const { reply } = await postJson<ChatResponse>(
         buildApiUrl(backendUrl, "/api/v1/voice/chat"),
-        { message: buildQuestionPrompt(config, question, transcribed) },
+        {
+          message: buildQuestionPrompt(config, question, transcribed),
+          session_id: sessionIdRef.current,
+        },
         signal,
       );
 
@@ -685,7 +711,10 @@ export function useVoiceAI({
 
       const { reply } = await postJson<ChatResponse>(
         buildApiUrl(backendUrl, "/api/v1/voice/chat"),
-        { message: buildConfusedPrompt(config, question, answer) },
+        {
+          message: buildConfusedPrompt(config, question, answer),
+          session_id: sessionIdRef.current,
+        },
         signal,
       );
 
@@ -721,6 +750,7 @@ export function useVoiceAI({
 
         const formData = new FormData();
         formData.append("audio", audioBlob, "recording.wav");
+        formData.append("session_id", sessionIdRef.current);
 
         const sttResponse = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/transcribe"), {
           method: "POST",
@@ -748,7 +778,11 @@ export function useVoiceAI({
 
         const { intent } = await postJson<ClassifyResponse>(
           buildApiUrl(backendUrl, "/api/v1/voice/classify"),
-          { current_question: qa.question, user_text: transcribed },
+          {
+            current_question: qa.question,
+            user_text: transcribed,
+            session_id: sessionIdRef.current,
+          },
           controller.signal,
         );
         const normalizedIntent = (intent || "").trim().toUpperCase();

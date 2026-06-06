@@ -1,6 +1,8 @@
 package com.vn.chamviet.chamviet_api.AI.service;
 
 import com.vn.chamviet.chamviet_api.AI.dto.AiResponseDTO;
+import com.vn.chamviet.chamviet_api.product.dto.ComponentLookupDTO;
+import com.vn.chamviet.chamviet_api.product.service.ProductStoryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -11,20 +13,24 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.Comparator;
 
 @Service
 public class AIService {
 
     private final WebClient webClient;
     private final Duration visionTimeout;
+    private final ProductStoryService productStoryService;
 
     public AIService(
             WebClient.Builder webClientBuilder,
             @Value("${ai.vision.base-url:http://localhost:5000}") String visionBaseUrl,
-            @Value("${ai.vision.timeout-seconds:15}") long visionTimeoutSeconds
+            @Value("${ai.vision.timeout-seconds:15}") long visionTimeoutSeconds,
+            ProductStoryService productStoryService
     ) {
         this.webClient = webClientBuilder.baseUrl(visionBaseUrl).build();
         this.visionTimeout = Duration.ofSeconds(visionTimeoutSeconds);
+        this.productStoryService = productStoryService;
     }
 
     public AiResponseDTO testAiConnection(MultipartFile file) {
@@ -32,7 +38,7 @@ public class AIService {
         builder.part("file", file.getResource())
                 .filename(file.getOriginalFilename());
 
-        return webClient.post()
+        AiResponseDTO response = webClient.post()
                 .uri("/predict")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(builder.build()))
@@ -45,6 +51,34 @@ public class AIService {
                     return Mono.just(errorRes);
                 })
                 .block(visionTimeout);
+
+        enrichWithProductRoute(response);
+        return response;
     }
-    
+
+    private void enrichWithProductRoute(AiResponseDTO response) {
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            return;
+        }
+
+        AiResponseDTO.PredictionData bestPrediction = response.getData().stream()
+            .filter(prediction -> prediction.getLabel() != null && prediction.getConfidence() != null)
+            .max(Comparator.comparing(AiResponseDTO.PredictionData::getConfidence))
+            .orElse(null);
+
+        if (bestPrediction == null) {
+            return;
+        }
+
+        productStoryService.lookupByLabel(bestPrediction.getLabel())
+            .ifPresent(lookup -> applyLookup(response, lookup));
+    }
+
+    private void applyLookup(AiResponseDTO response, ComponentLookupDTO lookup) {
+        response.setProductId(lookup.getProductId());
+        response.setVariantId(lookup.getVariantId());
+        response.setComponentId(lookup.getComponentId());
+        response.setComponentSku(lookup.getComponentSku());
+        response.setRoute(lookup.getRoute());
+    }
 }

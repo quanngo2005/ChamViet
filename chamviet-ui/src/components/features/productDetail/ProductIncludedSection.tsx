@@ -1,6 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { ContentContainer, PageSection } from '../../common/layout';
 import { PRODUCT_DETAIL_COPY } from '../../../data/productDetail';
+import type { ProductIncludedItem } from '../../../types/productApi';
 
 function IncludedCard({ title, description }: { title: string; description: string }) {
   return (
@@ -42,8 +43,13 @@ function IncludedCard({ title, description }: { title: string; description: stri
   );
 }
 
-export function ProductIncludedSection() {
+export interface ProductIncludedSectionProps {
+  items?: ProductIncludedItem[];
+}
+
+export function ProductIncludedSection({ items }: ProductIncludedSectionProps) {
   const { included } = PRODUCT_DETAIL_COPY;
+  const sectionItems = items && items.length > 0 ? items : included;
 
   return (
     <PageSection sx={{ py: { xs: 6, md: 8 } }}>
@@ -72,7 +78,7 @@ export function ProductIncludedSection() {
               gap: { xs: 4, md: '32px' },
             }}
           >
-            {included.map((item) => (
+            {sectionItems.map((item) => (
               <IncludedCard key={item.title} title={item.title} description={item.description} />
             ))}
           </Box>
