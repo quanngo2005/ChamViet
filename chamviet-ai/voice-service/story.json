@@ -1,0 +1,30 @@
+{
+  "story": "Thánh Gióng",
+  "questions": [
+    {
+      "id": 1,
+      "question": "Thánh Gióng sinh ra ở đâu?",
+      "answer": "Thánh Gióng sinh ra ở làng Gióng, tục gọi là làng Phù Đổng, thuộc huyện Gia Lâm, Hà Nội ngày nay."
+    },
+    {
+      "id": 2,
+      "question": "Điều kỳ lạ gì xảy ra khi sứ giả của vua đến làng tìm người tài?",
+      "answer": "Cậu bé Gióng vốn lên ba tuổi vẫn chưa biết nói, nhưng khi nghe sứ giả rao tìm người tài đánh giặc Ân, cậu bỗng cất tiếng nói xin được gặp sứ giả để ra trận giết giặc."
+    },
+    {
+      "id": 3,
+      "question": "Thánh Gióng đã dùng những vũ khí gì để đánh giặc Ân?",
+      "answer": "Thánh Gióng dùng roi sắt và ngựa sắt do nhà vua cho rèn. Khi roi sắt gãy, ngài nhổ bụi tre bên đường làm vũ khí tiếp tục chiến đấu."
+    },
+    {
+      "id": 4,
+      "question": "Sau khi đánh tan giặc Ân, Thánh Gióng đã làm gì?",
+      "answer": "Sau khi đánh tan giặc, Thánh Gióng cùng ngựa sắt bay lên trời biến mất, không nhận bất kỳ phần thưởng nào từ nhà vua."
+    },
+    {
+      "id": 5,
+      "question": "Nhân dân đã làm gì để tưởng nhớ công ơn của Thánh Gióng?",
+      "answer": "Nhân dân lập đền thờ Thánh Gióng tại làng Phù Đổng và hàng năm tổ chức Hội Gióng vào tháng 4 âm lịch để tưởng nhớ công ơn của ngài. Hội Gióng đã được UNESCO công nhận là Di sản văn hóa phi vật thể của nhân loại."
+    }
+  ]
+}
