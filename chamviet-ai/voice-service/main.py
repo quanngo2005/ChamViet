@@ -317,6 +317,13 @@ class ClassifyInput(BaseModel):
     current_question: str
     user_text       : str
 
+class AnswerEvalInput(BaseModel):
+    story_title: str = ""
+    child_age: int = 0
+    question: str
+    child_answer: str
+    correct_answer: str
+
 @app.post("/api/classify", tags=["chat"])
 async def classify_api(body: ClassifyInput):
     """Phân loại intent bất đồng bộ mạnh mẽ: ANSWER | QUESTION | CONFIRM | CONFUSED."""
@@ -329,6 +336,18 @@ async def classify_api(body: ClassifyInput):
         GLOBAL_SYSTEM_PROMPT,
     )
     return {"intent": intent}
+
+
+@app.post("/api/evaluate-answer", tags=["chat"])
+async def evaluate_answer_api(body: AnswerEvalInput):
+    """Chấm độ tương khớp câu trả lời của bé theo nghĩa, không bắt khớp văn mẫu."""
+    evaluation = await evaluate_story_answer(
+        question=body.question,
+        correct_answer=body.correct_answer,
+        user_answer=body.child_answer,
+        story_title=body.story_title,
+    )
+    return evaluation
 
 
 class ChatSpeakInput(BaseModel):

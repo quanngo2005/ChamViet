@@ -2,15 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { StoryConfig } from "../data/video-story-qa";
 import { buildApiUrl } from "../utils/apiBase";
 
-const CORRECT_THRESHOLD = 0.75;
-const UNCLEAR_THRESHOLD = 0.4;
+const UNCLEAR_SCORE_THRESHOLD = 40;
 const DEFAULT_SILENT_RETRY = "Cô chưa nghe rõ, con nói to hơn một chút nhé.";
+const MIN_RECORDING_MS = 450;
+const MIN_RECORDING_RMS = 0.008;
 const MAX_TTS_CACHE_ITEMS = 48;
 const MAX_RECORDING_GAIN = 2.4;
 const TRIM_THRESHOLD_FLOOR = 0.01;
 const TRIM_PADDING_MS = 140;
 const FADE_MS = 12;
 const AUDIO_WORKLET_NAME = "pcm-capture-processor";
+const TTS_PLAYBACK_RATE = 1.18;
 
 const FILLER_WORDS = new Set([
   "a",
@@ -54,6 +56,20 @@ interface ClassifyResponse {
   intent: string;
 }
 
+interface AnswerEvalResponse {
+  score: number;
+  is_correct: boolean;
+  feedback?: string;
+  reason?: string;
+  embedding_score?: number;
+  judge_source?: string;
+}
+
+interface PreparedSpeechPlayback {
+  playToEnd: () => Promise<boolean>;
+  stop: () => void;
+}
+
 const speechBlobCache = new Map<string, Blob>();
 
 function createSessionId(seed?: string): string {
@@ -85,6 +101,7 @@ async function fetchSpeechBlob(
   backendUrl: string,
   text: string,
   sessionId: string,
+  signal?: AbortSignal,
 ): Promise<Blob | null> {
   const cacheKey = `${backendUrl}::${text.trim()}`;
   const cached = speechBlobCache.get(cacheKey);
@@ -96,6 +113,7 @@ async function fetchSpeechBlob(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, session_id: sessionId }),
+    signal,
   });
 
   if (!response.ok) {
@@ -126,14 +144,20 @@ async function prepareSpeechPlayback(
   backendUrl: string,
   text: string,
   sessionId: string,
-): Promise<{ playToEnd: () => Promise<boolean> } | null> {
-  const blob = await fetchSpeechBlob(backendUrl, text, sessionId);
+  signal?: AbortSignal,
+): Promise<PreparedSpeechPlayback | null> {
+  if (signal?.aborted) {
+    return null;
+  }
+
+  const blob = await fetchSpeechBlob(backendUrl, text, sessionId, signal);
   if (!blob) {
     return null;
   }
 
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
+  audio.playbackRate = TTS_PLAYBACK_RATE;
 
   const isReady = await new Promise<boolean>((resolve) => {
     let settled = false;
@@ -149,26 +173,49 @@ async function prepareSpeechPlayback(
     audio.oncanplaythrough = () => finish(true);
     audio.onloadeddata = () => finish(true);
     audio.onerror = () => finish(false);
+    signal?.addEventListener("abort", () => finish(false), { once: true });
     audio.load();
   });
 
-  if (!isReady) {
+  if (!isReady || signal?.aborted) {
     URL.revokeObjectURL(url);
     return null;
   }
 
-  return {
-    playToEnd: () =>
-      new Promise<boolean>((resolve) => {
-        const cleanup = (value: boolean) => {
-          URL.revokeObjectURL(url);
-          resolve(value);
-        };
+  let cleaned = false;
+  let resolvePlay: ((value: boolean) => void) | null = null;
 
-        audio.onended = () => cleanup(true);
-        audio.onerror = () => cleanup(false);
-        audio.play().catch(() => cleanup(false));
-      }),
+  const cleanup = (value: boolean) => {
+    if (cleaned) {
+      return;
+    }
+
+    cleaned = true;
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
+    audio.onended = null;
+    audio.onerror = null;
+    URL.revokeObjectURL(url);
+    resolvePlay?.(value);
+  };
+
+  const abortPlayback = () => cleanup(false);
+  signal?.addEventListener("abort", abortPlayback, { once: true });
+
+  return {
+    playToEnd: () => new Promise<boolean>((resolve) => {
+      if (cleaned || signal?.aborted) {
+        resolve(false);
+        return;
+      }
+
+      resolvePlay = resolve;
+      audio.onended = () => cleanup(true);
+      audio.onerror = () => cleanup(false);
+      audio.play().catch(() => cleanup(false));
+    }),
+    stop: () => cleanup(false),
   };
 }
 
@@ -314,6 +361,25 @@ function normalizeText(value: string): string {
     .trim();
 }
 
+function isUsableRecording(samples: Float32Array, sampleRate: number): boolean {
+  if (samples.length === 0) {
+    return false;
+  }
+
+  const durationMs = (samples.length / sampleRate) * 1000;
+  if (durationMs < MIN_RECORDING_MS) {
+    return false;
+  }
+
+  let energy = 0;
+  for (let index = 0; index < samples.length; index += 1) {
+    energy += samples[index] * samples[index];
+  }
+
+  const rms = Math.sqrt(energy / samples.length);
+  return rms >= MIN_RECORDING_RMS;
+}
+
 async function createPcmCaptureNode(
   audioContext: AudioContext,
   onChunk: (chunk: Float32Array) => void,
@@ -349,40 +415,6 @@ async function createPcmCaptureNode(
     onChunk(new Float32Array(event.data));
   };
   return node;
-}
-
-function scoreAnswer(userText: string, answer: string): number {
-  const normalizedUser = normalizeText(userText);
-  const normalizedAnswer = normalizeText(answer);
-
-  if (!normalizedUser || !normalizedAnswer) {
-    return 0;
-  }
-
-  if (normalizedUser === normalizedAnswer) {
-    return 1;
-  }
-
-  if (
-    normalizedAnswer.includes(normalizedUser) ||
-    normalizedUser.includes(normalizedAnswer)
-  ) {
-    return 0.82;
-  }
-
-  const userTokens = normalizedUser.split(" ").filter(Boolean);
-  const answerTokens = normalizedAnswer.split(" ").filter(Boolean);
-  if (userTokens.length === 0 || answerTokens.length === 0) {
-    return 0;
-  }
-
-  const answerSet = new Set(answerTokens);
-  const commonCount = userTokens.filter((token) => answerSet.has(token)).length;
-  const precision = commonCount / userTokens.length;
-  const recall = commonCount / answerTokens.length;
-  const f1 = precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall);
-
-  return Number(f1.toFixed(2));
 }
 
 function buildGreetingText(config: StoryConfig): string {
@@ -484,6 +516,7 @@ export function useVoiceAI({
   const [score, setScore] = useState(0);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const isRecordingRef = useRef(false);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
@@ -495,6 +528,10 @@ export function useVoiceAI({
   const scoreRef = useRef(0);
   const sessionPhaseRef = useRef<SessionPhase>("idle");
   const processAbortRef = useRef<AbortController | null>(null);
+  const sessionAbortRef = useRef<AbortController | null>(null);
+  const speechAbortRef = useRef<AbortController | null>(null);
+  const activeSpeechRef = useRef<PreparedSpeechPlayback | null>(null);
+  const sessionGenerationRef = useRef(0);
   const configRef = useRef(storyConfig);
   configRef.current = storyConfig;
   const sessionIdRef = useRef(
@@ -531,12 +568,34 @@ export function useVoiceAI({
     }
   }, []);
 
+  const stopCurrentSpeech = useCallback(() => {
+    speechAbortRef.current?.abort();
+    speechAbortRef.current = null;
+    activeSpeechRef.current?.stop();
+    activeSpeechRef.current = null;
+  }, []);
+
+  const stopSession = useCallback(() => {
+    sessionGenerationRef.current += 1;
+    sessionAbortRef.current?.abort();
+    sessionAbortRef.current = null;
+    processAbortRef.current?.abort();
+    processAbortRef.current = null;
+    stopCurrentSpeech();
+    cleanupAudioResources();
+    isRecordingRef.current = false;
+    setIsRecording(false);
+    setIsProcessing(false);
+    setIsAwaitingUserText(false);
+    setSessionPhase("idle");
+    sessionPhaseRef.current = "idle";
+  }, [cleanupAudioResources, stopCurrentSpeech]);
+
   useEffect(() => {
     return () => {
-      processAbortRef.current?.abort();
-      cleanupAudioResources();
+      stopSession();
     };
-  }, [cleanupAudioResources]);
+  }, [stopSession]);
 
   useEffect(() => {
     if (!storyConfig) {
@@ -575,16 +634,45 @@ export function useVoiceAI({
 
   const speakAndNotify = useCallback(
     async (text: string) => {
-      const preparedSpeech = await prepareSpeechPlayback(backendUrl, text, sessionIdRef.current);
-      if (!preparedSpeech) {
-        return;
-      }
-
+      const generation = sessionGenerationRef.current;
+      stopCurrentSpeech();
       setAiText(text);
       onAiMessage?.(text);
-      await preparedSpeech.playToEnd();
+
+      const controller = new AbortController();
+      speechAbortRef.current = controller;
+      const preparedSpeech = await prepareSpeechPlayback(
+        backendUrl,
+        text,
+        sessionIdRef.current,
+        controller.signal,
+      );
+      if (!preparedSpeech) {
+        if (speechAbortRef.current === controller) {
+          speechAbortRef.current = null;
+        }
+        return generation === sessionGenerationRef.current && !controller.signal.aborted;
+      }
+
+      if (generation !== sessionGenerationRef.current || controller.signal.aborted) {
+        preparedSpeech.stop();
+        if (speechAbortRef.current === controller) {
+          speechAbortRef.current = null;
+        }
+        return false;
+      }
+
+      activeSpeechRef.current = preparedSpeech;
+      const completed = await preparedSpeech.playToEnd();
+      if (activeSpeechRef.current === preparedSpeech) {
+        activeSpeechRef.current = null;
+      }
+      if (speechAbortRef.current === controller) {
+        speechAbortRef.current = null;
+      }
+      return completed && generation === sessionGenerationRef.current;
     },
-    [backendUrl, onAiMessage],
+    [backendUrl, onAiMessage, stopCurrentSpeech],
   );
 
   const askQuestion = useCallback(
@@ -604,8 +692,11 @@ export function useVoiceAI({
       setSessionPhase("asking");
       const questionText = buildQuestionText(qa.question, questionIndex, config.qaList.length);
       onQuestionRead?.(questionText);
-      await speakAndNotify(questionText);
+      if (!(await speakAndNotify(questionText))) {
+        return;
+      }
       setSessionPhase("listening");
+      sessionPhaseRef.current = "listening";
     },
     [onQuestionRead, speakAndNotify],
   );
@@ -618,12 +709,16 @@ export function useVoiceAI({
       }
 
       setSessionPhase("responding");
-      await speakAndNotify(buildEndingText(finalScore, config.qaList.length));
+      sessionPhaseRef.current = "responding";
+      if (!(await speakAndNotify(buildEndingText(finalScore, config.qaList.length)))) {
+        return;
+      }
       await fetch(
         `${buildApiUrl(backendUrl, "/api/v1/voice/reset")}?session_id=${encodeURIComponent(sessionIdRef.current)}`,
-        { method: "POST" },
+        { method: "POST", signal: sessionAbortRef.current?.signal },
       );
       setSessionPhase("done");
+      sessionPhaseRef.current = "done";
       onSessionEnd?.(finalScore, config.qaList.length);
     },
     [backendUrl, onSessionEnd, speakAndNotify],
@@ -652,6 +747,12 @@ export function useVoiceAI({
       return;
     }
 
+    sessionAbortRef.current?.abort();
+    const sessionController = new AbortController();
+    sessionAbortRef.current = sessionController;
+    sessionGenerationRef.current += 1;
+    const generation = sessionGenerationRef.current;
+
     try {
       setSessionPhase("loading");
       sessionPhaseRef.current = "loading";
@@ -666,17 +767,31 @@ export function useVoiceAI({
       await postJson<unknown>(
         buildApiUrl(backendUrl, "/api/v1/voice/load-content"),
         { content: config.storyContent, session_id: sessionIdRef.current },
+        sessionController.signal,
       );
+
+      if (generation !== sessionGenerationRef.current || sessionController.signal.aborted) {
+        return;
+      }
 
       setSessionPhase("greeting");
       sessionPhaseRef.current = "greeting";
-      await speakAndNotify(buildGreetingText(config));
+      if (!(await speakAndNotify(buildGreetingText(config)))) {
+        return;
+      }
       await askQuestion(0);
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
       setIsAwaitingUserText(false);
       onError?.(error);
       setSessionPhase("idle");
       sessionPhaseRef.current = "idle";
+    } finally {
+      if (sessionAbortRef.current === sessionController) {
+        sessionAbortRef.current = null;
+      }
     }
   }, [askQuestion, backendUrl, onError, speakAndNotify]);
 
@@ -696,8 +811,11 @@ export function useVoiceAI({
         signal,
       );
 
-      await speakAndNotify(reply);
+      if (!(await speakAndNotify(reply))) {
+        return;
+      }
       setSessionPhase("listening");
+      sessionPhaseRef.current = "listening";
     },
     [backendUrl, speakAndNotify],
   );
@@ -718,8 +836,11 @@ export function useVoiceAI({
         signal,
       );
 
-      await speakAndNotify(reply);
+      if (!(await speakAndNotify(reply))) {
+        return;
+      }
       setSessionPhase("listening");
+      sessionPhaseRef.current = "listening";
     },
     [backendUrl, speakAndNotify],
   );
@@ -762,11 +883,14 @@ export function useVoiceAI({
         }
 
         const { text: transcribed } = (await sttResponse.json()) as TextResponse;
-        if (!transcribed || transcribed.trim().length === 0) {
+        const normalizedTranscript = normalizeText(transcribed || "");
+        if (!normalizedTranscript) {
           setIsAwaitingUserText(false);
           setSessionPhase("responding");
           sessionPhaseRef.current = "responding";
-          await speakAndNotify(DEFAULT_SILENT_RETRY);
+          if (!(await speakAndNotify(DEFAULT_SILENT_RETRY))) {
+            return;
+          }
           setSessionPhase("listening");
           sessionPhaseRef.current = "listening";
           return;
@@ -800,29 +924,44 @@ export function useVoiceAI({
           return;
         }
 
-        const normalizedAnswer = normalizeText(transcribed);
-        const answerScore = scoreAnswer(transcribed, qa.answer);
-        if (answerScore >= CORRECT_THRESHOLD) {
+        const evaluation = await postJson<AnswerEvalResponse>(
+          buildApiUrl(backendUrl, "/api/v1/voice/evaluate-answer"),
+          {
+            story_title: config.storyTitle,
+            child_age: config.childAge,
+            question: qa.question,
+            child_answer: transcribed,
+            correct_answer: qa.answer,
+            session_id: sessionIdRef.current,
+          },
+          controller.signal,
+        );
+        const feedback = evaluation.feedback?.trim();
+        const isCorrect = evaluation.is_correct || evaluation.score >= 75;
+
+        if (isCorrect) {
           const nextScore = currentScore + 1;
           setScore(nextScore);
           scoreRef.current = nextScore;
-          await speakAndNotify(buildCorrectText());
+          if (!(await speakAndNotify(feedback || buildCorrectText()))) {
+            return;
+          }
           await advanceToNext(questionIndex + 1, nextScore);
           return;
         }
 
-        if (
-          normalizedAnswer.length === 0 ||
-          normalizedIntent.includes("CONFIRM") ||
-          answerScore >= UNCLEAR_THRESHOLD
-        ) {
-          await speakAndNotify(buildUnclearText());
+        if (normalizedIntent.includes("CONFIRM") || evaluation.score >= UNCLEAR_SCORE_THRESHOLD) {
+          if (!(await speakAndNotify(feedback || buildUnclearText()))) {
+            return;
+          }
           setSessionPhase("listening");
           sessionPhaseRef.current = "listening";
           return;
         }
 
-        await speakAndNotify(buildWrongText(qa.answer));
+        if (!(await speakAndNotify(feedback || buildWrongText(qa.answer)))) {
+          return;
+        }
         await advanceToNext(questionIndex + 1, currentScore);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
@@ -851,6 +990,11 @@ export function useVoiceAI({
   );
 
   const startRecording = useCallback(async () => {
+    if (isRecordingRef.current) {
+      return;
+    }
+
+    isRecordingRef.current = true;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -903,16 +1047,18 @@ export function useVoiceAI({
       silenceGain.connect(audioContext.destination);
       setIsRecording(true);
     } catch (error) {
+      isRecordingRef.current = false;
       setIsAwaitingUserText(false);
       onError?.(error);
     }
   }, [onError]);
 
   const stopRecording = useCallback(() => {
-    if (!isRecording) {
+    if (!isRecordingRef.current) {
       return;
     }
 
+    isRecordingRef.current = false;
     setIsRecording(false);
     const sampleRate = audioCtxRef.current?.sampleRate ?? 16000;
     cleanupAudioResources();
@@ -928,10 +1074,23 @@ export function useVoiceAI({
     }
 
     const processed = preprocessRecordedSamples(merged, sampleRate);
+    if (!isUsableRecording(processed, sampleRate)) {
+      setIsAwaitingUserText(false);
+      setSessionPhase("responding");
+      sessionPhaseRef.current = "responding";
+      void (async () => {
+        if (await speakAndNotify(DEFAULT_SILENT_RETRY)) {
+          setSessionPhase("listening");
+          sessionPhaseRef.current = "listening";
+        }
+      })();
+      return;
+    }
+
     const wavBlob = encodeWav(processed, sampleRate);
     setIsAwaitingUserText(true);
     void processVoiceFlow(wavBlob);
-  }, [isRecording, processVoiceFlow]);
+  }, [processVoiceFlow, speakAndNotify]);
 
   return {
     isRecording,
@@ -945,6 +1104,7 @@ export function useVoiceAI({
     initSession,
     startRecording,
     stopRecording,
+    stopSession,
     resetAiText: () => setAiText(""),
   };
 }

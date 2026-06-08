@@ -1,0 +1,12 @@
+.cache/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+uvicorn.err.log
+uvicorn.out.log
+test*.py
+project.md

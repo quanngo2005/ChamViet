@@ -1,5 +1,7 @@
 package com.vn.chamviet.chamviet_api.AI.service;
 
+import com.vn.chamviet.chamviet_api.AI.dto.voice.AnswerEvalRequest;
+import com.vn.chamviet.chamviet_api.AI.dto.voice.AnswerEvalResponse;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ChatRequest;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ChatResponse;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ClassifyRequest;
@@ -93,6 +95,16 @@ public class VoiceAIService {
             .bodyValue(request)
             .retrieve()
             .bodyToMono(ClassifyResponse.class)
+            .block());
+    }
+
+    public AnswerEvalResponse evaluateAnswer(AnswerEvalRequest request) {
+        return execute("evaluate answer", () -> voiceClient.post()
+            .uri("/api/evaluate-answer")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(request)
+            .retrieve()
+            .bodyToMono(AnswerEvalResponse.class)
             .block());
     }
 

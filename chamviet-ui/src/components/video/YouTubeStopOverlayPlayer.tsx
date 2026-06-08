@@ -210,6 +210,7 @@ export default function YouTubeStopOverlayPlayer({
     initSession,
     startRecording,
     stopRecording,
+    stopSession,
   } = useVoiceAI({
     backendUrl: API_BASE_URL,
     storyConfig,
@@ -288,6 +289,12 @@ export default function YouTubeStopOverlayPlayer({
     setSessionInitiated(false);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      stopSession();
+    };
+  }, [stopSession]);
+
   // ── YouTube event handlers ──────────────────────────────────────────────
   const onReady: YouTubeProps["onReady"] = (event) => {
     playerRef.current = event.target;
@@ -303,21 +310,24 @@ export default function YouTubeStopOverlayPlayer({
 
   // ── Action handlers ─────────────────────────────────────────────────────
   const handleSkip = () => {
+    stopSession();
     setOverlayOpen(false);
     setTimeout(() => resetOverlay(), 500);
   };
 
   const closeOverlayAndResume = () => {
+    stopSession();
     setOverlayOpen(false);
     setTimeout(() => resetOverlay(), 500);
   };
 
   const handleReplay = () => {
-      if (playerRef.current) {
-        playerRef.current.seekTo(config?.startTime || 0);
-        playerRef.current.playVideo();
-      }
-      setOverlayOpen(false);
+    stopSession();
+    if (playerRef.current) {
+      playerRef.current.seekTo(config?.startTime || 0);
+      playerRef.current.playVideo();
+    }
+    setOverlayOpen(false);
     setTimeout(() => resetOverlay(), 500);
   };
 

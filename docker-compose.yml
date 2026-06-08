@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: chamviet
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-1234}
     ports:
       - "${MYSQL_PORT:-3307}:3306"
     volumes:
@@ -16,9 +16,10 @@ services:
       retries: 10
 
   ai-service:
-    image: chamviet-ai-service:latest
+    image: quanngo205/voice-service:${CHAMVIET_IMAGE_TAG:-2026-06-08}
     build:
-      context: ./chamviet-ai
+      context: ./chamviet-ai/voice-service
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       GROQ_API_KEY: ${GROQ_API_KEY:-}
@@ -37,7 +38,7 @@ services:
       retries: 10
 
   vision-service:
-    image: chamviet-vision-service:latest
+    image: chamviet-vision-service:${CHAMVIET_IMAGE_TAG:-2026-06-08}
     build:
       context: ./chamviet-ai/vision-service
     restart: unless-stopped
@@ -60,7 +61,7 @@ services:
       retries: 10
 
   backend:
-    image: chamviet-backend:latest
+    image: quanngo205/chamviet-api:${CHAMVIET_IMAGE_TAG:-2026-06-08}
     build:
       context: ./chamviet-api
     restart: unless-stopped
@@ -74,7 +75,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/chamviet
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-1234}
       AI_VOICE_BASE_URL: http://ai-service:8000
       AI_VISION_BASE_URL: http://vision-service:5000
       AI_VISION_TIMEOUT_SECONDS: ${VISION_TIMEOUT_SECONDS:-15}

@@ -1,5 +1,7 @@
 package com.vn.chamviet.chamviet_api.AI.controller;
 
+import com.vn.chamviet.chamviet_api.AI.dto.voice.AnswerEvalRequest;
+import com.vn.chamviet.chamviet_api.AI.dto.voice.AnswerEvalResponse;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ChatRequest;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ChatResponse;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ClassifyRequest;
@@ -55,6 +57,11 @@ public class VoiceAIController {
     @PostMapping("/classify")
     public ResponseEntity<ClassifyResponse> classify(@RequestBody ClassifyRequest request) {
         return ResponseEntity.ok(voiceAIService.classify(request));
+    }
+
+    @PostMapping("/evaluate-answer")
+    public ResponseEntity<AnswerEvalResponse> evaluateAnswer(@RequestBody AnswerEvalRequest request) {
+        return ResponseEntity.ok(voiceAIService.evaluateAnswer(request));
     }
 
     @PostMapping("/speak")

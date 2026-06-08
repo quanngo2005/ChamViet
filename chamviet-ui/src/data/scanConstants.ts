@@ -1,18 +1,15 @@
 /**
  * Fallback maps for legacy development flows.
- * Production scan routing should prefer backend-enriched `productId` values.
+ * Production scan routing should prefer backend-enriched story/puzzle values.
  */
-export const PRODUCT_ID_MAP: Record<string, string> = {
-  auco_laclongquan: "1",
+export const STORY_ROUTE_MAP: Record<string, string> = {
+  auco_laclongquan: "/story/auco-laclongquan",
+  laclongquan_auco: "/story/auco-laclongquan",
 };
 
-export function resolveLegacyLabelProductId(label: string): string | undefined {
-  return PRODUCT_ID_MAP[label];
-}
-
 export function resolveLegacyLabelRoute(label: string): string | undefined {
-  const productId = resolveLegacyLabelProductId(label);
-  return productId ? `/products/${productId}` : undefined;
+  const key = label.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return STORY_ROUTE_MAP[key];
 }
 
 export function resolveStoryRoute(storySlug: string): string {
