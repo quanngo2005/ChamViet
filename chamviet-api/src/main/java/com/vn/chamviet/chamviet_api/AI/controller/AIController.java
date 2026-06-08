@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@CrossOrigin(origins = "http://localhost:5174")
 @RestController
 @RequestMapping({"/api/v1/ai", "/api/v1/vision"})
 public class AIController {

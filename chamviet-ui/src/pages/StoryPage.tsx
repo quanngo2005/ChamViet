@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link as RouterLink, useParams } from "react-router-dom";
 
 import Box from "@mui/material/Box";
@@ -8,10 +8,14 @@ import CardActionArea from "@mui/material/CardActionArea";
 import Container from "@mui/material/Container";
 import Divider from "@mui/material/Divider";
 import Grid from "@mui/material/Grid";
+import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 
 import storyVideo from "../data/story-data.json";
 import YouTubeStopOverlayPlayer, {
@@ -68,9 +72,33 @@ function CinemaHero({
   videoId: string;
   onCtaClick?: (videoId: string, config: VideoStopConfig) => void;
 }) {
+  const heroRef = useRef<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const isLandscapePhone = useMediaQuery("(orientation: landscape) and (max-height: 500px)", {
     noSsr: true,
   });
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === heroRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const handleToggleFullscreen = () => {
+    const target = heroRef.current;
+
+    if (!target) return;
+
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+      return;
+    }
+
+    void target.requestFullscreen();
+  };
 
   return (
     <Box sx={{ py: isLandscapePhone ? 0 : { xs: 4, md: 6 } }}>
@@ -80,6 +108,7 @@ function CinemaHero({
         sx={isLandscapePhone ? { height: "100vh" } : undefined}
       >
         <Box
+          ref={heroRef}
           sx={{
             position: "relative",
             borderRadius: isLandscapePhone ? 0 : 3.5,
@@ -88,9 +117,22 @@ function CinemaHero({
             boxShadow: isLandscapePhone ? "none" : "0px 26px 56px rgba(0, 0, 0, 0.38)",
             height: isLandscapePhone ? "100vh" : "auto",
             width: "100%",
+            backgroundColor: "#000000",
+            "&:fullscreen": {
+              border: "none",
+              borderRadius: 0,
+              boxShadow: "none",
+              height: "100vh",
+              width: "100vw",
+            },
+            "&:fullscreen .story-video-frame": {
+              height: "100%",
+              width: "100%",
+            },
           }}
         >
           <Box
+            className="story-video-frame"
             sx={{
               ...(isLandscapePhone
                 ? { width: "100%", height: "100%" }
@@ -105,6 +147,29 @@ function CinemaHero({
               onCtaClick={onCtaClick}
             />
           </Box>
+          <Tooltip title={isFullscreen ? "Thu nhỏ video" : "Xem toàn màn hình"}>
+            <IconButton
+              aria-label={isFullscreen ? "Thu nhỏ video" : "Xem video toàn màn hình"}
+              onClick={handleToggleFullscreen}
+              sx={{
+                position: "absolute",
+                right: { xs: 10, sm: 14 },
+                top: { xs: 10, sm: 14 },
+                zIndex: 2,
+                width: 42,
+                height: 42,
+                color: "#ffffff",
+                backgroundColor: "rgba(15, 23, 42, 0.62)",
+                border: "1px solid rgba(255, 255, 255, 0.18)",
+                backdropFilter: "blur(10px)",
+                "&:hover": {
+                  backgroundColor: "rgba(15, 23, 42, 0.82)",
+                },
+              }}
+            >
+              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+          </Tooltip>
         </Box>
       </Container>
     </Box>

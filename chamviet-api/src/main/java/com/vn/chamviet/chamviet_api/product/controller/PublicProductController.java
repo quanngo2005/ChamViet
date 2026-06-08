@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 @RequestMapping("/api/public")
 @RequiredArgsConstructor
 public class PublicProductController {
@@ -29,7 +28,7 @@ public class PublicProductController {
                 .body(ApiResponse.error("Product not found", exception.getMessage(), HttpStatus.NOT_FOUND.value()));
         }
     }
-
+    @CrossOrigin(origins = {"https://www.chamviet.com.vn","https://chamviet.com.vn"})
     @GetMapping("/puzzle-stories/video/{videoId}")
     public ResponseEntity<ApiResponse<StoryConfigDTO>> getStoryByVideoId(@PathVariable String videoId) {
         try {
