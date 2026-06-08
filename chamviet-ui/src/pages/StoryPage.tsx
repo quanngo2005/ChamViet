@@ -73,32 +73,61 @@ function CinemaHero({
   onCtaClick?: (videoId: string, config: VideoStopConfig) => void;
 }) {
   const heroRef = useRef<HTMLDivElement | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isVideoExpanded, setIsVideoExpanded] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const isLandscapePhone = useMediaQuery("(orientation: landscape) and (max-height: 500px)", {
     noSsr: true,
   });
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === heroRef.current);
+      const isHeroFullscreen = document.fullscreenElement === heroRef.current;
+      setIsNativeFullscreen(isHeroFullscreen);
+      setIsVideoExpanded(isHeroFullscreen);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  const handleToggleFullscreen = () => {
+  useEffect(() => {
+    if (!isVideoExpanded || isNativeFullscreen) return undefined;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isNativeFullscreen, isVideoExpanded]);
+
+  const handleToggleFullscreen = async () => {
     const target = heroRef.current;
 
     if (!target) return;
 
-    if (document.fullscreenElement) {
-      void document.exitFullscreen();
+    if (isVideoExpanded) {
+      if (document.fullscreenElement === target) {
+        await document.exitFullscreen();
+      } else {
+        setIsVideoExpanded(false);
+      }
       return;
     }
 
-    void target.requestFullscreen();
+    if (target.requestFullscreen) {
+      try {
+        await target.requestFullscreen();
+        return;
+      } catch {
+        // iOS Safari can reject wrapper fullscreen; fall back to fixed viewport mode.
+      }
+    }
+
+    setIsVideoExpanded(true);
   };
+
+  const fullscreenButtonLabel = isVideoExpanded ? "Thu nhỏ video" : "Xem video toàn màn hình";
 
   return (
     <Box sx={{ py: isLandscapePhone ? 0 : { xs: 4, md: 6 } }}>
@@ -118,6 +147,29 @@ function CinemaHero({
             height: isLandscapePhone ? "100vh" : "auto",
             width: "100%",
             backgroundColor: "#000000",
+            ...(isVideoExpanded && !isNativeFullscreen
+              ? {
+                  position: "fixed",
+                  inset: 0,
+                  zIndex: 1300,
+                  width: "100vw",
+                  height: "100vh",
+                  border: "none",
+                  borderRadius: 0,
+                  boxShadow: "none",
+                  "@supports (height: 100dvh)": {
+                    height: "100dvh",
+                  },
+                }
+              : {}),
+            ...(isVideoExpanded
+              ? {
+                  ".story-video-frame": {
+                    height: "100%",
+                    width: "100%",
+                  },
+                }
+              : {}),
             "&:fullscreen": {
               border: "none",
               borderRadius: 0,
@@ -147,9 +199,9 @@ function CinemaHero({
               onCtaClick={onCtaClick}
             />
           </Box>
-          <Tooltip title={isFullscreen ? "Thu nhỏ video" : "Xem toàn màn hình"}>
+          <Tooltip title={fullscreenButtonLabel}>
             <IconButton
-              aria-label={isFullscreen ? "Thu nhỏ video" : "Xem video toàn màn hình"}
+              aria-label={fullscreenButtonLabel}
               onClick={handleToggleFullscreen}
               sx={{
                 position: "absolute",
@@ -167,7 +219,7 @@ function CinemaHero({
                 },
               }}
             >
-              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              {isVideoExpanded ? <FullscreenExitIcon /> : <FullscreenIcon />}
             </IconButton>
           </Tooltip>
         </Box>
