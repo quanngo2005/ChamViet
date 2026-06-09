@@ -1,3 +1,7 @@
+import io
+import wave
+import asyncio
+import numpy as np
 from groq import AsyncGroq, Groq
 from config import (
     GROQ_API_KEY,
@@ -6,10 +10,8 @@ from config import (
     STT_LOW_AVG_LOGPROB_THRESHOLD,
     STT_RETRY_ORIGINAL_AUDIO,
 )
-import numpy as np
-import io, wave
 
-STT_MODEL  = GROQ_STT_MODEL
+STT_MODEL = GROQ_STT_MODEL
 _async_client = None
 _client = None
 
@@ -39,7 +41,7 @@ def _boost_audio(audio_bytes: bytes) -> bytes:
             params = wf.getparams()
             channels = wf.getnchannels()
             sample_width = wf.getsampwidth()
-            raw    = wf.readframes(wf.getnframes())
+            raw = wf.readframes(wf.getnframes())
     except wave.Error:
         return audio_bytes
 
@@ -53,7 +55,7 @@ def _boost_audio(audio_bytes: bytes) -> bytes:
     if audio.size == 0:
         return audio_bytes
 
-    # Trim im lặng rất nhẹ để Whisper tập trung vào phần bé nói.
+    # Trim im lặng rất nhẹ để bộ nhận diện tập trung vào phần bé nói.
     abs_audio = np.abs(audio)
     peak = abs_audio.max()
     if peak > 0:
@@ -174,17 +176,16 @@ def _transcribe_once_sync(client: Groq, audio_bytes: bytes, language: str) -> tu
 
 async def transcribe_audio_file(audio_bytes: bytes, language: str = "vi") -> str:
     """
-    Nhận audio_bytes (WAV), tự động chuẩn hóa âm lượng động, gửi lên Groq Whisper bất đồng bộ.
+    Nhận dạng giọng nói bất đồng bộ bằng Groq Whisper.
     """
     try:
-        client = _get_async_client()
         boosted = _boost_audio(audio_bytes)
+        client = _get_async_client()
         first = await _transcribe_once_async(client, boosted, language)
         if STT_RETRY_ORIGINAL_AUDIO and boosted != audio_bytes and _is_low_confidence(*first):
-            print(f"[STT] Low confidence after normalization, retrying original audio. text='{first[0]}' stats={first[1]}", flush=True)
+            print(f"[STT Groq] Low confidence after normalization, retrying original audio. text='{first[0]}'", flush=True)
             second = await _transcribe_once_async(client, audio_bytes, language)
             chosen = _choose_better_transcript(first, second)
-            print(f"[STT] Retry result original='{second[0]}' stats={second[1]} chosen='{chosen}'", flush=True)
             return chosen
         return first[0]
     except Exception as e:
@@ -194,17 +195,16 @@ async def transcribe_audio_file(audio_bytes: bytes, language: str = "vi") -> str
 
 def transcribe_audio_file_sync(audio_bytes: bytes, language: str = "vi") -> str:
     """
-    Phiên bản đồng bộ để tương thích ngược nếu cần.
+    Nhận dạng giọng nói đồng bộ bằng Groq Whisper.
     """
     try:
-        client = _get_client()
         boosted = _boost_audio(audio_bytes)
+        client = _get_client()
         first = _transcribe_once_sync(client, boosted, language)
         if STT_RETRY_ORIGINAL_AUDIO and boosted != audio_bytes and _is_low_confidence(*first):
-            print(f"[STT] Low confidence after normalization, retrying original audio. text='{first[0]}' stats={first[1]}", flush=True)
+            print(f"[STT Groq Sync] Low confidence after normalization, retrying original audio. text='{first[0]}'", flush=True)
             second = _transcribe_once_sync(client, audio_bytes, language)
             chosen = _choose_better_transcript(first, second)
-            print(f"[STT] Retry result original='{second[0]}' stats={second[1]} chosen='{chosen}'", flush=True)
             return chosen
         return first[0]
     except Exception as e:
