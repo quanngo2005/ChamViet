@@ -1,4 +1,5 @@
 import json
+import random
 import re
 import threading
 import unicodedata
@@ -6,7 +7,6 @@ from config import (
     GOOGLE_API_KEY, GEMINI_LLM_MODEL,
     GROQ_API_KEY, GROQ_LLM_MODEL, LLM_PROVIDER,
     EMBEDDING_ACCEPT_THRESHOLD, EMBEDDING_MODEL_NAME,
-    EMBEDDING_REJECT_THRESHOLD,
 )
 
 _gemini_client = None
@@ -283,28 +283,34 @@ async def _embedding_cosine_similarity(text_a: str, text_b: str) -> float:
 
 
 def _fallback_feedback(is_correct: bool, correct_answer: str, question: str = "", user_answer: str = "") -> str:
+    correct_answer = correct_answer.strip()
     if is_correct:
-        return "Con trả lời đúng ý rồi, cô khen con nhớ truyện rất tốt."
+        praise_templates = [
+            "Hoan hô con, con nhớ truyện rất tốt!",
+            "Giỏi quá, con đã trả lời đúng ý rồi đó!",
+            "Cô khen con nhé, con nắm được ý chính của câu chuyện rồi!",
+            "Tốt lắm, câu trả lời của con rất đúng với nội dung truyện!",
+            "Con trả lời đúng rồi, cô rất vui vì con lắng nghe câu chuyện thật kỹ!",
+        ]
+        return random.choice(praise_templates)
+
     user_part = f'Cô nghe con nói: "{user_answer}". ' if user_answer else ""
     question_part = f'Câu hỏi này đang hỏi: "{question}". ' if question else ""
-    return (
-        f"{user_part}Con đã cố gắng rồi, mình cùng nhớ lại chi tiết trong truyện nhé. "
-        f"{question_part}Câu trả lời đúng là: {correct_answer}"
-    )
+    correction_templates = [
+        f"{user_part}Con đã cố gắng rồi. {question_part}Cô nhắc nhẹ nhé, trong truyện là: {correct_answer}",
+        f"{user_part}Gần đúng rồi con ạ. {question_part}Mình nhớ lại cùng cô nhé: {correct_answer}",
+        f"{user_part}Không sao đâu, con đang tập nhớ truyện mà. {question_part}Ý đúng là: {correct_answer}",
+        f"{user_part}Cô thấy con đã chịu suy nghĩ rồi. {question_part}Chi tiết đúng trong truyện là: {correct_answer}",
+        f"{user_part}Cảm ơn con đã trả lời. {question_part}Cô giúp con nhớ lại nhé: {correct_answer}",
+    ]
+    return random.choice(correction_templates)
 
 
 def _has_enough_feedback_detail(feedback: str, is_correct: bool, correct_answer: str) -> bool:
     feedback = feedback.strip()
-    min_words = 8 if is_correct else 18
-    if len(feedback.split()) < min_words:
+    min_words = 5 if is_correct else 10
+    if len(re.findall(r"\w+", feedback, flags=re.UNICODE)) < min_words:
         return False
-
-    if not is_correct:
-        normalized_feedback = feedback.lower()
-        answer_words = [word.lower() for word in re.findall(r"\w+", correct_answer, flags=re.UNICODE)]
-        important_words = [word for word in answer_words if len(word) >= 4]
-        if important_words and sum(word in normalized_feedback for word in important_words) < min(3, len(important_words)):
-            return False
 
     incomplete_endings = (
         "cố gắng", "cố gắng.", "thử lại", "thử lại.", "đúng rồi", "đúng rồi.",
@@ -343,37 +349,40 @@ async def _judge_story_answer(
     correct_answer: str,
     user_answer: str,
     story_title: str = "",
-    embedding_score: float | None = None,
 ) -> dict:
-    similarity_line = ""
-    if embedding_score is not None:
-        similarity_line = f"Embedding similarity: {embedding_score:.3f}\n"
-
     prompt = (
-        "Chấm câu trả lời của bé theo NGHĨA, không bắt khớp văn mẫu.\n"
+        "Chấm câu trả lời của bé mầm non theo Ý LÕI, không bắt khớp văn mẫu.\n"
         f"Truyện: {story_title}\n"
         f"Câu hỏi: {question}\n"
         f"Đáp án mẫu: {correct_answer}\n"
         f"Bé trả lời: {user_answer}\n"
-        f"{similarity_line}"
-        "Rút ý lõi từ đáp án mẫu. Đúng nếu bé trả lời đủ ý chính, dù nói ngắn, đồng nghĩa, thiếu dấu hoặc STT sai nhẹ. "
-        "Sai nếu nhầm sự kiện chính, mâu thuẫn đáp án, quá mơ hồ, không biết, hoặc lạc đề. "
-        "score là độ đầy đủ 0-100, không phải ngưỡng quyết định.\n"
-        "Chỉ trả JSON:\n"
+        "Đối tượng trả lời là trẻ mầm non: các câu có thể rất ngắn, thiếu chủ vị, nói lủng củng, dùng từ đồng nghĩa, "
+        "nói gần đúng, thiếu dấu, hoặc chỉ nêu một vài từ khóa. Hãy rút ý lõi từ đáp án mẫu và xem bé có diễn đạt "
+        "đúng ý chính hay không.\n"
+        "Đúng nếu câu trả lời giữ được ý chính/cốt lõi của đáp án, dù diễn đạt không trọn câu hoặc không giống văn mẫu. "
+        "Sai nếu bé nhầm sự kiện chính, trả lời mâu thuẫn với đáp án, quá mơ hồ để xác định ý, nói không biết, hoặc lạc đề. "
+        "Khi viết feedback, hãy nói như một cô giáo mầm non dịu dàng: khen/động viên tự nhiên, ấm áp, không máy móc, "
+        "không dùng đi dùng lại một mẫu câu. Nếu bé sai, hãy khen sự cố gắng trước, sau đó bắt buộc nhắc lại đáp án mẫu "
+        "một cách nhẹ nhàng để bé học thêm, không ép bé nói theo văn mẫu.\n"
+        "score là mức độ đầy đủ 0-100, không phải ngưỡng quyết định cứng.\n"
+        "Chỉ trả JSON hợp lệ, không markdown, không giải thích ngoài JSON, gồm đúng 4 trường:\n"
         '{"score": 0-100, "is_correct": true/false, "reason": "lý do ngắn", "feedback": "lời cô giáo"}'
     )
 
     system_prompt = (
-        "Bạn là bộ đánh giá câu trả lời truyện cho trẻ nhỏ. "
-        "Bạn chấm công bằng theo ý nghĩa, không bắt khớp văn mẫu, nhưng không bỏ qua các lỗi sai sự kiện chính."
+        "Bạn là một cô giáo mầm non dịu dàng đang đánh giá câu trả lời truyện của trẻ. "
+        "Bạn chấm công bằng theo ý nghĩa cốt lõi, chấp nhận cách nói ngắn, vụng, đồng nghĩa hoặc chưa đủ chủ vị, "
+        "nhưng không bỏ qua các lỗi sai sự kiện chính. "
+        "Hãy đa dạng hóa cách khen và động viên, giữ giọng nói ấm áp, khích lệ, đúng chuẩn mực cô giáo mầm non. "
+        "Luôn trả về JSON chuẩn với đúng 4 trường: score, is_correct, reason, feedback."
     )
 
     result = await get_answer(
         user_message=prompt,
         system_prompt=system_prompt,
         history=[],
-        temperature=0.0,
-        max_tokens=150,
+        temperature=0.7,
+        max_tokens=220,
     )
     return _extract_json_object(result)
 
@@ -386,7 +395,7 @@ async def evaluate_story_answer(
 ) -> dict:
     """
     Chấm câu trả lời theo flow:
-    embedding cosine local -> skip LLM ở hai đầu rõ ràng -> LLM judge một lần khi lưng chừng.
+    embedding cosine local -> auto-pass khi rất giống -> LLM judge mọi trường hợp còn lại.
     """
     user_answer = user_answer.strip()
     if not user_answer:
@@ -413,22 +422,11 @@ async def evaluate_story_answer(
             "reason": "embedding_similarity_high",
         }
 
-    if embedding_score <= EMBEDDING_REJECT_THRESHOLD:
-        return {
-            "score": embedding_percent,
-            "is_correct": False,
-            "embedding_score": embedding_score,
-            "judge_source": "embedding_reject",
-            "feedback": _fallback_feedback(False, correct_answer, question=question, user_answer=user_answer),
-            "reason": "embedding_similarity_low",
-        }
-
     raw_data = await _judge_story_answer(
         question=question,
         correct_answer=correct_answer,
         user_answer=user_answer,
         story_title=story_title,
-        embedding_score=embedding_score,
     )
 
     data = _normalize_evaluation_data(raw_data) if raw_data else {}

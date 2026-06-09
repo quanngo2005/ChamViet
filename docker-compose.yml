@@ -79,6 +79,7 @@ services:
       AI_VOICE_BASE_URL: http://ai-service:8000
       AI_VISION_BASE_URL: http://vision-service:5000
       AI_VISION_TIMEOUT_SECONDS: ${VISION_TIMEOUT_SECONDS:-15}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174,https://www.chamviet.com.vn,https://chamviet.com.vn}
     ports:
       - "${BACKEND_PORT:-8081}:8081"
     healthcheck:

@@ -24,6 +24,14 @@ TTS_TRAILING_SILENCE_MS = int(os.getenv("TTS_TRAILING_SILENCE_MS", "450"))
 TTS_REQUEST_TIMEOUT_SECONDS = int(os.getenv("TTS_REQUEST_TIMEOUT_SECONDS", "35"))
 TTS_TOTAL_TIMEOUT_SECONDS = int(os.getenv("TTS_TOTAL_TIMEOUT_SECONDS", "45"))
 
+# ==========================================
+# CẤU HÌNH STT (Speech-to-Text)
+# ==========================================
+STT_PROVIDER      = os.getenv("STT_PROVIDER", "groq").strip().lower()
+
+# FPT AI (STT)
+FPT_STT_API_KEY   = os.getenv("FPT_STT_API_KEY", "")
+
 # Groq (STT - Whisper)
 GROQ_API_KEY      = os.getenv("GROQ_API_KEY", "")
 GROQ_STT_MODEL    = os.getenv("GROQ_STT_MODEL", "whisper-large-v3")

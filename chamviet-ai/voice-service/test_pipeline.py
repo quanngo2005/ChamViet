@@ -21,9 +21,6 @@ import wave
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 import numpy as np
 
 from config import EMBEDDING_MODEL_NAME, GEMINI_LLM_MODEL, GROQ_LLM_MODEL, LLM_PROVIDER
