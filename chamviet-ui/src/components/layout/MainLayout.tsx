@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 
 import Footer from "./Footer";
 import Header from "./Header";
-import ChatWidget from "../common/ChatWidget";
+
 import ScrollProgressBar from "../common/ScrollProgressBar";
 
 export default function MainLayout() {
@@ -19,7 +19,7 @@ export default function MainLayout() {
       </Box>
       <Analytics />
       <Footer />
-      <ChatWidget />
+      {/* <ChatWidget /> */}
     </Box>
   );
 }

@@ -13,16 +13,18 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import { Sprout, User } from "lucide-react";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { Sprout } from "lucide-react";
+import { HOME_PRODUCT } from "../../data/home";
 
-const navItems = [
+const productPath = `/products/${HOME_PRODUCT.id}`;
+
+const primaryNavItems = [
+  { label: "Sản phẩm", to: productPath },
+  { label: "Cách chơi", to: "/how-to-play" },
+  { label: "Câu chuyện", to: "/story" },
+  { label: "Quét tranh", to: "/scan" },
   { label: "Giới thiệu", to: "/about" },
-  // { label: "Sản Phẩm", to: "/products" },
-  { label: "Câu Chuyện", to: "/story" },
-  { label: "Cách Chơi", to: "/how-to-play" },
-  { label: "Mở câu chuyện", to: "/scan" },
-  // { label: "Giỏ Hàng", to: "/cart" },
-  // { label: "Đăng Nhập", to: "/login" },
 ];
 
 export default function Header() {
@@ -107,14 +109,14 @@ export default function Header() {
           {/* Desktop Navigation - Hidden on mobile */}
           <Stack
             direction="row"
-            spacing={1}
+            spacing={0.5}
             sx={{
               display: { xs: "none", md: "flex" },
               alignItems: "center",
-              mr: 4
+              mr: 2
             }}
           >
-            {navItems.map((item) => (
+            {primaryNavItems.map((item) => (
               <Button
                 key={item.to}
                 component={NavLink}
@@ -129,6 +131,7 @@ export default function Header() {
                   py: 1,
                   borderRadius: "999px",
                   position: "relative",
+                  WebkitTapHighlightColor: "transparent",
                   transition: "color 160ms ease, background-color 160ms ease, transform 160ms ease",
                   "&::after": {
                     content: '""',
@@ -142,13 +145,6 @@ export default function Header() {
                     transform: "scaleX(0)",
                     transformOrigin: "center",
                     transition: "transform 180ms ease",
-                  },
-                  "&.active": {
-                    color: "var(--primary)",
-                    backgroundColor: "rgba(198, 40, 40, 0.08)",
-                  },
-                  "&.active::after": {
-                    transform: "scaleX(1)",
                   },
                   "&:hover": {
                     color: "var(--primary)",
@@ -165,33 +161,58 @@ export default function Header() {
             ))}
           </Stack>
 
-          {/* Action Icons matching Global Design */}
-          <Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center" }}>
-            <Box
-              component={RouterLink}
-              to="/login"
-              sx={{
-                width: 44,
-                height: 44,
-                backgroundColor: "var(--bg)",
-                color: "var(--text-main)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-                textDecoration: "none",
-                transition: "all 0.2s",
-                border: "1px solid rgba(78, 52, 46, 0.1)",
-                "&:hover": {
-                  backgroundColor: "white",
-                  borderColor: "rgba(198, 40, 40, 0.18)",
-                  color: "var(--primary)",
-                }
-              }}
-            >
-              <User size={20} />
-            </Box>
-          </Stack>
+          <Button
+            component={RouterLink}
+            to={productPath}
+            variant="contained"
+            disableElevation
+            endIcon={<ArrowForwardIcon sx={{ fontSize: 17 }} />}
+            sx={{
+              display: { xs: "none", md: "inline-flex" },
+              minHeight: 46,
+              borderRadius: "999px",
+              px: 2.4,
+              color: "#ffffff",
+              backgroundColor: "var(--primary)",
+              fontWeight: 850,
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              boxShadow: "0 12px 26px rgba(198, 40, 40, 0.20)",
+              WebkitTapHighlightColor: "transparent",
+              "&:hover": {
+                backgroundColor: "var(--primary-hover)",
+                transform: "translateY(-1px)",
+              },
+            }}
+          >
+            {HOME_PRODUCT.ctaLabel}
+          </Button>
+
+          <Button
+            component={RouterLink}
+            to={productPath}
+            variant="contained"
+            disableElevation
+            sx={{
+              display: { xs: "inline-flex", md: "none" },
+              minWidth: 0,
+              minHeight: 44,
+              borderRadius: "999px",
+              px: { xs: 1.6, sm: 2 },
+              color: "#ffffff",
+              backgroundColor: "var(--primary)",
+              fontWeight: 850,
+              fontSize: 13,
+              textTransform: "none",
+              whiteSpace: "nowrap",
+              WebkitTapHighlightColor: "transparent",
+              "&:hover": {
+                backgroundColor: "var(--primary-hover)",
+              },
+            }}
+          >
+            Mua ngay
+          </Button>
 
           {/* Mobile Hamburger Menu Button - Visible only on mobile */}
           <IconButton
@@ -202,8 +223,9 @@ export default function Header() {
             sx={{
               display: { xs: "flex", md: "none" },
               color: "var(--primary)",
-              width: 44,
-              height: 44,
+              width: 48,
+              height: 48,
+              WebkitTapHighlightColor: "transparent",
             }}
           >
             <MenuIcon />
@@ -232,13 +254,47 @@ export default function Header() {
           }}
         >
           {/* Close Button */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, pb: 1 }}>
+            <Typography
+              sx={{
+                color: "var(--primary)",
+                fontWeight: 900,
+                textTransform: "uppercase",
+                letterSpacing: 0,
+              }}
+            >
+              Chạm Việt
+            </Typography>
             <IconButton
               onClick={handleMobileMenuClose}
-              sx={{ color: "var(--primary)" }}
+              sx={{ color: "var(--primary)", width: 48, height: 48, WebkitTapHighlightColor: "transparent" }}
             >
               <CloseIcon />
             </IconButton>
+          </Box>
+
+          <Box sx={{ px: 2, pb: 1.5 }}>
+            <Button
+              component={RouterLink}
+              to={productPath}
+              onClick={handleMobileMenuClose}
+              fullWidth
+              variant="contained"
+              disableElevation
+              endIcon={<ArrowForwardIcon sx={{ fontSize: 18 }} />}
+              sx={{
+                minHeight: 52,
+                borderRadius: "12px",
+                backgroundColor: "var(--primary)",
+                color: "#ffffff",
+                fontWeight: 900,
+                textTransform: "none",
+                WebkitTapHighlightColor: "transparent",
+                "&:hover": { backgroundColor: "var(--primary-hover)" },
+              }}
+            >
+              {HOME_PRODUCT.ctaLabel}
+            </Button>
           </Box>
 
           {/* Mobile Navigation Items */}
@@ -249,7 +305,7 @@ export default function Header() {
               py: 2,
             }}
           >
-            {navItems.map((item) => (
+            {primaryNavItems.map((item) => (
               <Button
                 key={item.to}
                 component={NavLink}
@@ -263,12 +319,10 @@ export default function Header() {
                   color: "var(--text-sub)",
                   justifyContent: "flex-start",
                   fontSize: "1rem",
-                  py: 1.5,
+                  minHeight: 48,
+                  py: 1.35,
                   borderRadius: '12px',
-                  "&.active": {
-                    backgroundColor: "rgba(198, 40, 40, 0.08)",
-                    color: "var(--primary)",
-                  },
+                  WebkitTapHighlightColor: "transparent",
                   "&:hover": {
                     backgroundColor: "rgba(198, 40, 40, 0.05)",
                     color: "var(--primary)"

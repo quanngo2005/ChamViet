@@ -1,564 +1,363 @@
-import { Box, Container, Typography, Stack, Grid, Card } from '@mui/material';
+import { Link as RouterLink } from "react-router-dom";
 
-// Image constants (from Figma)
-const images = {
-  heritageCrafts: 'https://www.figma.com/api/mcp/asset/fd2ef885-852f-42ca-b3d2-f79ca7ad1b40',
-  cultureInHands: 'https://www.figma.com/api/mcp/asset/9f658c2c-17d2-4f9d-bbf7-dd9a3d463f29',
-  founder: 'https://www.figma.com/api/mcp/asset/5c45ff94-9574-4cac-be25-c900e942c624',
-  techLead: 'https://www.figma.com/api/mcp/asset/c9d45385-c870-4dc9-b74e-cba64e23a702',
-  artisanManager: 'https://www.figma.com/api/mcp/asset/f03e2b28-bd67-421e-b660-478acacf22fa',
-  founderAlt1: 'https://www.figma.com/api/mcp/asset/5c45ff94-9574-4cac-be25-c900e942c624',
-  founderAlt2: 'https://www.figma.com/api/mcp/asset/5c45ff94-9574-4cac-be25-c900e942c624',
-  founderAlt3: 'https://www.figma.com/api/mcp/asset/5c45ff94-9574-4cac-be25-c900e942c624',
-  founderAlt4: 'https://www.figma.com/api/mcp/asset/5c45ff94-9574-4cac-be25-c900e942c624',
-  founderAlt5: 'https://www.figma.com/api/mcp/asset/5c45ff94-9574-4cac-be25-c900e942c624',
-  founderAlt6: 'https://www.figma.com/api/mcp/asset/5c45ff94-9574-4cac-be25-c900e942c624',
-  iconPlay: 'https://www.figma.com/api/mcp/asset/a8d44e43-84c5-464e-8102-4c187306f1e1',
-  iconWatch: 'https://www.figma.com/api/mcp/asset/ef5c49be-297a-4fbe-a25a-09299185fa3f',
-  iconSustainable: 'https://www.figma.com/api/mcp/asset/219c60c5-c99a-43d7-af46-9bfda6eabe4a',
-  iconHandmade: 'https://www.figma.com/api/mcp/asset/e75c5369-4924-42f9-93b1-8e2a2c0019cd',
-  iconHeritage1: 'https://www.figma.com/api/mcp/asset/6aae7b54-13da-4b8f-8076-b8e663e4d8ab',
-  iconHeritage2: 'https://www.figma.com/api/mcp/asset/d172aa10-4f56-47fe-a033-a44ca4503fb0',
-  logoFooter: 'https://www.figma.com/api/mcp/asset/a8d44e43-84c5-464e-8102-4c187306f1e1',
-  socialFacebook: 'https://www.figma.com/api/mcp/asset/6aae7b54-13da-4b8f-8076-b8e663e4d8ab',
-  socialInstagram: 'https://www.figma.com/api/mcp/asset/d172aa10-4f56-47fe-a033-a44ca4503fb0',
-  socialTwitter: 'https://www.figma.com/api/mcp/asset/219c60c5-c99a-43d7-af46-9bfda6eabe4a',
-};
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import { BookOpen, HeartHandshake, Puzzle, ScanLine, Sparkles } from "lucide-react";
 
-// Hero Section
+import { HOME_IMAGES, HOME_PRODUCT } from "../data/home";
+
+const ABOUT_VALUES = [
+  {
+    icon: Puzzle,
+    title: "Chạm vào văn hóa",
+    description: "Bé bắt đầu bằng việc lắp ghép, cầm nắm và quan sát thay vì chỉ xem trên màn hình.",
+  },
+  {
+    icon: Sparkles,
+    title: "Công nghệ vừa đủ",
+    description: "QR, video phản chiếu và AI hỏi đáp hỗ trợ câu chuyện mà không lấn át trải nghiệm chơi.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Gia đình cùng kể",
+    description: "Mỗi box tạo một khoảnh khắc để cha mẹ và bé cùng nói về nhân vật, địa danh và ký ức Việt.",
+  },
+];
+
+const ABOUT_STEPS = [
+  { label: "Puzzle gỗ", icon: Puzzle },
+  { label: "Quét tranh", icon: ScanLine },
+  { label: "Xem demo", icon: BookOpen },
+];
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <Typography
+      sx={{
+        color: "var(--primary)",
+        fontSize: 12,
+        fontWeight: 900,
+        letterSpacing: 1.4,
+        textTransform: "uppercase",
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
 function HeroSection() {
   return (
     <Box
       sx={{
-        position: 'relative',
-        height: '614px',
-        minHeight: '400px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
+        position: "relative",
+        overflow: "hidden",
+        background:
+          "linear-gradient(135deg, rgba(245, 239, 230, 0.96) 0%, rgba(253, 251, 247, 1) 52%, rgba(255, 248, 226, 0.88) 100%)",
+        pt: { xs: 6, md: 9 },
+        pb: { xs: 7, md: 10 },
       }}
-      data-node-id="62:902"
     >
-      {/* Background Image */}
-      <Box
-        component="img"
-        src={images.heritageCrafts}
-        alt="Heritage Crafts"
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          zIndex: 0,
-        }}
-      />
+      <Container maxWidth="xl">
+        <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 4, md: 8 }} alignItems="center">
+          <Stack spacing={2.25} sx={{ flex: 1, maxWidth: 660 }}>
+            <SectionLabel>Về Chạm Việt</SectionLabel>
+            <Typography
+              component="h1"
+              sx={{
+                color: "var(--text-h)",
+                fontSize: { xs: 40, sm: 52, md: 76 },
+                fontWeight: 950,
+                lineHeight: { xs: 1.04, md: 0.98 },
+                letterSpacing: 0,
+              }}
+            >
+              Để câu chuyện Việt được bé tự tay mở ra
+            </Typography>
+            <Typography
+              sx={{
+                color: "var(--text-sub)",
+                fontSize: { xs: 16, md: 18 },
+                lineHeight: 1.8,
+                maxWidth: 580,
+              }}
+            >
+              Chạm Việt kết hợp puzzle gỗ, hộp Pepper's Ghost và AI hỏi đáp để biến những truyền thuyết
+              quen thuộc thành một trải nghiệm chơi, xem và kể lại.
+            </Typography>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.25} sx={{ pt: 1 }}>
+              <Button
+                component={RouterLink}
+                to={`/products/${HOME_PRODUCT.id}`}
+                variant="contained"
+                disableElevation
+                sx={{
+                  borderRadius: 999,
+                  px: 3,
+                  py: 1.35,
+                  textTransform: "none",
+                  fontWeight: 900,
+                  backgroundColor: "var(--primary)",
+                  "&:hover": { backgroundColor: "var(--primary-dark)" },
+                }}
+              >
+                {HOME_PRODUCT.ctaLabel}
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/story"
+                variant="outlined"
+                sx={{
+                  borderRadius: 999,
+                  px: 3,
+                  py: 1.35,
+                  textTransform: "none",
+                  fontWeight: 850,
+                  color: "var(--primary)",
+                  borderColor: "rgba(198, 40, 40, 0.24)",
+                  "&:hover": {
+                    borderColor: "rgba(198, 40, 40, 0.42)",
+                    backgroundColor: "rgba(198, 40, 40, 0.05)",
+                  },
+                }}
+              >
+                Xem demo
+              </Button>
+            </Stack>
+          </Stack>
 
-      {/* Gradient Overlay */}
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to right, rgba(168, 50, 50, 0.4), rgba(0, 0, 0, 0.6))',
-          zIndex: 1,
-        }}
-      />
-
-      {/* Content */}
-      <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
-        <Stack spacing={2} alignItems="center">
-          {/* Badge */}
           <Box
             sx={{
-              backgroundColor: '#a83232',
-              borderRadius: '12px',
-              px: 2,
-              py: 0.5,
-              display: 'inline-block',
+              flex: 1,
+              width: "100%",
+              maxWidth: 560,
+              position: "relative",
             }}
           >
-            <Typography
-              variant="caption"
+            <Box
+              component="img"
+              src={HOME_IMAGES.heroChildArWebp}
+              alt="Bé trải nghiệm câu chuyện tương tác Chạm Việt"
+              loading="eager"
+              decoding="async"
               sx={{
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: '12px',
-                letterSpacing: '1.2px',
-                textTransform: 'uppercase',
+                width: "100%",
+                aspectRatio: "4 / 3",
+                objectFit: "cover",
+                borderRadius: { xs: 3, md: 4 },
+                border: "1px solid rgba(78, 52, 46, 0.12)",
+                boxShadow: "0 28px 60px rgba(78, 52, 46, 0.18)",
               }}
-            >
-              Ghép Kí Ức
-            </Typography>
+            />
           </Box>
-
-          {/* Heading */}
-          <Typography
-            variant="h2"
-            sx={{
-              color: 'white',
-              fontWeight: 900,
-              fontSize: '60px',
-              lineHeight: '60px',
-              textAlign: 'center',
-              
-            }}
-          >
-            Tìm Hiểu Văn Hóa Thông Qua Đồ Chơi
-          </Typography>
-
-          {/* Subheading */}
-          <Typography
-            sx={{
-              color: '#f1f5f9',
-              fontSize: '20px',
-              textAlign: 'center',
-              fontWeight: 300,
-              maxWidth: '672px',
-              
-            }}
-          >
-            Kết nối thế hệ kỹ thuật số với di sản văn hóa phong phú, đầy cảm xúc của Việt Nam.
-          </Typography>
         </Stack>
       </Container>
     </Box>
   );
 }
 
-// Mission Section
 function MissionSection() {
   return (
-    <Box sx={{ backgroundColor: 'white', py: 10, px: 10 }}>
+    <Box sx={{ backgroundColor: "var(--bg)", py: { xs: 7, md: 11 } }}>
       <Container maxWidth="lg">
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={8}>
-          {/* Left Column - Text Content */}
-          <Box sx={{ flex: { xs: 1, md: 0.5 } }}>
-            <Stack spacing={3}>
-              {/* Label */}
-              <Typography
-                variant="caption"
-                sx={{
-                  color: '#a83232',
-                  fontWeight: 'bold',
-                  fontSize: '14px',
-                  letterSpacing: '2.8px',
-                  textTransform: 'uppercase',
-                  
-                }}
-              >
-                Sứ Mệnh
-              </Typography>
-
-              {/* Main Heading */}
-              <Typography
-                variant="h3"
-                sx={{
-                  color: '#0f172a',
-                  fontWeight: 900,
-                  fontSize: '36px',
-                  lineHeight: '40px',
-                  
-                }}
-              >
-                Cầu nối thời gian
-              </Typography>
-
-              {/* Description */}
-              <Typography
-                sx={{
-                  color: '#475569',
-                  fontSize: '18px',
-                  lineHeight: '1.625',
-                  
-                }}
-              >
-                Tại Chạm Việt, chúng tôi tin rằng văn hóa không chỉ được tìm thấy trong bảo
-                tàng—mà còn được cảm nhận qua từng bàn tay. Sứ mệnh của chúng tôi là xây dựng
-                cầu nối giữa thế hệ kỹ thuật số và những truyền thống vượt thời gian của Việt
-                Nam thông qua các hoạt động tương tác, trải nghiệm thực tế.
-              </Typography>
-
-              {/* Key Features */}
-              <Stack spacing={2} sx={{ pt: 2 }}>
-                <Stack direction="row" spacing={2}>
-                  <Box
-                    component="img"
-                    src={images.iconHeritage1}
-                    alt="Heritage"
-                    sx={{ width: 38, height: 35.5, flexShrink: 0 }}
-                  />
-                  <Stack spacing={1}>
-                    <Typography
-                      sx={{
-                        fontWeight: 'bold',
-                        fontSize: '16px',
-                        color: '#0f172a',
-                        
-                      }}
-                    >
-                      Di sản kể chuyện
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: '14px',
-                        color: '#475569',
-                        
-                      }}
-                    >
-                      Kể những câu chuyện về Việt Nam thông qua những hiện vật bằng gỗ được chế
-                      tác tinh xảo.
-                    </Typography>
-                  </Stack>
-                </Stack>
-
-                <Stack direction="row" spacing={2}>
-                  <Box
-                    component="img"
-                    src={images.iconHeritage2}
-                    alt="Connection"
-                    sx={{ width: 35.25, height: 37, flexShrink: 0 }}
-                  />
-                  <Stack spacing={1}>
-                    <Typography
-                      sx={{
-                        fontWeight: 'bold',
-                        fontSize: '16px',
-                        color: '#0f172a',
-                        
-                      }}
-                    >
-                      Kết nối giữa các thế hệ
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: '14px',
-                        color: '#475569',
-                        
-                      }}
-                    >
-                      Khuyến khích cha mẹ và con cái cùng nhau khám phá cội nguồn thông qua các
-                      hoạt động chung.
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </Stack>
-            </Stack>
-          </Box>
-
-          {/* Right Column - Image */}
-          <Box sx={{ flex: { xs: 1, md: 0.5 }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Box
-              sx={{
-                position: 'relative',
-                width: '100%',
-                maxWidth: '546px',
-                aspect: '1',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {/* Blur Effect */}
-              <Box
-                sx={{
-                  position: 'absolute',
-                  width: '256px',
-                  height: '256px',
-                  backgroundColor: 'rgba(168, 50, 50, 0.05)',
-                  borderRadius: '12px',
-                  filter: 'blur(32px)',
-                  top: '-31px',
-                  right: '-40px',
-                  zIndex: 0,
-                }}
-              />
-
-              {/* Image Container */}
-              <Box
-                sx={{
-                  position: 'relative',
-                  zIndex: 1,
-                  transform: 'rotate(2deg)',
-                  width: '528px',
-                  height: '528px',
-                }}
-              >
-                <Box
-                  component="img"
-                  src={images.cultureInHands}
-                  alt="Culture in Hands"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '8px',
-                    boxShadow: '0px 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                    objectFit: 'cover',
-                  }}
-                />
-              </Box>
-            </Box>
-          </Box>
-        </Stack>
-      </Container>
-    </Box>
-  );
-}
-
-// Story Section
-function StorySection() {
-  const features = [
-    { title: 'Chơi Giỏi', description: 'Tiếp xúc với puzzle', icon: images.iconPlay },
-    { title: 'Xem Vui', description: 'Hologram video', icon: images.iconWatch },
-    { title: 'Bền Vững', description: 'Chất liệu Gỗ', icon: images.iconSustainable },
-    { title: 'Handmade', description: 'Làm thủ công', icon: images.iconHandmade },
-  ];
-
-  return (
-    <Box id="story" sx={{ backgroundColor: '#f8f6f6', py: 10, px: 10 }}>
-      <Container maxWidth="lg">
-        <Stack spacing={8}>
-          {/* Header */}
-          <Stack spacing={2} alignItems="center">
+        <Stack spacing={{ xs: 4, md: 6 }}>
+          <Stack spacing={1.5} sx={{ maxWidth: 760 }}>
+            <SectionLabel>Sứ mệnh</SectionLabel>
             <Typography
-              variant="caption"
+              component="h2"
               sx={{
-                color: '#a83232',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                letterSpacing: '2.8px',
-                textTransform: 'uppercase',
-                
+                color: "var(--text-h)",
+                fontSize: { xs: 30, md: 48 },
+                fontWeight: 950,
+                lineHeight: 1.08,
+                letterSpacing: 0,
               }}
             >
-              Câu Chuyện
+              Làm cho di sản dễ chơi hơn, dễ nhớ hơn
             </Typography>
-            <Typography
-              variant="h3"
-              sx={{
-                color: '#0f172a',
-                fontWeight: 900,
-                fontSize: '36px',
-                textAlign: 'center',
-                
-              }}
-            >
-              Khởi nguồn của Chạm Việt
+            <Typography sx={{ color: "var(--text-sub)", fontSize: { xs: 15.5, md: 17 }, lineHeight: 1.85 }}>
+              Chúng tôi không muốn văn hóa chỉ nằm trong sách hoặc bảo tàng. Mỗi sản phẩm được thiết kế
+              như một cây cầu nhỏ: bé lắp ghép bằng tay, xem câu chuyện hiện lên, rồi hỏi lại để hiểu sâu hơn.
             </Typography>
           </Stack>
 
-          {/* Story Card */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={0}>
-            <Box sx={{ flex: { xs: 1, md: 0.5 } }}>
-              <Card
-                sx={{
-                  backgroundColor: 'white',
-                  border: '1px solid rgba(168, 50, 50, 0.1)',
-                  boxShadow: '0px 1px 2px 0px rgba(0, 0, 0, 0.05)',
-                  borderRadius: '8px',
-                  p: 6,
-                  height: '100%',
-                }}
-              >
-                <Stack spacing={3}>
-                  <Typography
-                    sx={{
-                      fontSize: '18px',
-                      color: '#334155',
-                      lineHeight: '1.625',
-                      
-                    }}
-                  >
-                    Chạm Việt ra đời từ một nhận ra rất giản dị: trẻ em đang dần mất kết nối với
-                    cội nguồn của mình trong một thế giới ngày càng số hóa. Dù các thiết bị màn
-                    hình mang lại nguồn giải trí vô tận, chúng lại thiếu đi chiều sâu và sự ấm
-                    áp mà các chất liệu truyền thống mang lại.
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: '18px',
-                      color: '#334155',
-                      lineHeight: '1.625',
-                      
-                    }}
-                  >
-                    Chúng tôi quyết định kết hợp sự ấm áp của chất liệu gỗ truyền thống với sức
-                    hấp dẫn của công nghệ hiện đại. Bằng cách tích hợp mã QR và các tương tác 3D
-                    vào những món đồ chơi vật lý, chúng tôi mang lịch sử Việt Nam trở nên sống
-                    động theo một cách mà trẻ em ngày nay có thể dễ dàng tiếp cận và thấu hiểu.
-                  </Typography>
-                </Stack>
-              </Card>
-            </Box>
-
-            {/* Features Grid */}
-            <Box sx={{ flex: { xs: 1, md: 0.5 } }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+              gap: 2,
+            }}
+          >
+            {ABOUT_VALUES.map(({ icon: Icon, title, description }) => (
               <Box
+                key={title}
                 sx={{
-                  backgroundColor: 'rgba(168, 50, 50, 0.05)',
-                  borderRadius: '8px',
-                  p: 6,
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
+                  minHeight: 220,
+                  p: { xs: 2.5, md: 3 },
+                  borderRadius: 2,
+                  backgroundColor: "rgba(255, 255, 255, 0.72)",
+                  border: "1px solid var(--border)",
+                  boxShadow: "var(--shadow-sm)",
                 }}
               >
-                <Grid container spacing={2}>
-                  {features.map((feature) => (
-                    <Grid key={feature.title} size={6}>
-                      <Card
-                        sx={{
-                          backgroundColor: 'white',
-                          border: '1px solid rgba(168, 50, 50, 0.05)',
-                          boxShadow: '0px 1px 2px 0px rgba(0, 0, 0, 0.05)',
-                          borderRadius: '8px',
-                          p: 3,
-                          textAlign: 'center',
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Box
-                          component="img"
-                          src={feature.icon}
-                          alt={feature.title}
-                          sx={{ width: 30, height: 30, mb: 1 }}
-                        />
-                        <Typography
-                          sx={{
-                            fontWeight: 'bold',
-                            fontSize: '16px',
-                            color: '#0f172a',
-                            mb: 0.5,
-                            
-                          }}
-                        >
-                          {feature.title}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: '12px',
-                            color: '#64748b',
-                            
-                          }}
-                        >
-                          {feature.description}
-                        </Typography>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Box>
-            </Box>
-          </Stack>
-        </Stack>
-      </Container>
-    </Box>
-  );
-}
-
-// Team Section
-function TeamSection() {
-  const team = [
-    { name: 'Nguyễn Phương Huyền', role: 'CEO', image: images.founder },
-    { name: 'Nguyễn Thị Huyền Anh', role: 'CTO', image: images.techLead },
-    { name: 'Trần Văn Bảo', role: 'Lead Designer', image: images.artisanManager },
-    { name: 'Ngô Thái Giang', role: 'Product Lead', image: images.founderAlt4 },
-    { name: 'Nguyễn Thanh Hoan', role: 'Marketing Lead', image: images.founderAlt5 },
-    { name: 'Nguyễn Xuân Thành', role: 'Operations Lead', image: images.founderAlt6 },
-  ];
-
-  return (
-    <Box sx={{ backgroundColor: 'white', py: 12, px: 10 }}>
-      <Container maxWidth="lg">
-        <Stack spacing={8}>
-          {/* Header */}
-          <Stack spacing={2} alignItems="center">
-            <Typography
-              variant="caption"
-              sx={{
-                color: '#a83232',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                letterSpacing: '2.8px',
-                textTransform: 'uppercase',
-                
-              }}
-            >
-              The Team
-            </Typography>
-            <Typography
-              variant="h3"
-              sx={{
-                color: '#0f172a',
-                fontWeight: 900,
-                fontSize: '36px',
-                textAlign: 'center',
-                
-              }}
-            >
-              Creators of Culture
-            </Typography>
-          </Stack>
-
-          {/* Team Grid */}
-          <Grid container spacing={6}>
-            {team.map((member) => (
-              <Grid key={member.name} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Stack spacing={2} alignItems="center">
-                  {/* Image */}
+                <Stack spacing={2}>
                   <Box
                     sx={{
-                      position: 'relative',
-                      width: '192px',
-                      height: '192px',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      backgroundColor: 'rgba(168, 50, 50, 0.2)',
+                      width: 48,
+                      height: 48,
+                      borderRadius: 2,
+                      display: "grid",
+                      placeItems: "center",
+                      color: "var(--primary)",
+                      backgroundColor: "rgba(198, 40, 40, 0.08)",
                     }}
                   >
-                    <Box
-                      component="img"
-                      src={member.image}
-                      alt={member.name}
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
+                    <Icon size={25} strokeWidth={2.2} />
                   </Box>
-
-                  {/* Info */}
-                  <Stack spacing={0.5} alignItems="center">
-                    <Typography
-                      sx={{
-                        fontWeight: 'bold',
-                        fontSize: '20px',
-                        color: '#0f172a',
-                        
-                      }}
-                    >
-                      {member.name}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontWeight: 500,
-                        fontSize: '16px',
-                        color: '#a83232',
-                      }}
-                    >
-                      {member.role}
+                  <Stack spacing={0.75}>
+                    <Typography sx={{ color: "var(--text-h)", fontSize: 20, fontWeight: 900 }}>{title}</Typography>
+                    <Typography sx={{ color: "var(--text-sub)", fontSize: 14.5, lineHeight: 1.75 }}>
+                      {description}
                     </Typography>
                   </Stack>
                 </Stack>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Stack>
+      </Container>
+    </Box>
+  );
+}
+
+function StorySection() {
+  return (
+    <Box sx={{ backgroundColor: "#fffaf0", py: { xs: 7, md: 11 } }}>
+      <Container maxWidth="lg">
+        <Stack direction={{ xs: "column", md: "row" }} spacing={{ xs: 4, md: 7 }} alignItems="center">
+          <Box sx={{ flex: 1, width: "100%" }}>
+            <Box
+              component="img"
+              src={HOME_IMAGES.unboxingFlatlayWebp}
+              alt="Bộ box Chạm Việt gồm puzzle và phụ kiện kể chuyện"
+              loading="lazy"
+              decoding="async"
+              sx={{
+                width: "100%",
+                aspectRatio: "4 / 3",
+                objectFit: "cover",
+                borderRadius: 3,
+                border: "1px solid rgba(78, 52, 46, 0.12)",
+                boxShadow: "0 20px 44px rgba(78, 52, 46, 0.14)",
+              }}
+            />
+          </Box>
+
+          <Stack spacing={2.25} sx={{ flex: 1 }}>
+            <SectionLabel>Cách chúng tôi thiết kế</SectionLabel>
+            <Typography
+              component="h2"
+              sx={{
+                color: "var(--text-h)",
+                fontSize: { xs: 30, md: 46 },
+                fontWeight: 950,
+                lineHeight: 1.08,
+                letterSpacing: 0,
+              }}
+            >
+              Một sản phẩm nhỏ, ba lớp trải nghiệm
+            </Typography>
+            <Typography sx={{ color: "var(--text-sub)", fontSize: { xs: 15.5, md: 17 }, lineHeight: 1.85 }}>
+              Phần vật lý tạo sự tập trung. Phần phản chiếu tạo cảm giác kỳ diệu. Phần hỏi đáp giúp bé
+              nhớ câu chuyện theo lời của mình.
+            </Typography>
+            <Stack spacing={1.25} sx={{ pt: 1 }}>
+              {ABOUT_STEPS.map(({ label, icon: Icon }) => (
+                <Box
+                  key={label}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    p: 1.5,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(255, 255, 255, 0.68)",
+                    border: "1px solid rgba(78, 52, 46, 0.10)",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 1.5,
+                      display: "grid",
+                      placeItems: "center",
+                      color: "var(--secondary)",
+                      backgroundColor: "rgba(139, 94, 60, 0.10)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon size={21} strokeWidth={2.2} />
+                  </Box>
+                  <Typography sx={{ color: "var(--text-h)", fontWeight: 850 }}>{label}</Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Stack>
+        </Stack>
+      </Container>
+    </Box>
+  );
+}
+
+function FinalCta() {
+  return (
+    <Box sx={{ backgroundColor: "var(--bg)", py: { xs: 7, md: 10 } }}>
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            p: { xs: 3, md: 5 },
+            borderRadius: 3,
+            backgroundColor: "var(--primary)",
+            color: "#ffffff",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          <Stack direction={{ xs: "column", md: "row" }} spacing={3} alignItems={{ xs: "stretch", md: "center" }}>
+            <Stack spacing={1.25} sx={{ flex: 1, maxWidth: 680 }}>
+              <Typography sx={{ fontSize: { xs: 28, md: 42 }, fontWeight: 950, lineHeight: 1.08, letterSpacing: 0 }}>
+                Bắt đầu bằng một câu chuyện quen thuộc
+              </Typography>
+              <Typography sx={{ color: "rgba(255,255,255,0.80)", fontSize: { xs: 15, md: 16 }, lineHeight: 1.75 }}>
+                Box tương tác kể chuyện giúp bé gặp lại Hồ Gươm, Thánh Gióng và những biểu tượng văn hóa Việt
+                bằng cách tự tay khám phá.
+              </Typography>
+            </Stack>
+            <Button
+              component={RouterLink}
+              to={`/products/${HOME_PRODUCT.id}`}
+              variant="contained"
+              disableElevation
+              sx={{
+                alignSelf: { xs: "stretch", md: "center" },
+                borderRadius: 999,
+                px: 3,
+                py: 1.35,
+                textTransform: "none",
+                fontWeight: 950,
+                color: "var(--primary)",
+                backgroundColor: "#ffffff",
+                "&:hover": { backgroundColor: "#fff7df" },
+              }}
+            >
+              {HOME_PRODUCT.ctaLabel}
+            </Button>
+          </Stack>
+        </Box>
       </Container>
     </Box>
   );
@@ -566,11 +365,11 @@ function TeamSection() {
 
 export default function AboutUsPage() {
   return (
-    <Box sx={{ backgroundColor: '#f8f6f6', width: '100%' }}>
+    <Box sx={{ width: "100%", backgroundColor: "var(--bg)" }}>
       <HeroSection />
       <MissionSection />
       <StorySection />
-      <TeamSection />
+      <FinalCta />
     </Box>
   );
 }

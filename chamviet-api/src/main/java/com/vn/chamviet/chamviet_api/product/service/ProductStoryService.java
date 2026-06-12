@@ -3,12 +3,13 @@ package com.vn.chamviet.chamviet_api.product.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vn.chamviet.chamviet_api.product.ComponentItem;
+import com.vn.chamviet.chamviet_api.product.Component;
+import com.vn.chamviet.chamviet_api.product.ComponentContent;
 import com.vn.chamviet.chamviet_api.product.ProductVariantComponent;
 import com.vn.chamviet.chamviet_api.product.dto.ComponentLookupDTO;
 import com.vn.chamviet.chamviet_api.product.dto.StoryConfigDTO;
 import com.vn.chamviet.chamviet_api.product.dto.StoryQaItemDTO;
-import com.vn.chamviet.chamviet_api.product.repository.ComponentItemRepo;
+import com.vn.chamviet.chamviet_api.product.repository.ComponentContentRepo;
 import com.vn.chamviet.chamviet_api.product.repository.ProductVariantComponentRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,18 +28,18 @@ public class ProductStoryService {
         "auco_laclongquan", "PUZ-LLQ-01"
     );
 
-    private final ComponentItemRepo componentItemRepo;
+    private final ComponentContentRepo componentContentRepo;
     private final ProductVariantComponentRepo productVariantComponentRepo;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
     public StoryConfigDTO getStoryByVideoId(String videoId) {
-        ComponentItem componentItem = componentItemRepo.findByComponentType(ComponentItem.ComponentType.PUZZLE).stream()
+        ComponentContent content = componentContentRepo.findByComponentComponentType(Component.ComponentType.PUZZLE).stream()
             .filter(item -> Objects.equals(extractVideoId(item.getVideoUrl()), videoId))
             .findFirst()
             .orElseThrow(() -> new EntityNotFoundException("Puzzle story not found for video ID: " + videoId));
 
-        return toStoryConfig(componentItem, videoId);
+        return toStoryConfig(content, videoId);
     }
 
     @Transactional(readOnly = true)
@@ -53,21 +54,22 @@ public class ProductStoryService {
 
     @Transactional(readOnly = true)
     public Optional<ComponentLookupDTO> lookupByComponentSku(String sku) {
-        return productVariantComponentRepo.findFirstByComponentItemSkuOrderBySortOrderAsc(sku)
+        return productVariantComponentRepo.findFirstByComponentSkuOrderBySortOrderAsc(sku)
             .map(this::toComponentLookup);
     }
 
-    private StoryConfigDTO toStoryConfig(ComponentItem componentItem, String videoId) {
+    private StoryConfigDTO toStoryConfig(ComponentContent content, String videoId) {
+        Component component = content.getComponent();
         return StoryConfigDTO.builder()
-            .componentId(componentItem.getId())
-            .componentSku(componentItem.getSku())
+            .componentId(component.getId())
+            .componentSku(component.getSku())
             .videoId(videoId)
-            .videoUrl(componentItem.getVideoUrl())
-            .storyTitle(componentItem.getStoryTitle())
-            .childAge(componentItem.getAgeRange() == null ? 6 : componentItem.getAgeRange().getMinAge())
-            .pieceCount(componentItem.getPieceCount())
-            .storyContent(componentItem.getStoryContent())
-            .qaList(parseQaList(componentItem.getStoryQaJson()))
+            .videoUrl(content.getVideoUrl())
+            .storyTitle(content.getStoryTitle())
+            .childAge(component.getAgeRange() == null ? 6 : component.getAgeRange().getMinAge())
+            .pieceCount(content.getPieceCount())
+            .storyContent(content.getStoryContent())
+            .qaList(parseQaList(content.getStoryQaJson()))
             .build();
     }
 
@@ -79,8 +81,8 @@ public class ProductStoryService {
         return ComponentLookupDTO.builder()
             .productId(productId)
             .variantId(variantComponent.getProductVariant() == null ? null : variantComponent.getProductVariant().getId())
-            .componentId(variantComponent.getComponentItem() == null ? null : variantComponent.getComponentItem().getId())
-            .componentSku(variantComponent.getComponentItem() == null ? null : variantComponent.getComponentItem().getSku())
+            .componentId(variantComponent.getComponent() == null ? null : variantComponent.getComponent().getId())
+            .componentSku(variantComponent.getComponent() == null ? null : variantComponent.getComponent().getSku())
             .route(productId == null ? null : "/products/" + productId)
             .build();
     }

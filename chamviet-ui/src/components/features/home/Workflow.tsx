@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties } from 'react';
+import { Boxes, MessageCircleQuestion, PlayCircle, ScanLine } from 'lucide-react';
 
 import beHac from '@assets/be-hac.png';
+import beHacWebp from '@assets/be-hac.webp';
 
 import { useSmoothScroll, useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
 import { useHomePageData } from '../../../hooks/useHomePageData';
@@ -17,6 +19,13 @@ type WorkflowStep = {
   accentColor: string;
   variant: WorkflowVariant;
   fallbackLabel: string;
+};
+
+const workflowIcons = {
+  puzzle: Boxes,
+  scanner: ScanLine,
+  ghost: PlayCircle,
+  qa: MessageCircleQuestion,
 };
 
 function WorkflowAssetImage({
@@ -50,6 +59,7 @@ function WorkflowAssetImage({
       src={src}
       alt={alt ?? ''}
       loading="lazy"
+      decoding="async"
       onError={() => setHasError(true)}
     />
   );
@@ -110,7 +120,17 @@ function QaVisual({ step }: { step: WorkflowStep }) {
       <WorkflowAssetImage src={step.image} alt={step.alt} fallbackLabel={step.fallbackLabel} />
       <div className="workflow-visual__veil workflow-visual__veil--qa" aria-hidden="true" />
       <div className="workflow-visual__qa-head">
-        <img className="workflow-visual__qa-avatar" src={beHac} alt="" aria-hidden="true" />
+        <picture>
+          <source srcSet={beHacWebp} type="image/webp" />
+          <img
+            className="workflow-visual__qa-avatar"
+            src={beHac}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
         <div className="workflow-visual__qa-headcopy">
           <span className="workflow-visual__qa-kicker">AI Story Guide</span>
           <strong>Hỏi đáp và khám phá</strong>
@@ -160,24 +180,35 @@ export default function Workflow() {
 
           <div ref={listRef} className="workflow-section__cards">
             {steps.map((step) => (
-              <article
-                key={step.number}
-                className={`step-card step-card--${step.variant} scroll-reveal-child scale-in`}
-                style={{ '--accent-color': step.accentColor } as CSSProperties}
-              >
-                <div className="step-card__media">
-                  <WorkflowVisual step={step} />
-                </div>
+              (() => {
+                const Icon = workflowIcons[step.variant];
 
-                <div className="step-card__body">
-                  <div className="step-card__meta">
-                    <span className="step-card__num">{String(step.number).padStart(2, '0')}</span>
-                    <span className="step-card__category">{step.screenLabel}</span>
-                  </div>
-                  <h4 className="step-card__title">{step.title}</h4>
-                  <p className="step-card__desc">{step.description}</p>
-                </div>
-              </article>
+                return (
+                  <article
+                    key={step.number}
+                    className={`step-card step-card--${step.variant} scroll-reveal-child scale-in`}
+                    style={{ '--accent-color': step.accentColor } as CSSProperties}
+                  >
+                    <div className="step-card__media">
+                      <WorkflowVisual step={step} />
+                    </div>
+
+                    <div className="step-card__body">
+                      <div className="step-card__meta">
+                        <span className="step-card__identity">
+                          <span className="step-card__icon" aria-hidden="true">
+                            <Icon size={20} />
+                          </span>
+                          <span className="step-card__num">{String(step.number).padStart(2, '0')}</span>
+                        </span>
+                        <span className="step-card__category">{step.screenLabel}</span>
+                      </div>
+                      <h4 className="step-card__title">{step.title}</h4>
+                      <p className="step-card__desc">{step.description}</p>
+                    </div>
+                  </article>
+                );
+              })()
             ))}
           </div>
         </div>

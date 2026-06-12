@@ -154,10 +154,10 @@ public class BoxOrderService {
     private String toSnapshotJson(List<ProductVariantComponent> components) {
         List<ComponentSnapshot> snapshots = components.stream()
             .map(component -> new ComponentSnapshot(
-                component.getComponentItem().getId(),
-                component.getComponentItem().getSku(),
-                component.getComponentItem().getName(),
-                component.getComponentItem().getComponentType().name(),
+                component.getComponent().getId(),
+                component.getComponent().getSku(),
+                component.getComponent().getName(),
+                component.getComponent().getComponentType().name(),
                 component.getQuantity(),
                 component.getSortOrder()
             ))

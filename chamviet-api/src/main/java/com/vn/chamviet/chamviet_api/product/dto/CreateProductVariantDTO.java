@@ -19,7 +19,9 @@ public class CreateProductVariantDTO {
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;
 
-    private Integer ageRangeId;
+    @NotNull(message = "Component count is required")
+    @Positive(message = "Component count must be greater than 0")
+    private Integer componentCount;
 
     private Object attributes;
 

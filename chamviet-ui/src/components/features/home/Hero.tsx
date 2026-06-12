@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { ArrowRight, PlayCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { HOME_COPY, HOME_IMAGES, HOME_PRODUCT } from '../../../data/home';
-import heroChildAr from '../../../assets/hero-child-ar.png';
 
 export default function Hero() {
   const [showStickyCtA, setShowStickyCtA] = useState(false);
@@ -23,15 +22,23 @@ export default function Hero() {
     <>
       <section className="hero-section">
         <div className="hero-section__media" aria-hidden="true">
-          <img src={heroChildAr} alt="" />
+          <picture>
+            <source srcSet={HOME_IMAGES.heroChildArWebp} type="image/webp" />
+            <img
+              src={HOME_IMAGES.heroChildAr}
+              alt=""
+              decoding="async"
+              fetchPriority="high"
+            />
+          </picture>
         </div>
         <div className="hero-section__wash" />
 
         <div className="container hero-section__inner">
           <div className="hero-section__copy">
-            <p className="hero-section__kicker">Puzzle gỗ. Hộp phản chiếu. Câu chuyện Việt.</p>
+            <p className="hero-section__kicker">Câu chuyện Việt qua góc nhìn 3D.</p>
             <h1 className="hero-card__heading">
-              Một hộp chơi để bé chạm, xem và hỏi về văn hóa Việt.
+              Chạm một câu chuyện - Nhớ một Việt Nam.
             </h1>
             <p className="hero-card__sub">
               {HOME_COPY.hero.description}
@@ -52,19 +59,6 @@ export default function Hero() {
             </div>
           </div>
 
-          <button className="hero-demo" onClick={scrollToVideo} type="button">
-            <img
-              src={HOME_IMAGES.videoThumbnail}
-              alt="Demo cách đặt điện thoại lên hộp phản chiếu để xem câu chuyện"
-              className="hero-demo__image"
-            />
-            <span className="hero-demo__overlay">
-              <span className="hero-demo__play">
-                <PlayCircle size={42} />
-              </span>
-              <span className="hero-demo__label">Xem hộp hoạt động</span>
-            </span>
-          </button>
         </div>
       </section>
 

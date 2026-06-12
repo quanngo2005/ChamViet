@@ -6,7 +6,7 @@ import Card from "@mui/material/Card";
 import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { HOME_PRODUCT } from "../data/home";
+import { HOME_COPY, HOME_PRODUCT } from "../data/home";
 
 const COLORS = {
   bg: "#fdfbf7",
@@ -134,36 +134,13 @@ function HeroSection() {
 }
 
 function StepsSection() {
-  const steps = [
-    {
-      number: "1",
-      title: "Lắp Ghép Puzzle",
-      description:
-        "Chơi vật lý: Xây dựng thế giới của bạn với những mảnh ghép gỗ thủ công lấy cảm hứng từ đời sống làng quê.",
-      glyph: "🧩",
-    },
-    {
-      number: "2",
-      title: "Quét Mã QR",
-      description:
-        "Kết nối số: Khai mở bản sắc kỹ thuật số ẩn chứa của những nhân vật huyền thoại.",
-      glyph: "📱",
-    },
-    {
-      number: "3",
-      title: "Đặt và Phản Chiếu",
-      description:
-        "Tương tác kỳ diệu: Trải nghiệm trình chiếu ảnh ba chiều (hologram) bên trong chiếc hộp đặc biệt của chúng tôi.",
-      glyph: "🔮",
-    },
-    {
-      number: "4",
-      title: "Xem và Lắng Nghe",
-      description:
-        "Câu chuyện sống động: Đắm mình vào những câu chuyện dân gian Việt Nam được kể lại với hình ảnh đầy ấn tượng.",
-      glyph: "🎧",
-    },
-  ];
+  const glyphs = ["🧩", "📱", "🔮", "🎧"];
+  const steps = HOME_COPY.steps.items.map((step, index) => ({
+    number: step.number,
+    title: step.title,
+    description: step.description,
+    glyph: glyphs[index] ?? "✨",
+  }));
 
   return (
     <Box sx={{ position: "relative", backgroundColor: COLORS.surfaceAlt, py: { xs: 7, md: 10 }, overflow: "hidden" }}>
@@ -209,7 +186,7 @@ function StepsSection() {
               textAlign: "center"
             }}
           >
-            4 Bước ma thuật
+            {HOME_COPY.steps.title}
           </Typography>
 
           <Box sx={{ position: "relative" }}>
@@ -332,6 +309,99 @@ function StepsSection() {
                 </Stack>
               ))}
             </Box>
+          </Box>
+        </Stack>
+      </Container>
+    </Box>
+  );
+}
+
+function CommonIssuesSection() {
+  const issues = [
+    {
+      title: "Camera chưa nhận tranh",
+      description: "Đặt tranh trên mặt phẳng sáng, đưa trọn bức tranh vào khung quét và giữ điện thoại ổn định vài giây.",
+      glyph: "📷",
+    },
+    {
+      title: "Hình phản chiếu bị mờ",
+      description: "Giảm ánh sáng xung quanh, tăng độ sáng màn hình và đặt điện thoại đúng vị trí trên hộp Pepper's Ghost.",
+      glyph: "💡",
+    },
+    {
+      title: "Âm thanh quá nhỏ",
+      description: "Bật âm lượng điện thoại trước khi đặt lên hộp, hoặc dùng loa ngoài khi bé xem cùng cả gia đình.",
+      glyph: "🔊",
+    },
+  ];
+
+  return (
+    <Box sx={{ backgroundColor: COLORS.surfaceAlt, py: { xs: 7, md: 10 } }}>
+      <Container maxWidth="lg">
+        <Stack spacing={5}>
+          <Stack spacing={1.5} sx={{ maxWidth: 760 }}>
+            <Typography
+              variant="h4"
+              sx={{
+                color: COLORS.title,
+                fontWeight: 900,
+                fontSize: { xs: 24, md: 32 },
+                lineHeight: { xs: "30px", md: "38px" },
+              }}
+            >
+              Lỗi thường gặp khi trải nghiệm
+            </Typography>
+            <Typography sx={{ color: COLORS.muted, fontSize: 16, lineHeight: 1.7 }}>
+              Một vài chỉnh sửa nhỏ giúp phần quét tranh và phản chiếu ổn định hơn trên điện thoại.
+            </Typography>
+          </Stack>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+              gap: 3,
+            }}
+          >
+            {issues.map((issue) => (
+              <Card
+                key={issue.title}
+                sx={{
+                  borderRadius: 2,
+                  border: "1px solid rgba(168, 50, 50, 0.08)",
+                  boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.06)",
+                  backgroundColor: COLORS.surface,
+                }}
+              >
+                <Box sx={{ p: 3 }}>
+                  <Stack spacing={1.5}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        backgroundColor: "rgba(168, 50, 50, 0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 23,
+                      }}
+                      aria-hidden
+                    >
+                      {issue.glyph}
+                    </Box>
+                    <Stack spacing={0.75}>
+                      <Typography sx={{ color: COLORS.title, fontWeight: 850, fontSize: 18 }}>
+                        {issue.title}
+                      </Typography>
+                      <Typography sx={{ color: COLORS.body, fontSize: 14, lineHeight: 1.7 }}>
+                        {issue.description}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </Box>
+              </Card>
+            ))}
           </Box>
         </Stack>
       </Container>
@@ -541,6 +611,7 @@ export default function HowToPlayPage() {
       <HeroSection />
       <StepsSection />
       <TipsForParentsSection />
+      <CommonIssuesSection />
       <FinalCtaSection />
     </Box>
   );

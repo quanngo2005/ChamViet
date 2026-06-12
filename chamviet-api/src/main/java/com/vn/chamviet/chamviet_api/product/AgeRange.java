@@ -28,4 +28,15 @@ public class AgeRange {
 
     @Column(name = "max_age", nullable = false)
     private Integer maxAge;
+
+    @Column(name = "recommended_piece_count", nullable = false)
+    private Integer recommendedPieceCount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "difficulty_level")
+    private DifficultyLevel difficultyLevel;
+
+    public enum DifficultyLevel {
+        EASY, MEDIUM, HARD
+    }
 }

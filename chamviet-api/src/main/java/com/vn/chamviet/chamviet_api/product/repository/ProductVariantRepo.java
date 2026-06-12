@@ -18,10 +18,10 @@ public interface ProductVariantRepo extends JpaRepository<ProductVariant, Long> 
         select distinct pv
         from ProductVariant pv
         left join fetch pv.product
-        left join fetch pv.ageRange
         left join fetch pv.components pvc
-        left join fetch pvc.componentItem ci
-        left join fetch ci.ageRange
+        left join fetch pvc.component c
+        left join fetch c.content
+        left join fetch c.ageRange
         where pv.id = :id
         """)
     java.util.Optional<ProductVariant> findDetailedById(@Param("id") Long id);

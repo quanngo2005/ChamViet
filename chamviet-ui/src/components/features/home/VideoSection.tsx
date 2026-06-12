@@ -2,6 +2,7 @@ import { PlayCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
 import videoThumbnail from '../../../assets/video-thumbnail.png';
+import videoThumbnailWebp from '../../../assets/video-thumbnail.webp';
 
 export default function VideoSection() {
   const sectionRef = useSmoothScroll<HTMLDivElement>();
@@ -19,8 +20,8 @@ export default function VideoSection() {
           <div className="video-section__header">
             <p className="video-section__eyebrow">Trải nghiệm thực tế</p>
             <h2 className="video-section__title">
-              Xem câu chuyện hiện lên<br />
-              <span style={{ color: 'var(--primary)' }}>trong hộp Pepper's Ghost</span>
+              Pepper's Ghost Demo<br />
+              <span>câu chuyện hiện lên trong hộp</span>
             </h2>
             <p className="video-section__sub">
               Sự kết hợp giữa video trên điện thoại và hộp phản chiếu tạo cảm giác như một sân khấu thu nhỏ.
@@ -36,11 +37,16 @@ export default function VideoSection() {
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && openStory()}
           >
-            <img
-              src={videoThumbnail}
-              alt="Xem trải nghiệm video trong hộp phản chiếu"
-              className="video-section__thumb"
-            />
+            <picture>
+              <source srcSet={videoThumbnailWebp} type="image/webp" />
+              <img
+                src={videoThumbnail}
+                alt="Xem trải nghiệm video trong hộp phản chiếu"
+                className="video-section__thumb"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
             <div className="video-section__overlay">
               <div className="video-section__play-btn">
                 <PlayCircle size={56} color="white" />

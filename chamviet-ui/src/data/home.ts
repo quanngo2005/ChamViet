@@ -1,16 +1,24 @@
 import heroImage from '@assets/hero.png';
 import unboxingFlatlay from '@assets/unboxing-flatlay.png';
+import unboxingFlatlayWebp from '@assets/unboxing-flatlay.webp';
 import heroChildAr from '@assets/hero-child-ar.png';
+import heroChildArWebp from '@assets/hero-child-ar.webp';
 import videoThumbnail from '@assets/video-thumbnail.png';
+import videoThumbnailWebp from '@assets/video-thumbnail.webp';
 
 export const HOME_IMAGES = {
   heroImage,
+  heroChildAr,
+  heroChildArWebp,
   videoThumbnail,
+  videoThumbnailWebp,
+  unboxingFlatlay,
+  unboxingFlatlayWebp,
   howToPlay: {
     step1: heroImage,
-    step2: videoThumbnail,
-    step3: unboxingFlatlay,
-    step4: heroChildAr,
+    step2: videoThumbnailWebp,
+    step3: unboxingFlatlayWebp,
+    step4: heroChildArWebp,
   }
 };
 
@@ -49,42 +57,42 @@ export const HOME_COPY = {
     productTitle: 'Khám phá Sự tích Hồ Gươm và Sự tích Thánh Gióng',
   },
   learning: {
-    title: 'Học Hỏi Qua Mọi Giác Quan',
-    description: 'Phương pháp giáo dục đa giác quan kết hợp đồ chơi truyền thống và công nghệ hiện đại giúp trẻ phát triển toàn diện.',
+    title: 'Tại sao nên mua?',
+    description: 'Một box nhỏ gọn nhưng đủ để bé tự làm, tự xem và tự kể lại câu chuyện Việt theo cách của mình.',
     cards: [
       {
-        icon: '👁️',
-        title: 'Nhìn',
-        color: 'rgba(219, 234, 254, 1)',
-        description: 'Hình ảnh dân gian sinh động, màu sắc tươi sáng kích thích thị giác.',
+        icon: 'hands',
+        title: 'Tự tay hoàn thành',
+        color: 'rgba(139, 94, 60, 0.1)',
+        description: 'Puzzle gỗ giúp bé tập trung, kiên nhẫn và có cảm giác tự hào khi hoàn thành tranh.',
       },
       {
-        icon: '👂',
-        title: 'Nghe',
-        color: 'rgba(217, 164, 65, 0.2)',
-        description: 'Giọng kể lôi cuốn, âm nhạc truyền thống qua ứng dụng tương tác.',
+        icon: 'stage',
+        title: 'Xem chuyện hiện lên',
+        color: 'rgba(198, 40, 40, 0.08)',
+        description: 'Hộp phản chiếu biến điện thoại thành sân khấu nhỏ, dễ hiểu ngay khi đặt lên hộp.',
       },
       {
-        icon: '✋',
-        title: 'Chạm',
-        color: 'rgba(220, 252, 231, 1)',
-        description: 'Chất liệu gỗ tự nhiên an toàn, mang lại cảm giác ấm áp chân thực.',
+        icon: 'qa',
+        title: 'Hỏi tiếp sau khi xem',
+        color: 'rgba(212, 175, 55, 0.14)',
+        description: 'AI hỏi đáp giúp bé nhớ nhân vật, sự kiện và ý nghĩa câu chuyện lâu hơn.',
       },
       {
-        icon: '🎮',
-        title: 'Chơi',
-        color: 'rgba(168, 50, 50, 0.1)',
-        description: 'Tương tác sáng tạo, rèn luyện tư duy logic và kỹ năng vận động tinh.',
+        icon: 'gift',
+        title: 'Quà tặng có chiều sâu',
+        color: 'rgba(78, 52, 46, 0.08)',
+        description: 'Phù hợp làm quà cho bé và cũng là cách gia đình cùng nói chuyện về văn hóa Việt.',
       },
     ]
   },
   steps: {
-    title: 'Hành Trình Trải Nghiệm 4 Bước',
-    description: 'Mỗi bước dùng một hình minh họa riêng để người xem hiểu ngay hành động cần làm.',
+    title: 'Trải nghiệm 4 bước',
+    description: 'Vuốt từng bước trên điện thoại để thấy hành trình từ lắp ghép đến hỏi đáp.',
     items: [
       {
         number: '1',
-        title: 'Lắp ghép',
+        title: 'Bé tự tay lắp ghép',
         description: 'Các mảnh gỗ ghép vào nhau để dần hiện ra bức tranh văn hóa.',
         screenLabel: 'Lắp ghép puzzle',
         image: HOME_IMAGES.howToPlay.step1,
@@ -95,7 +103,7 @@ export const HOME_COPY = {
       },
       {
         number: '2',
-        title: 'Quét với AI Vision',
+        title: 'Quét tranh bằng AI',
         description: 'Đưa điện thoại vào màn hình quét của web để nhận diện bức tranh đã hoàn thành.',
         screenLabel: 'AI Vision',
         image: HOME_IMAGES.howToPlay.step2,
@@ -106,7 +114,7 @@ export const HOME_COPY = {
       },
       {
         number: '3',
-        title: 'Đặt lên hộp và xem',
+        title: 'Xem sân khấu nhỏ',
         description: 'Đặt điện thoại lên hộp Pepper\'s Ghost để hiệu ứng phản chiếu hiện lên rõ hơn.',
         screenLabel: 'Pepper Ghost',
         image: HOME_IMAGES.howToPlay.step3,
@@ -117,7 +125,7 @@ export const HOME_COPY = {
       },
       {
         number: '4',
-        title: 'Hỏi đáp và khám phá',
+        title: 'Hỏi thêm cùng AI',
         description: 'Đặt câu hỏi để khám phá câu chuyện qua giao diện trò chuyện AI tương tác.',
         screenLabel: 'Hỏi đáp',
         image: HOME_IMAGES.howToPlay.step4,

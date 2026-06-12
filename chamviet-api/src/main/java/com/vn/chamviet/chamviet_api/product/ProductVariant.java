@@ -31,10 +31,6 @@ public class ProductVariant {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "age_range_id")
-    private AgeRange ageRange;
-
     @Column(unique = true, length = 100)
     @ToString.Include
     private String sku;
@@ -42,6 +38,9 @@ public class ProductVariant {
     @Column(nullable = false, precision = 10, scale = 2)
     @ToString.Include
     private BigDecimal price;
+
+    @Column(name = "component_count", nullable = false)
+    private Integer componentCount;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json")

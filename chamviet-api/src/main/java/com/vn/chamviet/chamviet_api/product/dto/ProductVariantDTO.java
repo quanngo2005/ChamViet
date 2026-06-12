@@ -12,8 +12,7 @@ public class ProductVariantDTO {
     private Long id;
     private String sku;
     private BigDecimal price;
-    private Integer ageRangeId;
-    private String ageRangeName;
+    private Integer componentCount;
     private Object attributes;
     private List<ProductVariantComponentDTO> components;
 }

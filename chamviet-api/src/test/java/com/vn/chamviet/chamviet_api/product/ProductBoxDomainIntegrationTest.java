@@ -8,7 +8,7 @@ import com.vn.chamviet.chamviet_api.entity.repository.OrdersRepo;
 import com.vn.chamviet.chamviet_api.product.dto.ProductDTO;
 import com.vn.chamviet.chamviet_api.product.repository.AgeRangeRepo;
 import com.vn.chamviet.chamviet_api.product.repository.CategoryRepo;
-import com.vn.chamviet.chamviet_api.product.repository.ComponentItemRepo;
+import com.vn.chamviet.chamviet_api.product.repository.ComponentRepo;
 import com.vn.chamviet.chamviet_api.product.repository.ProductRepo;
 import com.vn.chamviet.chamviet_api.product.repository.ProductVariantRepo;
 import com.vn.chamviet.chamviet_api.product.service.BoxOrderService;
@@ -63,7 +63,7 @@ class ProductBoxDomainIntegrationTest {
     private ProductVariantRepo productVariantRepo;
 
     @Autowired
-    private ComponentItemRepo componentItemRepo;
+    private ComponentRepo componentRepo;
 
     @Autowired
     private ProductService productService;
@@ -100,9 +100,9 @@ class ProductBoxDomainIntegrationTest {
 
     private Account account;
     private ProductVariant variant;
-    private ComponentItem puzzleOne;
-    private ComponentItem puzzleTwo;
-    private ComponentItem pepperGhost;
+    private Component puzzleOne;
+    private Component puzzleTwo;
+    private Component pepperGhost;
 
     @BeforeEach
     void setUp() {
@@ -128,6 +128,8 @@ class ProductBoxDomainIntegrationTest {
             .name("4-6")
             .minAge(4)
             .maxAge(6)
+            .recommendedPieceCount(20)
+            .difficultyLevel(AgeRange.DifficultyLevel.EASY)
             .build());
 
         Product product = Product.builder()
@@ -148,50 +150,58 @@ class ProductBoxDomainIntegrationTest {
             .isPrimary(true)
             .build());
 
-        puzzleOne = componentItemRepo.save(ComponentItem.builder()
+        puzzleOne = Component.builder()
             .sku("PUZ-ONE")
             .name("Puzzle One")
-            .componentType(ComponentItem.ComponentType.PUZZLE)
+            .componentType(Component.ComponentType.PUZZLE)
             .ageRange(ageRange)
+            .stockOnHand(10)
+            .reservedStock(0)
+            .status(Component.ComponentStatus.ACTIVE)
+            .build();
+        puzzleOne.setContent(ComponentContent.builder()
+            .component(puzzleOne)
             .videoUrl("https://www.youtube.com/watch?v=Mb0RWyh3sqQ")
             .storyTitle("Lac Long Quan")
             .storyContent("Story content one")
             .storyQaJson("[{\"question\":\"Q1\",\"answer\":\"A1\"}]")
             .pieceCount(12)
-            .stockOnHand(10)
-            .reservedStock(0)
-            .status(ComponentItem.ComponentStatus.ACTIVE)
             .build());
+        puzzleOne = componentRepo.save(puzzleOne);
 
-        puzzleTwo = componentItemRepo.save(ComponentItem.builder()
+        puzzleTwo = Component.builder()
             .sku("PUZ-TWO")
             .name("Puzzle Two")
-            .componentType(ComponentItem.ComponentType.PUZZLE)
+            .componentType(Component.ComponentType.PUZZLE)
             .ageRange(ageRange)
+            .stockOnHand(10)
+            .reservedStock(0)
+            .status(Component.ComponentStatus.ACTIVE)
+            .build();
+        puzzleTwo.setContent(ComponentContent.builder()
+            .component(puzzleTwo)
             .videoUrl("https://www.youtube.com/watch?v=Mb0RWyh3sqQ")
             .storyTitle("Lac Long Quan")
             .storyContent("Story content two")
             .storyQaJson("[{\"question\":\"Q2\",\"answer\":\"A2\"}]")
             .pieceCount(18)
-            .stockOnHand(10)
-            .reservedStock(0)
-            .status(ComponentItem.ComponentStatus.ACTIVE)
             .build());
+        puzzleTwo = componentRepo.save(puzzleTwo);
 
-        pepperGhost = componentItemRepo.save(ComponentItem.builder()
+        pepperGhost = componentRepo.save(Component.builder()
             .sku("PG-ONE")
             .name("Pepper Ghost")
-            .componentType(ComponentItem.ComponentType.PEPPER_GHOST)
+            .componentType(Component.ComponentType.PEPPER_GHOST)
             .stockOnHand(10)
             .reservedStock(0)
-            .status(ComponentItem.ComponentStatus.ACTIVE)
+            .status(Component.ComponentStatus.ACTIVE)
             .build());
 
         variant = ProductVariant.builder()
             .product(product)
-            .ageRange(ageRange)
             .sku("BOX-001")
             .price(new BigDecimal("500000.00"))
+            .componentCount(3)
             .components(new ArrayList<>())
             .build();
 
@@ -199,19 +209,19 @@ class ProductBoxDomainIntegrationTest {
         savedVariant.setComponents(new ArrayList<>(List.of(
             ProductVariantComponent.builder()
                 .productVariant(savedVariant)
-                .componentItem(puzzleOne)
+                .component(puzzleOne)
                 .quantity(1)
                 .sortOrder(0)
                 .build(),
             ProductVariantComponent.builder()
                 .productVariant(savedVariant)
-                .componentItem(puzzleTwo)
+                .component(puzzleTwo)
                 .quantity(1)
                 .sortOrder(1)
                 .build(),
             ProductVariantComponent.builder()
                 .productVariant(savedVariant)
-                .componentItem(pepperGhost)
+                .component(pepperGhost)
                 .quantity(1)
                 .sortOrder(2)
                 .build()
@@ -237,35 +247,42 @@ class ProductBoxDomainIntegrationTest {
 
     @Test
     void shouldRejectInvalidPuzzleMetadata() {
-        ComponentItem invalidPuzzle = ComponentItem.builder()
+        Component invalidPuzzle = Component.builder()
             .sku("PUZ-BAD")
             .name("Broken Puzzle")
-            .componentType(ComponentItem.ComponentType.PUZZLE)
+            .componentType(Component.ComponentType.PUZZLE)
             .stockOnHand(1)
             .reservedStock(0)
-            .status(ComponentItem.ComponentStatus.ACTIVE)
+            .status(Component.ComponentStatus.ACTIVE)
             .build();
 
         assertThrows(ConstraintViolationException.class, () -> {
-            componentItemRepo.saveAndFlush(invalidPuzzle);
+            componentRepo.saveAndFlush(invalidPuzzle);
             entityManager.flush();
         });
     }
 
     @Test
     void shouldRejectPepperGhostWithStoryMetadata() {
-        ComponentItem invalidPepperGhost = ComponentItem.builder()
+        Component invalidPepperGhost = Component.builder()
             .sku("PG-BAD")
             .name("Pepper Ghost Invalid")
-            .componentType(ComponentItem.ComponentType.PEPPER_GHOST)
-            .videoUrl("https://www.youtube.com/watch?v=Mb0RWyh3sqQ")
+            .componentType(Component.ComponentType.PEPPER_GHOST)
             .stockOnHand(1)
             .reservedStock(0)
-            .status(ComponentItem.ComponentStatus.ACTIVE)
+            .status(Component.ComponentStatus.ACTIVE)
             .build();
+        invalidPepperGhost.setContent(ComponentContent.builder()
+            .component(invalidPepperGhost)
+            .videoUrl("https://www.youtube.com/watch?v=Mb0RWyh3sqQ")
+            .storyTitle("Invalid")
+            .storyContent("Invalid")
+            .storyQaJson("[{\"question\":\"Q\",\"answer\":\"A\"}]")
+            .pieceCount(1)
+            .build());
 
         assertThrows(ConstraintViolationException.class, () -> {
-            componentItemRepo.saveAndFlush(invalidPepperGhost);
+            componentRepo.saveAndFlush(invalidPepperGhost);
             entityManager.flush();
         });
     }
@@ -273,9 +290,10 @@ class ProductBoxDomainIntegrationTest {
     @Test
     void shouldRejectInvalidBoxComposition() {
         ProductVariant invalidVariant = ProductVariant.builder()
+            .componentCount(2)
             .components(List.of(
-                ProductVariantComponent.builder().componentItem(puzzleOne).quantity(1).build(),
-                ProductVariantComponent.builder().componentItem(pepperGhost).quantity(1).build()
+                ProductVariantComponent.builder().component(puzzleOne).quantity(1).build(),
+                ProductVariantComponent.builder().component(pepperGhost).quantity(1).build()
             ))
             .build();
 
@@ -286,17 +304,17 @@ class ProductBoxDomainIntegrationTest {
     void shouldReserveReleaseAndConsumeComponentInventory() {
         componentInventoryService.reserveComponents(variant.getId(), 2, 101L, "Reserve two boxes");
 
-        ComponentItem reservedPuzzle = componentItemRepo.findById(puzzleOne.getId()).orElseThrow();
-        ComponentItem reservedGhost = componentItemRepo.findById(pepperGhost.getId()).orElseThrow();
+        Component reservedPuzzle = componentRepo.findById(puzzleOne.getId()).orElseThrow();
+        Component reservedGhost = componentRepo.findById(pepperGhost.getId()).orElseThrow();
         assertEquals(2, reservedPuzzle.getReservedStock());
         assertEquals(2, reservedGhost.getReservedStock());
 
         componentInventoryService.releaseComponents(variant.getId(), 1, 101L, "Release one box");
-        assertEquals(1, componentItemRepo.findById(puzzleOne.getId()).orElseThrow().getReservedStock());
+        assertEquals(1, componentRepo.findById(puzzleOne.getId()).orElseThrow().getReservedStock());
 
         componentInventoryService.consumeReservedComponents(variant.getId(), 1, 101L, "Consume one box");
-        ComponentItem consumedPuzzle = componentItemRepo.findById(puzzleOne.getId()).orElseThrow();
-        ComponentItem consumedGhost = componentItemRepo.findById(pepperGhost.getId()).orElseThrow();
+        Component consumedPuzzle = componentRepo.findById(puzzleOne.getId()).orElseThrow();
+        Component consumedGhost = componentRepo.findById(pepperGhost.getId()).orElseThrow();
 
         assertEquals(0, consumedPuzzle.getReservedStock());
         assertEquals(9, consumedPuzzle.getStockOnHand());
@@ -326,17 +344,17 @@ class ProductBoxDomainIntegrationTest {
         OrderDetail detail = saved.getOrderDetails().get(0);
         assertEquals("BOX-001", detail.getSnapshotVariantSku());
         assertEquals(3, objectMapper.readTree(detail.getSnapshotComponentsJson()).size());
-        assertEquals(1, componentItemRepo.findById(puzzleOne.getId()).orElseThrow().getReservedStock());
+        assertEquals(1, componentRepo.findById(puzzleOne.getId()).orElseThrow().getReservedStock());
 
         ProductVariant reloadedVariant = productVariantRepo.findById(variant.getId()).orElseThrow();
-        reloadedVariant.getComponents().get(0).getComponentItem().setStoryTitle("Changed Story Title");
+        reloadedVariant.getComponents().get(0).getComponent().getContent().setStoryTitle("Changed Story Title");
         productVariantRepo.saveAndFlush(reloadedVariant);
 
         Orders snapshotCheck = ordersRepo.findById(created.getId()).orElseThrow();
         assertEquals(3, objectMapper.readTree(snapshotCheck.getOrderDetails().get(0).getSnapshotComponentsJson()).size());
 
         boxOrderService.cancelOrder(created.getId(), account.getId());
-        assertEquals(0, componentItemRepo.findById(puzzleOne.getId()).orElseThrow().getReservedStock());
+        assertEquals(0, componentRepo.findById(puzzleOne.getId()).orElseThrow().getReservedStock());
 
         Orders createdAgain = boxOrderService.createOrder(new BoxOrderService.CreateBoxOrderCommand(
             account.getId(),
@@ -354,14 +372,14 @@ class ProductBoxDomainIntegrationTest {
         ));
         Orders packed = boxOrderService.startPacking(createdAgain.getId(), account.getId());
         assertEquals(Orders.OrderStatus.PACKING, packed.getStatus());
-        assertEquals(9, componentItemRepo.findById(pepperGhost.getId()).orElseThrow().getStockOnHand());
+        assertEquals(9, componentRepo.findById(pepperGhost.getId()).orElseThrow().getStockOnHand());
     }
 
     @Test
     void shouldRejectOrderWhenComponentStockIsInsufficient() {
-        ComponentItem managedPuzzleOne = componentItemRepo.findById(puzzleOne.getId()).orElseThrow();
-        ComponentItem managedPuzzleTwo = componentItemRepo.findById(puzzleTwo.getId()).orElseThrow();
-        ComponentItem managedPepperGhost = componentItemRepo.findById(pepperGhost.getId()).orElseThrow();
+        Component managedPuzzleOne = componentRepo.findById(puzzleOne.getId()).orElseThrow();
+        Component managedPuzzleTwo = componentRepo.findById(puzzleTwo.getId()).orElseThrow();
+        Component managedPepperGhost = componentRepo.findById(pepperGhost.getId()).orElseThrow();
         managedPuzzleOne.setStockOnHand(0);
         managedPuzzleTwo.setStockOnHand(0);
         managedPepperGhost.setStockOnHand(0);
@@ -396,8 +414,8 @@ class ProductBoxDomainIntegrationTest {
     @Test
     void shouldAcceptValidPuzzlePersistence() {
         assertDoesNotThrow(() -> {
-            ComponentItem reloaded = componentItemRepo.findById(puzzleOne.getId()).orElseThrow();
-            assertNotNull(reloaded.getStoryQaJson());
+            Component reloaded = componentRepo.findById(puzzleOne.getId()).orElseThrow();
+            assertNotNull(reloaded.getContent().getStoryQaJson());
         });
     }
 }

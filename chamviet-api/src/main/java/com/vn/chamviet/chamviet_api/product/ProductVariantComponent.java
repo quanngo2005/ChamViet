@@ -26,8 +26,8 @@ public class ProductVariantComponent {
     private ProductVariant productVariant;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "component_item_id", nullable = false)
-    private ComponentItem componentItem;
+    @JoinColumn(name = "component_id", nullable = false)
+    private Component component;
 
     @Positive
     @Column(nullable = false)

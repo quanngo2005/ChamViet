@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface ProductVariantComponentRepo extends JpaRepository<ProductVariantComponent, Long> {
     List<ProductVariantComponent> findByProductVariantIdOrderBySortOrderAsc(Long productVariantId);
 
-    Optional<ProductVariantComponent> findFirstByComponentItemSkuOrderBySortOrderAsc(String sku);
+    Optional<ProductVariantComponent> findFirstByComponentSkuOrderBySortOrderAsc(String sku);
 }

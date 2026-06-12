@@ -90,6 +90,7 @@ export default function App() {
           <Route element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutUsPage />} />
+          <Route path="aboutus" element={<Navigate to="/about" replace />} />
           <Route path="story" element={<StoryPage />} />
           <Route path="how-to-play" element={<HowToPlayPage />} />
           <Route path="products" element={<Navigate to={`/products/${HOME_PRODUCT.id}`} replace />} />

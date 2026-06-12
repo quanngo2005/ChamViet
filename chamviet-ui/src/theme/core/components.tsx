@@ -42,7 +42,7 @@ const MuiButton: Components<Theme>['MuiButton'] = {
       fontWeight: 500,
       textTransform: 'none',
       borderRadius: '4px', // Match the slight radius in the image
-      transition: `all ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeInOut}`,
+      transition: `background-color ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeInOut}, color ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeInOut}, box-shadow ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeInOut}, transform ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeInOut}`,
     }),
     contained: () => ({
       boxShadow: 'none', // Image shows flat buttons mostly
@@ -108,7 +108,7 @@ const MuiCard: Components<Theme>['MuiCard'] = {
       boxShadow: heritageShadows.md,
       borderRadius: parseInt(heritageBorderRadius.lg.replace('px', '')) + 'px',
       border: `1px solid ${hexAlpha(heritageColors.textMain, 0.08)}`,
-      transition: `all ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}`,
+      transition: `box-shadow ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}, background-color ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}`,
       '&:hover': {
         boxShadow: heritageShadows.lg,
       },
@@ -214,7 +214,7 @@ const MuiLink: Components<Theme>['MuiLink'] = {
     root: ({ theme }) => ({
       color: heritageColors.primary,
       cursor: 'pointer',
-      transition: `all ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}`,
+      transition: `color ${theme.transitions.duration.shorter} ${theme.transitions.easing.easeOut}`,
       '&:hover': {
         color: heritageColors.primaryHover,
       },

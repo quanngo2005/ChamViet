@@ -14,7 +14,7 @@ import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import { useVoiceAI } from "../../hooks/useVoiceAi";
 import { fetchStoryConfigByVideoId, type StoryConfig } from "../../data/video-story-qa";
 import { resolveApiOrigin } from "../../utils/apiBase";
-import mascotHac from "../../assets/be-hac.png";
+import mascot from "../../assets/be-hac.png";
 
 const API_BASE_URL = resolveApiOrigin(import.meta.env.VITE_API_BASE_URL as string | undefined);
 
@@ -71,7 +71,7 @@ interface ChatMessage {
 const DEFAULT_VIDEO_REGISTRY: VideoRegistry = {
   Mb0RWyh3sqQ: {
     stopTime: 8,
-    mascotAvatar: mascotHac,
+    mascotAvatar: mascot,
     dialogue: [],
   },
 };
@@ -84,6 +84,44 @@ interface YouTubeStopOverlayPlayerProps {
   storyConfig?: StoryConfig;
   onCtaClick?: (videoId: string, config: VideoStopConfig) => void;
   colors?: any;
+}
+
+function extractYouTubeVideoId(value?: string): string | null {
+  const source = value?.trim();
+  if (!source) return null;
+  if (/^[a-zA-Z0-9_-]{11}$/.test(source)) return source;
+
+  try {
+    const url = new URL(source);
+    const host = url.hostname.replace(/^www\./, "");
+
+    if (host === "youtu.be") {
+      return url.pathname.split("/").filter(Boolean)[0] ?? null;
+    }
+
+    if (host.endsWith("youtube.com")) {
+      const watchId = url.searchParams.get("v");
+      if (watchId) return watchId;
+
+      const [kind, id] = url.pathname.split("/").filter(Boolean);
+      if ((kind === "embed" || kind === "shorts") && id) return id;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function isNativeVideoUrl(value?: string): boolean {
+  const source = value?.trim();
+  return Boolean(source && (/^data:video\//i.test(source) || /\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(source)));
+}
+
+function resolveVideoSourceUrl(value: string): string {
+  if (/^(https?:|blob:|data:)/i.test(value)) return value;
+  if (value.startsWith("/")) return `${API_BASE_URL}${value}`;
+  return `${API_BASE_URL}/${value.replace(/^\.?\//, "")}`;
 }
 
 // ─── Keyframes injected once ──────────────────────────────────────────────────
@@ -185,11 +223,19 @@ export default function YouTubeStopOverlayPlayer({
   // ── Refs ────────────────────────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
+  const nativeVideoRef = useRef<HTMLVideoElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const activeRegistry = registry || DEFAULT_VIDEO_REGISTRY;
-  const config = activeRegistry[videoId];
+  const config = activeRegistry[videoId] || DEFAULT_VIDEO_REGISTRY[videoId];
   const storyConfig = storyConfigOverride ?? config?.storyConfig ?? resolvedStoryConfig ?? undefined;
+  const backendVideoUrl = storyConfig?.videoUrl?.trim();
+  const backendYouTubeVideoId = extractYouTubeVideoId(backendVideoUrl);
+  const playbackVideoId = backendYouTubeVideoId ?? videoId;
+  const nativeVideoSrc =
+    backendVideoUrl && !backendYouTubeVideoId && isNativeVideoUrl(backendVideoUrl)
+      ? resolveVideoSourceUrl(backendVideoUrl)
+      : null;
 
   // ── Message helpers ─────────────────────────────────────────────────────
   const addMessage = useCallback((role: "user" | "ai", content: string) => {
@@ -323,7 +369,10 @@ export default function YouTubeStopOverlayPlayer({
 
   const handleReplay = () => {
     stopSession();
-    if (playerRef.current) {
+    if (nativeVideoRef.current) {
+      nativeVideoRef.current.currentTime = config?.startTime || 0;
+      void nativeVideoRef.current.play();
+    } else if (playerRef.current) {
       playerRef.current.seekTo(config?.startTime || 0);
       playerRef.current.playVideo();
     }
@@ -354,17 +403,38 @@ export default function YouTubeStopOverlayPlayer({
         "& iframe": { width: "100% !important", height: "100% !important" },
       }}
     >
-      <YouTube
-        videoId={videoId}
-        onReady={onReady}
-        onStateChange={onStateChange}
-        opts={{
-          width: "100%",
-          height: "100%",
-          playerVars: { rel: 0, modestbranding: 1, controls: 1, disablekb: 1, fs: 1 },
-        }}
-        style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}
-      />
+      {nativeVideoSrc ? (
+        <Box
+          component="video"
+          ref={nativeVideoRef}
+          src={nativeVideoSrc}
+          controls
+          playsInline
+          preload="metadata"
+          onEnded={() => setOverlayOpen(true)}
+          sx={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            inset: 0,
+            display: "block",
+            objectFit: "contain",
+            backgroundColor: "#000000",
+          }}
+        />
+      ) : (
+        <YouTube
+          videoId={playbackVideoId}
+          onReady={onReady}
+          onStateChange={onStateChange}
+          opts={{
+            width: "100%",
+            height: "100%",
+            playerVars: { rel: 0, modestbranding: 1, controls: 1, disablekb: 1, fs: 1 },
+          }}
+          style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}
+        />
+      )}
 
       {config && (
         <Portal>
@@ -731,7 +801,7 @@ export default function YouTubeStopOverlayPlayer({
                             ? "0 4px 14px rgba(168,50,50,0.35)"
                             : "none",
                         transform: isRecording ? "scale(1.12)" : "scale(1)",
-                        transition: "all 0.2s ease",
+                        transition: "transform 0.2s ease, background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease",
                         outline: "none",
                         opacity: canRecord || isRecording ? 1 : 0.6,
                         "&:active": canRecord || isRecording ? { transform: "scale(0.96)" } : {},

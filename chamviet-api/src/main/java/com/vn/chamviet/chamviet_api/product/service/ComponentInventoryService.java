@@ -2,10 +2,10 @@ package com.vn.chamviet.chamviet_api.product.service;
 
 import com.vn.chamviet.chamviet_api.entity.InventoryTransaction;
 import com.vn.chamviet.chamviet_api.entity.repository.InventoryTransactionRepo;
-import com.vn.chamviet.chamviet_api.product.ComponentItem;
+import com.vn.chamviet.chamviet_api.product.Component;
 import com.vn.chamviet.chamviet_api.product.ProductVariant;
 import com.vn.chamviet.chamviet_api.product.ProductVariantComponent;
-import com.vn.chamviet.chamviet_api.product.repository.ComponentItemRepo;
+import com.vn.chamviet.chamviet_api.product.repository.ComponentRepo;
 import com.vn.chamviet.chamviet_api.product.repository.ProductVariantRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ComponentInventoryService {
     private final ProductVariantRepo productVariantRepo;
-    private final ComponentItemRepo componentItemRepo;
+    private final ComponentRepo componentRepo;
     private final InventoryTransactionRepo inventoryTransactionRepo;
     private final ProductVariantCompositionService compositionService;
 
@@ -55,28 +55,28 @@ public class ComponentInventoryService {
         Map<Long, Integer> requiredByComponentId = new HashMap<>();
         for (ProductVariantComponent component : variant.getComponents()) {
             requiredByComponentId.merge(
-                component.getComponentItem().getId(),
+                component.getComponent().getId(),
                 component.getQuantity() * boxQuantity,
                 Integer::sum
             );
         }
 
-        List<ComponentItem> lockedComponents = componentItemRepo.findAllByIdInForUpdate(requiredByComponentId.keySet());
+        List<Component> lockedComponents = componentRepo.findAllByIdInForUpdate(requiredByComponentId.keySet());
         if (lockedComponents.size() != requiredByComponentId.size()) {
             throw new EntityNotFoundException("One or more components are missing");
         }
 
-        for (ComponentItem componentItem : lockedComponents) {
-            int required = requiredByComponentId.get(componentItem.getId());
+        for (Component component : lockedComponents) {
+            int required = requiredByComponentId.get(component.getId());
             switch (movementType) {
-                case RESERVE -> reserve(componentItem, required);
-                case RELEASE -> release(componentItem, required);
-                case CONSUME -> consume(componentItem, required);
+                case RESERVE -> reserve(component, required);
+                case RELEASE -> release(component, required);
+                case CONSUME -> consume(component, required);
                 default -> throw new IllegalArgumentException("Unsupported movement type: " + movementType);
             }
 
             inventoryTransactionRepo.save(InventoryTransaction.builder()
-                .componentItem(componentItem)
+                .component(component)
                 .type(movementType)
                 .quantity(required)
                 .referenceId(referenceId)
@@ -85,29 +85,29 @@ public class ComponentInventoryService {
         }
     }
 
-    private void reserve(ComponentItem componentItem, int required) {
-        int available = componentItem.getStockOnHand() - componentItem.getReservedStock();
+    private void reserve(Component component, int required) {
+        int available = component.getStockOnHand() - component.getReservedStock();
         if (available < required) {
-            throw new IllegalStateException("Insufficient component stock for " + componentItem.getSku());
+            throw new IllegalStateException("Insufficient component stock for " + component.getSku());
         }
-        componentItem.setReservedStock(componentItem.getReservedStock() + required);
+        component.setReservedStock(component.getReservedStock() + required);
     }
 
-    private void release(ComponentItem componentItem, int required) {
-        if (componentItem.getReservedStock() < required) {
-            throw new IllegalStateException("Reserved stock cannot go below zero for " + componentItem.getSku());
+    private void release(Component component, int required) {
+        if (component.getReservedStock() < required) {
+            throw new IllegalStateException("Reserved stock cannot go below zero for " + component.getSku());
         }
-        componentItem.setReservedStock(componentItem.getReservedStock() - required);
+        component.setReservedStock(component.getReservedStock() - required);
     }
 
-    private void consume(ComponentItem componentItem, int required) {
-        if (componentItem.getReservedStock() < required) {
-            throw new IllegalStateException("Reserved stock is insufficient for consume on " + componentItem.getSku());
+    private void consume(Component component, int required) {
+        if (component.getReservedStock() < required) {
+            throw new IllegalStateException("Reserved stock is insufficient for consume on " + component.getSku());
         }
-        if (componentItem.getStockOnHand() < required) {
-            throw new IllegalStateException("On-hand stock is insufficient for consume on " + componentItem.getSku());
+        if (component.getStockOnHand() < required) {
+            throw new IllegalStateException("On-hand stock is insufficient for consume on " + component.getSku());
         }
-        componentItem.setReservedStock(componentItem.getReservedStock() - required);
-        componentItem.setStockOnHand(componentItem.getStockOnHand() - required);
+        component.setReservedStock(component.getReservedStock() - required);
+        component.setStockOnHand(component.getStockOnHand() - required);
     }
 }

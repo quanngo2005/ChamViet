@@ -3075,3 +3075,451 @@ body.home-page-active section {
     margin: 8px 8px 0 0;
   }
 }
+
+/* Mobile-first landing refresh */
+.hero-section__media picture,
+.video-section__player picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.experience-bento {
+  padding: 104px 0 112px;
+}
+
+.experience-bento__heading {
+  max-width: 860px;
+  margin-inline: 0;
+  text-align: left;
+}
+
+.experience-bento__heading h2 {
+  max-width: 760px;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.experience-bento__heading > p:last-child {
+  max-width: 56ch;
+  margin-top: 18px;
+  color: rgba(78, 52, 46, 0.74);
+  font-size: 17px;
+  line-height: 1.72;
+}
+
+.experience-bento__grid {
+  grid-template-columns: minmax(320px, 1.05fr) repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.experience-bento__card {
+  min-height: 240px;
+  border-radius: 8px;
+  outline: none;
+}
+
+.experience-bento__card:focus-visible {
+  box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.18), 0 18px 42px rgba(78, 52, 46, 0.08);
+}
+
+.experience-bento__card--product {
+  grid-column: span 1;
+  grid-row: span 2;
+  min-height: 100%;
+  padding: 0;
+  background: #2b1512;
+}
+
+.experience-bento__card--product picture {
+  display: block;
+  height: 54%;
+  min-height: 260px;
+  overflow: hidden;
+}
+
+.experience-bento__card--product img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+.experience-bento__feature-copy {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+}
+
+.experience-bento__card--benefit {
+  grid-column: span 1;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.88), rgba(255, 249, 242, 0.74)),
+    var(--benefit-bg, rgba(198, 40, 40, 0.06));
+}
+
+.experience-bento__card--benefit p {
+  line-height: 1.72;
+}
+
+.workflow-section {
+  padding: 112px 0 120px;
+}
+
+.workflow-section__header {
+  position: relative;
+  top: auto;
+  margin-inline: 0;
+  text-align: left;
+}
+
+.workflow-section__title {
+  font-size: 52px;
+  line-height: 1.04;
+  letter-spacing: 0;
+}
+
+.workflow-section__sub {
+  max-width: 58ch;
+  margin-inline: 0;
+  line-height: 1.72;
+}
+
+.workflow-section__cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.workflow-section__connector {
+  display: none;
+}
+
+.step-card,
+.step-card:nth-child(even),
+.step-card:nth-child(even):hover {
+  transform: none;
+}
+
+.step-card {
+  min-height: 100%;
+  padding: 14px;
+  cursor: default;
+  touch-action: pan-x pan-y;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+}
+
+.step-card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.step-card__body {
+  gap: 14px;
+}
+
+.step-card__meta {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.step-card__identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-card__icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--accent-color);
+  color: white;
+  box-shadow: 0 12px 22px rgba(78, 52, 46, 0.16);
+}
+
+.step-card__num {
+  font-size: 42px;
+  line-height: 0.9;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.step-card__title {
+  font-size: 24px;
+  line-height: 1.12;
+}
+
+.step-card__desc {
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+.workflow-visual__image {
+  animation: workflowMediaLoop 4.6s ease-in-out infinite;
+}
+
+.workflow-visual__ghost-glow,
+.workflow-visual__scan-line,
+.workflow-piece {
+  animation-duration: 4s;
+}
+
+.video-section {
+  padding: 112px 0;
+}
+
+.video-section__title {
+  font-size: 54px;
+  line-height: 1.04;
+  letter-spacing: 0;
+}
+
+.video-section__title span {
+  color: var(--primary);
+}
+
+.video-section__sub {
+  line-height: 1.72;
+}
+
+.video-section__player {
+  max-width: 980px;
+}
+
+.purchase-section {
+  padding-bottom: 128px;
+}
+
+.mobile-sticky-cta {
+  z-index: 80;
+}
+
+.mobile-sticky-cta__button {
+  box-shadow: 0 18px 42px rgba(139, 26, 26, 0.28);
+}
+
+.mobile-sticky-cta__label {
+  font-weight: 900;
+}
+
+@keyframes workflowMediaLoop {
+  0%, 100% {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.07) translate3d(0, -2%, 0);
+  }
+}
+
+@media (max-width: 980px) {
+  .experience-bento__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .experience-bento__card--product,
+  .experience-bento__card--benefit {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .workflow-section__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .experience-bento,
+  .workflow-section,
+  .video-section,
+  .testimonials-section,
+  .purchase-section {
+    padding-top: 68px;
+    padding-bottom: 74px;
+  }
+
+  .hero-section {
+    padding-top: 54px;
+    padding-bottom: 78px;
+  }
+
+  .hero-card__sub,
+  .experience-bento__heading > p:last-child,
+  .workflow-section__sub,
+  .video-section__sub {
+    font-size: 15px;
+    line-height: 1.78;
+  }
+
+  .experience-bento__heading h2,
+  .workflow-section__title,
+  .video-section__title {
+    font-size: 34px;
+    line-height: 1.1;
+  }
+
+  .experience-bento__grid {
+    gap: 14px;
+  }
+
+  .experience-bento__card {
+    min-height: 190px;
+    padding: 20px;
+  }
+
+  .experience-bento__card--product {
+    padding: 0;
+  }
+
+  .experience-bento__card--product picture {
+    min-height: 220px;
+  }
+
+  .experience-bento__feature-copy {
+    padding: 20px;
+  }
+
+  .workflow-section__track {
+    margin-inline: -16px;
+  }
+
+  .workflow-section__cards {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    padding: 4px 16px 18px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .workflow-section__cards::-webkit-scrollbar,
+  .testimonials-section__grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .step-card {
+    flex: 0 0 min(82vw, 340px);
+    min-height: 500px;
+    scroll-snap-align: start;
+    padding: 12px;
+  }
+
+  .step-card__media {
+    min-height: 220px;
+  }
+
+  .workflow-visual {
+    min-height: 220px;
+  }
+
+  .step-card__num {
+    font-size: 48px;
+  }
+
+  .step-card__title {
+    font-size: 22px;
+  }
+
+  .step-card__desc {
+    font-size: 14px;
+    line-height: 1.78;
+  }
+
+  .video-section__player {
+    border-radius: 8px;
+  }
+
+  .testimonials-section__grid {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    margin-inline: -16px;
+    padding: 4px 16px 18px;
+  }
+
+  .testimonial-card {
+    flex: 0 0 min(84vw, 340px);
+    scroll-snap-align: start;
+  }
+
+  .purchase-section {
+    padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 430px) {
+  .home-page {
+    padding-bottom: calc(106px + env(safe-area-inset-bottom, 34px));
+  }
+
+  .hero-card__heading {
+    font-size: 40px;
+    line-height: 1.04;
+  }
+
+  .experience-bento,
+  .workflow-section,
+  .video-section,
+  .testimonials-section,
+  .purchase-section {
+    padding-top: 64px;
+    padding-bottom: 70px;
+  }
+
+  .section-eyebrow,
+  .experience-bento__kicker,
+  .video-section__eyebrow,
+  .testimonials-section__eyebrow,
+  .purchase-section__eyebrow {
+    font-size: 10.5px;
+    line-height: 1.35;
+  }
+
+  .step-card {
+    flex-basis: min(86vw, 326px);
+    min-height: 484px;
+  }
+
+  .mobile-sticky-cta {
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mobile-sticky-cta__button {
+    min-height: 60px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-card__heading {
+    font-size: 36px;
+  }
+
+  .experience-bento__heading h2,
+  .workflow-section__title,
+  .video-section__title {
+    font-size: 30px;
+  }
+
+  .step-card {
+    flex-basis: 88vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workflow-visual__image {
+    animation: none;
+  }
+}

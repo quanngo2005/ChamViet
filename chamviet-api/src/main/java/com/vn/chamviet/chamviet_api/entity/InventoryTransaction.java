@@ -1,6 +1,6 @@
 package com.vn.chamviet.chamviet_api.entity;
 
-import com.vn.chamviet.chamviet_api.product.ComponentItem;
+import com.vn.chamviet.chamviet_api.product.Component;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,8 +23,8 @@ public class InventoryTransaction {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "component_item_id")
-    private ComponentItem componentItem;
+    @JoinColumn(name = "component_id")
+    private Component component;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 20)

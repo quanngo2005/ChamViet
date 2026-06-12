@@ -1,10 +1,19 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import * as path from "path";
+import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [react()],
+    plugins: [
+        react(),
+        ViteImageOptimizer({
+            png: { quality: 80 },
+            jpeg: { quality: 80 },
+            jpg: { quality: 80 },
+            webp: { quality: 80 },
+        })
+    ],
     server: {
         port: 5173,
         proxy: {
@@ -17,7 +26,18 @@ export default defineConfig({
     },
 
     build: {
-        sourcemap: false
+        sourcemap: false,
+        rollupOptions: {
+            output: {
+                manualChunks: (id) => {
+                  if (id.includes('node_modules/@mui')) return 'mui';
+                  if (id.includes('node_modules/motion')) return 'motion';
+                  if (id.includes('apexcharts') || id.includes('react-apexcharts')) return 'charts';
+                  if (id.includes('node_modules/react')) return 'vendor';
+                  return undefined;
+                },
+            }
+        }
     },
 
     resolve: {

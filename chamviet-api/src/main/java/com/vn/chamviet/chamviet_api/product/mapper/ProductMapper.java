@@ -34,8 +34,7 @@ public class ProductMapper {
             .id(variant.getId())
             .sku(variant.getSku())
             .price(variant.getPrice())
-            .ageRangeId(variant.getAgeRange() == null ? null : variant.getAgeRange().getId())
-            .ageRangeName(variant.getAgeRange() == null ? null : variant.getAgeRange().getName())
+            .componentCount(variant.getComponentCount())
             .attributes(toPlainJson(variant.getAttributes()))
             .components(variant.getComponents() == null ? List.of() : variant.getComponents().stream()
                 .sorted(Comparator.comparing(ProductVariantComponent::getSortOrder, Comparator.nullsLast(Integer::compareTo)))
@@ -45,7 +44,8 @@ public class ProductMapper {
     }
 
     public ProductVariantComponentDTO toVariantComponentDTO(ProductVariantComponent component) {
-        ComponentItem item = component.getComponentItem();
+        com.vn.chamviet.chamviet_api.product.Component item = component.getComponent();
+        ComponentContent content = item.getContent();
         return ProductVariantComponentDTO.builder()
             .id(component.getId())
             .componentId(item.getId())
@@ -54,23 +54,24 @@ public class ProductMapper {
             .componentType(item.getComponentType().name())
             .quantity(component.getQuantity())
             .sortOrder(component.getSortOrder())
-            .videoUrl(item.getVideoUrl())
-            .storyTitle(item.getStoryTitle())
-            .pieceCount(item.getPieceCount())
+            .videoUrl(content == null ? null : content.getVideoUrl())
+            .storyTitle(content == null ? null : content.getStoryTitle())
+            .pieceCount(content == null ? null : content.getPieceCount())
             .build();
     }
 
-    public ComponentItemDTO toComponentDTO(ComponentItem item) {
-        return ComponentItemDTO.builder()
+    public ComponentDTO toComponentDTO(com.vn.chamviet.chamviet_api.product.Component item) {
+        ComponentContent content = item.getContent();
+        return ComponentDTO.builder()
             .id(item.getId())
             .sku(item.getSku())
             .name(item.getName())
             .componentType(item.getComponentType().name())
             .ageRangeId(item.getAgeRange() == null ? null : item.getAgeRange().getId())
             .ageRangeName(item.getAgeRange() == null ? null : item.getAgeRange().getName())
-            .videoUrl(item.getVideoUrl())
-            .storyTitle(item.getStoryTitle())
-            .pieceCount(item.getPieceCount())
+            .videoUrl(content == null ? null : content.getVideoUrl())
+            .storyTitle(content == null ? null : content.getStoryTitle())
+            .pieceCount(content == null ? null : content.getPieceCount())
             .stockOnHand(item.getStockOnHand())
             .reservedStock(item.getReservedStock())
             .status(item.getStatus().name())

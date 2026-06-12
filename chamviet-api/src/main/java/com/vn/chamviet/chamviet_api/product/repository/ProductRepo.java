@@ -17,10 +17,10 @@ public interface ProductRepo extends JpaRepository<Product, Long> {
         "category",
         "images",
         "variants",
-        "variants.ageRange",
         "variants.components",
-        "variants.components.componentItem",
-        "variants.components.componentItem.ageRange"
+        "variants.components.component",
+        "variants.components.component.ageRange",
+        "variants.components.component.content"
     })
     java.util.Optional<Product> findById(Long id);
 }
