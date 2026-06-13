@@ -73,36 +73,20 @@ export default function Header() {
             to="/"
             underline="none"
             color="inherit"
-            sx={{ display: "inline-flex", alignItems: "center", gap: 1.25, flexShrink: 0 }}
+            sx={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }}
           >
             <Box
+              component="img"
+              src="https://storage.googleapis.com/chamviet-media-bucket-2026/cham_viet_logo_red_transparent.png" // Đường dẫn tới file ảnh của bạn
+              alt="Chạm Việt"
               sx={{
-                backgroundColor: "var(--primary)",
-                borderRadius: "8px",
-                width: 40,
-                height: 40,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                boxShadow: "var(--shadow-sm)"
+                height: { xs: 36, sm: 44 }, // Tự động co giãn chiều cao theo màn hình
+                width: "auto",
+                objectFit: "contain",
               }}
-            >
-              <Sprout size={22} strokeWidth={2.4} />
-            </Box>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 800,
-                color: "var(--primary)",
-                display: { xs: "none", sm: "block" },
-                letterSpacing: 0,
-                textTransform: "uppercase",
-              }}
-            >
-              Chạm Việt
-            </Typography>
+            />
           </Link>
+
 
           <Box sx={{ flex: 1 }} />
 

@@ -1,618 +1,272 @@
-import { Link as RouterLink } from "react-router-dom";
+import './HowToPlayPage.css';
 
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import Container from "@mui/material/Container";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { HOME_COPY, HOME_PRODUCT } from "../data/home";
+import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
+import {
+  ArrowRight,
+  Boxes,
+  Camera,
+  CircleHelp,
+  Lightbulb,
+  MessageCircleQuestion,
+  PlayCircle,
+  ScanLine,
+  ShieldCheck,
+  Sparkles,
+  Volume2,
+  type LucideIcon,
+} from 'lucide-react';
 
-const COLORS = {
-  bg: "#fdfbf7",
-  surface: "#ffffff",
-  surfaceAlt: "#f8f6f6",
-  title: "#7a5230",
-  body: "#475569",
-  muted: "#a17954",
-  primary: "#a83232",
-  primaryHover: "#8a2828",
+import { HOME_COPY, HOME_IMAGES, HOME_PRODUCT } from '../data/home';
+
+const workflowIcons: Record<string, LucideIcon> = {
+  puzzle: Boxes,
+  scanner: ScanLine,
+  ghost: PlayCircle,
+  qa: MessageCircleQuestion,
 };
+
+const parentTips = [
+  {
+    icon: ShieldCheck,
+    title: 'Cùng con đi từng bước',
+    description:
+      'Hãy để bé tự lắp và tự quét trước, sau đó ba mẹ gợi mở thêm bằng câu hỏi về nhân vật, hành động và bài học trong chuyện.',
+  },
+  {
+    icon: Lightbulb,
+    title: 'Giữ ánh sáng vừa đủ',
+    description:
+      'Không gian hơi dịu sáng giúp phần phản chiếu rõ hơn, nhưng vẫn đủ sáng để bé thao tác với tranh và điện thoại an toàn.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Kể lại sau khi xem',
+    description:
+      'Khi video kết thúc, thử để bé dùng tranh gỗ kể lại câu chuyện theo cách riêng rồi hỏi AI những chi tiết bé tò mò.',
+  },
+];
+
+const commonIssues = [
+  {
+    icon: Camera,
+    title: 'Camera chưa nhận tranh',
+    description:
+      'Đặt tranh trên mặt phẳng sáng, đưa trọn bức tranh vào khung quét và giữ điện thoại ổn định vài giây.',
+  },
+  {
+    icon: Lightbulb,
+    title: 'Phản chiếu bị mờ',
+    description:
+      'Giảm ánh sáng xung quanh, tăng độ sáng màn hình và đặt điện thoại đúng vị trí trên hộp Pepper\'s Ghost.',
+  },
+  {
+    icon: Volume2,
+    title: 'Âm thanh quá nhỏ',
+    description:
+      'Bật âm lượng điện thoại trước khi đặt lên hộp, hoặc dùng loa ngoài khi bé xem cùng cả gia đình.',
+  },
+];
 
 function HeroSection() {
   return (
-    <Box
-      sx={{
-        backgroundColor: COLORS.bg,
-        position: "relative",
-        overflow: "hidden",
-        py: { xs: 7, md: 10 },
-      }}
-    >
-      <Box
-        sx={{
-          position: "absolute",
-          top: -64,
-          right: -64,
-          width: 240,
-          height: 240,
-          borderRadius: "24px",
-          backgroundColor: "rgba(217, 164, 65, 0.18)",
-          filter: "blur(22px)",
-          pointerEvents: "none",
-        }}
-      />
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: -72,
-          left: -72,
-          width: 320,
-          height: 320,
-          borderRadius: "24px",
-          backgroundColor: "rgba(168, 50, 50, 0.16)",
-          filter: "blur(22px)",
-          pointerEvents: "none",
-        }}
-      />
+    <section className="how-play-hero">
+      <div className="how-play-hero__media" aria-hidden="true">
+        <picture>
+          <source srcSet={HOME_IMAGES.heroChildArWebp} type="image/webp" />
+          <img src={HOME_IMAGES.heroChildAr} alt="" decoding="async" fetchPriority="high" />
+        </picture>
+      </div>
+      <div className="how-play-hero__wash" />
 
-      <Container maxWidth="lg">
-        <Stack spacing={3} sx={{ maxWidth: 920, mx: "auto", textAlign: "center" }}>
-          <Typography
-            sx={{
-              color: COLORS.primary,
-              fontWeight: 700,
-              fontSize: 12,
-              letterSpacing: "1.4px",
-              textTransform: "uppercase",
-            }}
-          >
-            Hành Trình
-          </Typography>
+      <div className="container how-play-hero__inner">
+        <motion.div
+          className="how-play-hero__copy"
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+          <p className="section-eyebrow">Hành trình trải nghiệm</p>
+          <h1>Cách chơi Chạm Việt trong một buổi tối</h1>
+          <p>
+            Từ lúc mở hộp đến khi bé hỏi AI về câu chuyện, mọi thứ được thiết kế thành
+            một mạch chơi dễ làm tại nhà: lắp tranh, quét tranh, xem sân khấu nhỏ rồi
+            cùng nhau kể lại.
+          </p>
 
-          <Typography
-            variant="h2"
-            sx={{
-              color: "#0f172a",
-              fontWeight: 900,
-              fontSize: { xs: 34, md: 56 },
-              lineHeight: { xs: "40px", md: "62px" },
-              letterSpacing: "-0.8px",
-            }}
-          >
-            Mang Văn Hóa Việt Nam Vào Đời Sống
-          </Typography>
+          <div className="how-play-hero__proofs" aria-label="Các phần trong trải nghiệm">
+            <span>Tranh gỗ</span>
+            <span>AI Vision</span>
+            <span>Pepper&apos;s Ghost</span>
+            <span>Hỏi đáp AI</span>
+          </div>
 
-          <Typography
-            sx={{
-              color: COLORS.muted,
-              fontSize: { xs: 16, md: 18 },
-              lineHeight: 1.7,
-              maxWidth: 760,
-              mx: "auto",
-            }}
-          >
-            Trải nghiệm sự kết hợp kỳ diệu giữa nghề thủ công truyền thống và công nghệ hiện
-            đại. Khám phá cách bốn bước đơn giản có thể đưa bạn đến thế giới của những câu
-            chuyện dân gian Việt Nam xưa.
-          </Typography>
-
-          {/* YouTube Video Mock */}
-          <Box
-            sx={{
-              mt: { xs: 4, md: 6 },
-              position: "relative",
-              paddingTop: "56.25%", // 16:9 Aspect Ratio
-              width: "100%",
-              borderRadius: 4,
-              overflow: "hidden",
-              boxShadow: "0px 20px 40px rgba(15, 23, 42, 0.08)",
-              border: "1px solid rgba(15, 23, 42, 0.06)",
-              backgroundColor: "#e2e8f0"
-            }}
-          >
-            <iframe
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                border: "none"
-              }}
-              src="https://www.youtube.com/embed/YE7VzlLtp-4?si=placeholder"
-              title="YouTube video player"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </Box>
-        </Stack>
-      </Container>
-    </Box>
+          <div className="how-play-hero__ctas">
+            <Link to={`/products/${HOME_PRODUCT.id}`} className="btn btn-primary">
+              <span>{HOME_PRODUCT.ctaLabel}</span>
+              <ArrowRight size={18} />
+            </Link>
+            <Link to="/scan" className="btn btn-outline">
+              <ScanLine size={18} />
+              <span>Thử quét tranh</span>
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </section>
   );
 }
 
 function StepsSection() {
-  const glyphs = ["🧩", "📱", "🔮", "🎧"];
-  const steps = HOME_COPY.steps.items.map((step, index) => ({
-    number: step.number,
-    title: step.title,
-    description: step.description,
-    glyph: glyphs[index] ?? "✨",
-  }));
-
   return (
-    <Box sx={{ position: "relative", backgroundColor: COLORS.surfaceAlt, py: { xs: 7, md: 10 }, overflow: "hidden" }}>
-      {/* Decorative Elements */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 15,
-          right: 0,
-          opacity: 0.05,
-          fontSize: 300,
-          fontFamily: "'Material Symbols Outlined', sans-serif",
-          pointerEvents: "none",
-          transform: "translate(20%, -20%)"
-        }}
-        aria-hidden
-      >
-      </Box>
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 15,
-          left: 0,
-          opacity: 0.05,
-          fontSize: 300,
-          fontFamily: "'Material Symbols Outlined', sans-serif",
-          pointerEvents: "none",
-          transform: "translate(-20%, 20%)"
-        }}
-        aria-hidden
-      >
-      </Box>
+    <section className="how-play-steps">
+      <div className="container">
+        <div className="how-play-section-head">
+          <p className="section-eyebrow">Hành trình 4 bước</p>
+          <h2>{HOME_COPY.steps.title}</h2>
+          <p>{HOME_COPY.steps.description}</p>
+        </div>
 
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
-        <Stack spacing={6}>
-          <Typography
-            variant="h2"
-            sx={{
-              color: "#0f172a",
-              fontWeight: 700,
-              fontSize: { xs: 26, md: 30 },
-              lineHeight: "36px",
-              textAlign: "center"
-            }}
-          >
-            {HOME_COPY.steps.title}
-          </Typography>
+        <div className="how-play-step-grid">
+          {HOME_COPY.steps.items.map((step) => {
+            const Icon = workflowIcons[step.variant] ?? Sparkles;
 
-          <Box sx={{ position: "relative" }}>
-            {/* Connecting Line (Desktop) */}
-            <Box
-              sx={{
-                display: { xs: "none", lg: "block" },
-                position: "absolute",
-                top: 96,
-                left: "12.5%",
-                right: "12.5%",
-                height: 2,
-                borderTop: "2px dashed rgba(168, 50, 50, 0.2)",
-                zIndex: 0
-              }}
-            />
-
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
-                columnGap: 6,
-                rowGap: 8,
-                position: "relative",
-                zIndex: 1
-              }}
-            >
-              {steps.map((step) => (
-                <Stack key={step.number} alignItems="center" textAlign="center">
-                  {/* Image Container */}
-                  <Box
-                    sx={{
-                      width: 192,
-                      height: 192,
-                      borderRadius: 3,
-                      border: "2px solid rgba(168, 50, 50, 0.2)",
-                      backgroundColor: COLORS.surfaceAlt,
-                      position: "relative",
-                      mb: 3,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        inset: 0,
-                        borderRadius: "10px",
-                        backgroundColor: "rgba(168, 50, 50, 0.05)",
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        p: 2,
-                        position: "relative",
-                        zIndex: 1,
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          borderRadius: 3,
-                          backgroundColor: "rgba(168, 50, 50, 0.1)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 64
-                        }}
-                      >
-                        {step.glyph}
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  {/* Number Badge */}
-                  <Box
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 3,
-                      backgroundColor: COLORS.primary,
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 700,
-                      fontSize: 16,
-                      boxShadow: "0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -2px rgba(0,0,0,0.1)",
-                      mb: 2,
-                    }}
-                  >
-                    {step.number}
-                  </Box>
-
-                  {/* Title */}
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      color: "#0f172a",
-                      fontWeight: 700,
-                      fontSize: 20,
-                      lineHeight: "28px",
-                      mb: 1
-                    }}
-                  >
-                    {step.title}
-                  </Typography>
-
-                  {/* Description */}
-                  <Typography
-                    sx={{
-                      color: "#475569",
-                      fontSize: 14,
-                      lineHeight: "20px"
-                    }}
-                  >
-                    {step.description}
-                  </Typography>
-                </Stack>
-              ))}
-            </Box>
-          </Box>
-        </Stack>
-      </Container>
-    </Box>
-  );
-}
-
-function CommonIssuesSection() {
-  const issues = [
-    {
-      title: "Camera chưa nhận tranh",
-      description: "Đặt tranh trên mặt phẳng sáng, đưa trọn bức tranh vào khung quét và giữ điện thoại ổn định vài giây.",
-      glyph: "📷",
-    },
-    {
-      title: "Hình phản chiếu bị mờ",
-      description: "Giảm ánh sáng xung quanh, tăng độ sáng màn hình và đặt điện thoại đúng vị trí trên hộp Pepper's Ghost.",
-      glyph: "💡",
-    },
-    {
-      title: "Âm thanh quá nhỏ",
-      description: "Bật âm lượng điện thoại trước khi đặt lên hộp, hoặc dùng loa ngoài khi bé xem cùng cả gia đình.",
-      glyph: "🔊",
-    },
-  ];
-
-  return (
-    <Box sx={{ backgroundColor: COLORS.surfaceAlt, py: { xs: 7, md: 10 } }}>
-      <Container maxWidth="lg">
-        <Stack spacing={5}>
-          <Stack spacing={1.5} sx={{ maxWidth: 760 }}>
-            <Typography
-              variant="h4"
-              sx={{
-                color: COLORS.title,
-                fontWeight: 900,
-                fontSize: { xs: 24, md: 32 },
-                lineHeight: { xs: "30px", md: "38px" },
-              }}
-            >
-              Lỗi thường gặp khi trải nghiệm
-            </Typography>
-            <Typography sx={{ color: COLORS.muted, fontSize: 16, lineHeight: 1.7 }}>
-              Một vài chỉnh sửa nhỏ giúp phần quét tranh và phản chiếu ổn định hơn trên điện thoại.
-            </Typography>
-          </Stack>
-
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-              gap: 3,
-            }}
-          >
-            {issues.map((issue) => (
-              <Card
-                key={issue.title}
-                sx={{
-                  borderRadius: 2,
-                  border: "1px solid rgba(168, 50, 50, 0.08)",
-                  boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.06)",
-                  backgroundColor: COLORS.surface,
-                }}
+            return (
+              <article
+                key={step.number}
+                className={`how-play-step-card how-play-step-card--${step.variant}`}
+                style={{ '--accent-color': step.accentColor } as CSSProperties}
               >
-                <Box sx={{ p: 3 }}>
-                  <Stack spacing={1.5}>
-                    <Box
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 2,
-                        backgroundColor: "rgba(168, 50, 50, 0.08)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 23,
-                      }}
-                      aria-hidden
-                    >
-                      {issue.glyph}
-                    </Box>
-                    <Stack spacing={0.75}>
-                      <Typography sx={{ color: COLORS.title, fontWeight: 850, fontSize: 18 }}>
-                        {issue.title}
-                      </Typography>
-                      <Typography sx={{ color: COLORS.body, fontSize: 14, lineHeight: 1.7 }}>
-                        {issue.description}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </Box>
-              </Card>
-            ))}
-          </Box>
-        </Stack>
-      </Container>
-    </Box>
+                <div className="how-play-step-card__media">
+                  <picture>
+                    <img src={step.image} alt={step.alt} loading="lazy" decoding="async" />
+                  </picture>
+                  <div className="how-play-step-card__veil" aria-hidden="true" />
+                  <span className="how-play-step-card__badge">{step.screenLabel}</span>
+                </div>
+
+                <div className="how-play-step-card__body">
+                  <div className="how-play-step-card__meta">
+                    <span className="how-play-step-card__icon" aria-hidden="true">
+                      <Icon size={20} />
+                    </span>
+                    <span className="how-play-step-card__num">
+                      {String(step.number).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
 function TipsForParentsSection() {
-  const tips = [
-    {
-      title: "Cùng nhau tương tác",
-      description:
-        "Hãy ngồi cùng con và đặt câu hỏi về các nhân vật trong câu chuyện. Nhân vật nào là yêu thích của con? Con đã học được bài học gì?",
-      glyph: "🤝",
-    },
-    {
-      title: "Tạo bầu không khí",
-      description:
-        "Để có trải nghiệm hình ảnh hologram tốt nhất, hãy giảm ánh sáng xung quanh một chút. Điều này sẽ giúp việc kể chuyện trở nên kỳ diệu và tập trung hơn.",
-      glyph: "💡",
-    },
-    {
-      title: "Mở rộng câu chuyện",
-      description:
-        "Hãy khuyến khích con bạn vẽ lại các nhân vật hoặc tái hiện những cảnh trong câu chuyện bằng các mảnh ghép gỗ sau khi video kết thúc.",
-      glyph: "🎨",
-    },
-  ];
-
   return (
-    <Box sx={{ backgroundColor: COLORS.bg, py: { xs: 7, md: 10 } }}>
-      <Container maxWidth="lg">
-        <Stack spacing={5}>
-          <Stack spacing={1.5} sx={{ maxWidth: 760 }}>
-            <Typography
-              variant="h4"
-              sx={{
-                color: COLORS.title,
-                fontWeight: 900,
-                fontSize: { xs: 24, md: 32 },
-                lineHeight: { xs: "30px", md: "38px" },
-              }}
-            >
-              Gợi ý dành cho phụ huynh
-            </Typography>
-            <Typography sx={{ color: COLORS.muted, fontSize: 16, lineHeight: 1.7 }}>
-              Một vài gợi ý nhỏ để buổi chơi cùng con trở nên trọn vẹn và đáng nhớ hơn.
-            </Typography>
-          </Stack>
+    <section className="how-play-guidance">
+      <div className="container how-play-guidance__inner">
+        <div className="how-play-guidance__copy">
+          <p className="section-eyebrow">Dành cho phụ huynh</p>
+          <h2>Biến phần chơi thành một cuộc trò chuyện</h2>
+          <p>
+            Chạm Việt không chỉ là xem video. Phần hay nhất thường đến sau đó, khi bé
+            tự nói lại điều mình nhớ và đặt thêm câu hỏi về văn hóa Việt.
+          </p>
+        </div>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-              gap: 3,
-            }}
-          >
-            {tips.map((tip) => (
-              <Card
-                key={tip.title}
-                sx={{
-                  borderRadius: 2,
-                  border: "1px solid rgba(168, 50, 50, 0.08)",
-                  boxShadow: "0px 1px 2px rgba(15, 23, 42, 0.06)",
-                  backgroundColor: COLORS.surface,
-                }}
-              >
-                <Box sx={{ p: 3 }}>
-                  <Stack spacing={1.5}>
-                    <Stack direction="row" spacing={1.25} sx={{ alignItems: "center" }}>
-                      <Box
-                        sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 2,
-                          backgroundColor: "rgba(168, 50, 50, 0.08)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 22,
-                        }}
-                        aria-hidden
-                      >
-                        {tip.glyph}
-                      </Box>
-                      <Typography sx={{ color: COLORS.title, fontWeight: 800, fontSize: 18 }}>
-                        {tip.title}
-                      </Typography>
-                    </Stack>
+        <div className="how-play-guidance__list">
+          {parentTips.map((tip) => {
+            const Icon = tip.icon;
 
-                    <Typography sx={{ color: COLORS.body, fontSize: 14, lineHeight: 1.7 }}>
-                      {tip.description}
-                    </Typography>
-                  </Stack>
-                </Box>
-              </Card>
-            ))}
-          </Box>
-        </Stack>
-      </Container>
-    </Box>
+            return (
+              <article key={tip.title} className="how-play-info-row">
+                <span className="how-play-info-row__icon" aria-hidden="true">
+                  <Icon size={21} />
+                </span>
+                <div>
+                  <h3>{tip.title}</h3>
+                  <p>{tip.description}</p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CommonIssuesSection() {
+  return (
+    <section className="how-play-issues">
+      <div className="container">
+        <div className="how-play-section-head how-play-section-head--left">
+          <p className="section-eyebrow">Tối ưu trải nghiệm</p>
+          <h2>Lỗi thường gặp khi chơi</h2>
+          <p>Một vài chỉnh sửa nhỏ giúp phần quét tranh và phản chiếu ổn định hơn trên điện thoại.</p>
+        </div>
+
+        <div className="how-play-issue-grid">
+          {commonIssues.map((issue) => {
+            const Icon = issue.icon;
+
+            return (
+              <article key={issue.title} className="how-play-issue-card">
+                <span className="how-play-issue-card__icon" aria-hidden="true">
+                  <Icon size={22} />
+                </span>
+                <h3>{issue.title}</h3>
+                <p>{issue.description}</p>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
 function FinalCtaSection() {
   return (
-    <Box
-      sx={{
-        backgroundColor: COLORS.primary,
-        py: { xs: 7, md: 10 },
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          opacity: 0.18,
-          background:
-            "radial-gradient(circle at top left, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 60%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <Container maxWidth="lg" sx={{ position: "relative" }}>
-        <Stack
-          spacing={3}
-          sx={{
-            maxWidth: 840,
-            mx: "auto",
-            textAlign: "center",
-            color: "#ffffff",
-          }}
-        >
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 900,
-              fontSize: { xs: 26, md: 36 },
-              lineHeight: { xs: "32px", md: "42px" },
-            }}
-          >
-            Bạn đã sẵn sàng bắt đầu hành trình của mình chưa?
-          </Typography>
-          <Typography sx={{ opacity: 0.92, fontSize: { xs: 15, md: 18 }, lineHeight: 1.7 }}>
-            Hãy chọn truyền thuyết đầu tiên của bạn và chứng kiến lịch sử sống dậy ngay trong
-            phòng khách của bạn.
-          </Typography>
-
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={1.5}
-            sx={{ alignItems: "center", justifyContent: "center", pt: 1 }}
-          >
-            <Button
-              component={RouterLink}
-              to={`/products/${HOME_PRODUCT.id}`}
-              variant="contained"
-              disableElevation
-              sx={{
-                backgroundColor: "#ffffff",
-                color: COLORS.primary,
-                borderRadius: 2,
-                px: 3.5,
-                py: 1.5,
-                fontWeight: 800,
-                textTransform: "none",
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.92)" },
-                width: { xs: "100%", sm: "auto" },
-              }}
-            >
-              Khám Phá Câu Chuyện
-            </Button>
-
-            <Button
-              component={RouterLink}
-              to={`/products/${HOME_PRODUCT.id}`}
-              variant="outlined"
-              sx={{
-                borderColor: "rgba(255,255,255,0.4)",
-                color: "#ffffff",
-                borderRadius: 2,
-                px: 3.5,
-                py: 1.5,
-                fontWeight: 800,
-                textTransform: "none",
-                "&:hover": {
-                  borderColor: "rgba(255,255,255,0.6)",
-                  backgroundColor: "rgba(255,255,255,0.08)",
-                },
-                width: { xs: "100%", sm: "auto" },
-              }}
-            >
-              {HOME_PRODUCT.ctaLabel}
-            </Button>
-          </Stack>
-        </Stack>
-      </Container>
-    </Box>
+    <section className="how-play-final">
+      <div className="container">
+        <div className="how-play-final__card">
+          <p className="section-eyebrow">Sẵn sàng mở hộp?</p>
+          <h2>Bắt đầu với Hồ Gươm và Thánh Gióng trong một box</h2>
+          <p>
+            Mỗi bộ có đủ tranh, hộp phản chiếu và mạch trải nghiệm để cả nhà cùng đi
+            qua câu chuyện đầu tiên.
+          </p>
+          <div className="how-play-final__ctas">
+            <Link to={`/products/${HOME_PRODUCT.id}`} className="btn btn-primary">
+              <span>{HOME_PRODUCT.ctaLabel}</span>
+              <ArrowRight size={18} />
+            </Link>
+            <Link to="/story" className="btn btn-outline">
+              <CircleHelp size={18} />
+              <span>Xem câu chuyện mẫu</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
 export default function HowToPlayPage() {
   return (
-    <Box sx={{ backgroundColor: COLORS.bg }}>
+    <main className="how-play-page">
       <HeroSection />
       <StepsSection />
       <TipsForParentsSection />
       <CommonIssuesSection />
       <FinalCtaSection />
-    </Box>
+    </main>
   );
 }
