@@ -3,7 +3,7 @@ import { lazy, Suspense, type CSSProperties } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Boxes, Hand, MessageCircleQuestion, PlayCircle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import fullBox from "../../assets/fullbox.webp";
+const fullBox = "https://storage.googleapis.com/chamviet-media-bucket-2026/fullbox.webp";
 
 import Hero from '../components/features/home/Hero';
 import { HOME_COPY, HOME_PRODUCT } from '../data/home';

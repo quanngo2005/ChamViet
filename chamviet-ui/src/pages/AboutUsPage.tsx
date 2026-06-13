@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import { BookOpen, HeartHandshake, Puzzle, Sparkles } from "lucide-react";
 
 import { HOME_IMAGES, HOME_PRODUCT } from "../data/home";
-import BOX_IMAGES from "../assets/fullbox.webp"
+const BOX_IMAGES = "https://storage.googleapis.com/chamviet-media-bucket-2026/fullbox.webp";
 
 const ABOUT_VALUES = [
   {
