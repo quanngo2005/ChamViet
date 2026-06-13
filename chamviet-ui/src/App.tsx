@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -7,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import { GuestRoute } from "./guards/GuestRoute";
 import { ProtectedRoute } from "./guards/ProtectedRoute";
 import { ThemeProvider } from "./theme/theme-provider";
-import LenisProvider, { getLenis } from "./components/common/LenisProvider";
+import LenisProvider from "./components/common/LenisProvider";
 import MainLayout from "./components/layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import AboutUsPage from "./pages/AboutUsPage";
@@ -16,22 +15,6 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import StoryPage from "./pages/StoryPage";
 import ScanPage from "./pages/ScanPage";
 import { HOME_PRODUCT } from "./data/home";
-
-function ScrollToTop() {
-  const location = useLocation();
-
-  useEffect(() => {
-    // Use Lenis for instant top-scroll — avoids fighting with smooth scroll
-    const lenis = getLenis();
-    if (lenis) {
-      lenis.scrollTo(0, { immediate: true });
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }, [location.pathname]);
-
-  return null;
-}
 
 function DashboardPage() {
   return (
@@ -85,7 +68,6 @@ export default function App() {
   return (
     <LenisProvider>
       <ThemeProvider>
-        <ScrollToTop />
         <Routes>
           <Route element={<MainLayout />}>
           <Route index element={<HomePage />} />

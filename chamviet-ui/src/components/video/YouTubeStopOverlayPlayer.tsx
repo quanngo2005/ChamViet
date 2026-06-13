@@ -14,7 +14,7 @@ import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import { useVoiceAI } from "../../hooks/useVoiceAi";
 import { fetchStoryConfigByVideoId, type StoryConfig } from "../../data/video-story-qa";
 import { resolveApiOrigin } from "../../utils/apiBase";
-import mascot from "../../assets/be-hac.png";
+import mascot from "../../assets/masotknen.webp";
 
 const API_BASE_URL = resolveApiOrigin(import.meta.env.VITE_API_BASE_URL as string | undefined);
 

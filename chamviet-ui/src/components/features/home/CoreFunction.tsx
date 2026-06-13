@@ -1,5 +1,6 @@
-import { Hand, Eye, Volume2, MessageSquareText } from 'lucide-react';
-import { useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
+import { Hand, Eye, Volume2, MessageSquareText } from "lucide-react";
+
+import { RevealItem, StaggerReveal } from "../../common/MotionReveal";
 
 const functions = [
   {
@@ -16,7 +17,7 @@ const functions = [
     title: 'NHÌN',
     icon: <Eye size={32} />,
     description: 'Đặt điện thoại lên hộp để nhân vật hiện lên như sân khấu nhỏ ngay trên bàn.',
-    outcome: 'Hiểu hologram bằng mắt thấy',
+    outcome: 'Hiểu hiệu ứng phản chiếu bằng mắt thấy',
     color: 'rgba(198, 40, 40, 0.1)',
     iconColor: 'var(--primary)'
   },
@@ -41,8 +42,6 @@ const functions = [
 ];
 
 export default function CoreFunctions() {
-  const containerRef = useSmoothScrollStagger<HTMLDivElement>('.function-card', 150);
-
   return (
     <section className="core-functions-section">
       <div className="container">
@@ -54,11 +53,11 @@ export default function CoreFunctions() {
           </p>
         </div>
 
-        <div ref={containerRef} className="core-functions-section__grid">
+        <StaggerReveal className="core-functions-section__grid">
           {functions.map((item) => (
-            <div
+            <RevealItem
               key={item.id}
-              className="function-card scroll-reveal-child fade-up"
+              className="function-card"
             >
               <div className="function-card__shape" style={{ background: item.color }} />
 
@@ -72,9 +71,9 @@ export default function CoreFunctions() {
               <h3 className="function-card__title">{item.title}</h3>
               <p className="function-card__desc">{item.description}</p>
               <p className="function-card__outcome">{item.outcome}</p>
-            </div>
+            </RevealItem>
           ))}
-        </div>
+        </StaggerReveal>
       </div>
     </section>
   );

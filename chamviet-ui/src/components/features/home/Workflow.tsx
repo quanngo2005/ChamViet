@@ -1,10 +1,10 @@
 import { useEffect, useState, type CSSProperties } from 'react';
-import { Boxes, MessageCircleQuestion, PlayCircle, ScanLine } from 'lucide-react';
+import { Boxes, MessageCircleQuestion, Box, ScanLine } from 'lucide-react';
+import { motion } from 'motion/react';
 
-import beHac from '@assets/be-hac.png';
-import beHacWebp from '@assets/be-hac.webp';
+import beHac from '@assets/masotknen.webp';
 
-import { useSmoothScroll, useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
+import { Reveal, RevealItem, StaggerReveal } from '../../common/MotionReveal';
 import { useHomePageData } from '../../../hooks/useHomePageData';
 
 type WorkflowVariant = 'puzzle' | 'scanner' | 'ghost' | 'qa';
@@ -24,7 +24,7 @@ type WorkflowStep = {
 const workflowIcons = {
   puzzle: Boxes,
   scanner: ScanLine,
-  ghost: PlayCircle,
+  ghost: Box,
   qa: MessageCircleQuestion,
 };
 
@@ -65,18 +65,26 @@ function WorkflowAssetImage({
   );
 }
 
-function PuzzleVisual({ step }: { step: WorkflowStep }) {
+
+
+export function PuzzleVisual({ step }: { step: WorkflowStep }) {
   return (
-    <figure className="workflow-visual workflow-visual--puzzle" style={{ '--accent-color': step.accentColor } as CSSProperties}>
-      <WorkflowAssetImage src={step.image} alt={step.alt} fallbackLabel={step.fallbackLabel} />
+    <motion.figure
+      className="workflow-visual workflow-visual--puzzle"
+      style={{ '--accent-color': step.accentColor } as CSSProperties}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+    >
+      <WorkflowAssetImage
+        src={step.image}
+        alt={step.alt}
+        fallbackLabel={step.fallbackLabel}
+      />
       <div className="workflow-visual__veil" aria-hidden="true" />
-      <div className="workflow-visual__pieces" aria-hidden="true">
-        <span className="workflow-piece workflow-piece--one" />
-        <span className="workflow-piece workflow-piece--two" />
-        <span className="workflow-piece workflow-piece--three" />
-      </div>
+      <div className="workflow-visual__badge">{step.screenLabel}</div>
       <div className="workflow-visual__caption">{step.screenLabel}</div>
-    </figure>
+    </motion.figure>
   );
 }
 
@@ -84,17 +92,6 @@ function ScannerVisual({ step }: { step: WorkflowStep }) {
   return (
     <figure className="workflow-visual workflow-visual--scanner" style={{ '--accent-color': step.accentColor } as CSSProperties}>
       <WorkflowAssetImage src={step.image} alt={step.alt} fallbackLabel={step.fallbackLabel} />
-      <div className="workflow-visual__scan-board" aria-hidden="true">
-        <span className="workflow-visual__scan-corner workflow-visual__scan-corner--tl" />
-        <span className="workflow-visual__scan-corner workflow-visual__scan-corner--tr" />
-        <span className="workflow-visual__scan-corner workflow-visual__scan-corner--bl" />
-        <span className="workflow-visual__scan-corner workflow-visual__scan-corner--br" />
-        <span className="workflow-visual__scan-line" />
-      </div>
-      <div className="workflow-visual__scanner-phone" aria-hidden="true">
-        <span className="workflow-visual__scanner-phone-camera" />
-        <span className="workflow-visual__scanner-phone-screen" />
-      </div>
       <div className="workflow-visual__badge">{step.screenLabel}</div>
     </figure>
   );
@@ -104,11 +101,6 @@ function GhostVisual({ step }: { step: WorkflowStep }) {
   return (
     <figure className="workflow-visual workflow-visual--ghost" style={{ '--accent-color': step.accentColor } as CSSProperties}>
       <WorkflowAssetImage src={step.image} alt={step.alt} fallbackLabel={step.fallbackLabel} />
-      <div className="workflow-visual__veil workflow-visual__veil--ghost" aria-hidden="true" />
-      <div className="workflow-visual__ghost-box" aria-hidden="true">
-        <div className="workflow-visual__ghost-phone" />
-        <div className="workflow-visual__ghost-glow" />
-      </div>
       <div className="workflow-visual__badge">{step.screenLabel}</div>
     </figure>
   );
@@ -121,7 +113,7 @@ function QaVisual({ step }: { step: WorkflowStep }) {
       <div className="workflow-visual__veil workflow-visual__veil--qa" aria-hidden="true" />
       <div className="workflow-visual__qa-head">
         <picture>
-          <source srcSet={beHacWebp} type="image/webp" />
+          <source srcSet={beHac} type="image/webp" />
           <img
             className="workflow-visual__qa-avatar"
             src={beHac}
@@ -131,15 +123,11 @@ function QaVisual({ step }: { step: WorkflowStep }) {
             decoding="async"
           />
         </picture>
-        <div className="workflow-visual__qa-headcopy">
-          <span className="workflow-visual__qa-kicker">AI Story Guide</span>
-          <strong>Hỏi đáp và khám phá</strong>
-        </div>
       </div>
       <div className="workflow-visual__chat" aria-hidden="true">
-        <div className="workflow-visual__bubble workflow-visual__bubble--bot">Bạn muốn hỏi điều gì?</div>
-        <div className="workflow-visual__bubble workflow-visual__bubble--user">Kể thêm về câu chuyện này nhé.</div>
-        <div className="workflow-visual__bubble workflow-visual__bubble--bot">Mình sẽ dẫn bạn đi tiếp.</div>
+        <div className="workflow-visual__bubble workflow-visual__bubble--bot">Lạc Long Quân là ai?</div>
+        <div className="workflow-visual__bubble workflow-visual__bubble--user">Là một vị thần rất khỏe.</div>
+        <div className="workflow-visual__bubble workflow-visual__bubble--bot">Đúng rồi!</div>
       </div>
       <div className="workflow-visual__badge">{step.screenLabel}</div>
     </figure>
@@ -161,33 +149,33 @@ function WorkflowVisual({ step }: { step: WorkflowStep }) {
 }
 
 export default function Workflow() {
-  const headRef = useSmoothScroll<HTMLDivElement>();
-  const listRef = useSmoothScrollStagger<HTMLDivElement>('.step-card', 150);
   const { copy } = useHomePageData();
   const steps = copy.steps.items as WorkflowStep[];
 
   return (
     <section className="workflow-section">
       <div className="container">
-        <div ref={headRef} className="workflow-section__header scroll-reveal fade-up">
+        <Reveal className="workflow-section__header">
           <p className="section-eyebrow">Hành trình 4 bước</p>
           <h2 className="workflow-section__title">{copy.steps.title}</h2>
           <p className="workflow-section__sub">{copy.steps.description}</p>
-        </div>
+        </Reveal>
 
         <div className="workflow-section__track">
           <div className="workflow-section__connector" aria-hidden="true" />
 
-          <div ref={listRef} className="workflow-section__cards">
+          <StaggerReveal className="workflow-section__cards">
             {steps.map((step) => (
               (() => {
                 const Icon = workflowIcons[step.variant];
 
                 return (
-                  <article
+                  <RevealItem
                     key={step.number}
-                    className={`step-card step-card--${step.variant} scroll-reveal-child scale-in`}
+                    as="article"
+                    className={`step-card step-card--${step.variant}`}
                     style={{ '--accent-color': step.accentColor } as CSSProperties}
+                    variant="scale"
                   >
                     <div className="step-card__media">
                       <WorkflowVisual step={step} />
@@ -206,11 +194,11 @@ export default function Workflow() {
                       <h4 className="step-card__title">{step.title}</h4>
                       <p className="step-card__desc">{step.description}</p>
                     </div>
-                  </article>
+                  </RevealItem>
                 );
               })()
             ))}
-          </div>
+          </StaggerReveal>
         </div>
       </div>
     </section>

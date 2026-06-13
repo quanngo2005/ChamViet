@@ -1,13 +1,12 @@
-import { MessageCircleQuestion, Sparkles } from 'lucide-react';
-import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
+import { MessageCircleQuestion, Sparkles } from "lucide-react";
+
+import { Reveal } from "../../common/MotionReveal";
 
 export default function AIQADemo() {
-  const sectionRef = useSmoothScroll<HTMLDivElement>();
-
   return (
-    <section className="ai-qa-section" ref={sectionRef}>
+    <section className="ai-qa-section">
       <div className="container">
-        <div className="ai-qa-section__inner scroll-reveal fade-up">
+        <Reveal className="ai-qa-section__inner">
           <div className="ai-qa-section__copy">
             <p className="section-eyebrow">AI hỏi đáp</p>
             <h2 className="ai-qa-section__title">Bé hỏi, AI trả lời ngay</h2>
@@ -37,7 +36,7 @@ export default function AIQADemo() {
               <span>Hỏi tiếp sau khi xem truyện</span>
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

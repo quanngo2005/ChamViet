@@ -1,11 +1,12 @@
 import './HomePage.css';
 import { lazy, Suspense, type CSSProperties } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Boxes, MessageCircleQuestion, PlayCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, Boxes, Hand, MessageCircleQuestion, PlayCircle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import fullBox from '../assets/fullBox.webp';
 
 import Hero from '../components/features/home/Hero';
-import { HOME_COPY, HOME_IMAGES, HOME_PRODUCT } from '../data/home';
+import { HOME_COPY, HOME_PRODUCT } from '../data/home';
 
 const VideoSection = lazy(() => import('../components/features/home/VideoSection'));
 const Workflow = lazy(() => import('../components/features/home/Workflow'));
@@ -32,7 +33,7 @@ function MobileStickyCtA() {
 }
 
 const benefitIcons = {
-  hands: Boxes,
+  hands: Hand,
   stage: PlayCircle,
   qa: MessageCircleQuestion,
   gift: Sparkles,
@@ -45,17 +46,17 @@ function ExperienceBento() {
     <section className="experience-bento" aria-label="Tại sao nên mua Chạm Việt">
       <div className="container">
         <div className="experience-bento__heading">
-          <p className="experience-bento__kicker">Tại sao nên mua?</p>
-          <h2>{HOME_COPY.learning.title}</h2>
+
+          <h2 style={{ color: 'var(--primary)' }}>{HOME_COPY.learning.title}</h2>
           <p>{HOME_COPY.learning.description}</p>
         </div>
 
         <div className="experience-bento__grid">
           <Link to={`/products/${HOME_PRODUCT.id}`} className="experience-bento__card experience-bento__card--product">
             <picture>
-              <source srcSet={HOME_IMAGES.unboxingFlatlayWebp} type="image/webp" />
+              <source srcSet={fullBox} type="image/webp" />
               <img
-                src={HOME_IMAGES.unboxingFlatlay}
+                src={fullBox}
                 alt="Bộ tranh gỗ và hộp Chạm Việt"
                 loading="lazy"
                 decoding="async"
@@ -66,8 +67,8 @@ function ExperienceBento() {
                 <Boxes size={22} />
               </span>
               <div>
-                <h3>2 tranh trong 1 box</h3>
-                <p>Hồ Gươm và Thánh Gióng được đóng gói thành một mạch chơi rõ ràng: lắp, quét, xem, hỏi.</p>
+                <h3>2 tranh trong 1 hộp</h3>
+                <p>Hồ Gươm và Thánh Gióng được đóng gói thành một mạch chơi rõ ràng: lắp, quét, xem, hỏi. Đi kèm hộp phản chiếu 3D</p>
               </div>
             </div>
           </Link>

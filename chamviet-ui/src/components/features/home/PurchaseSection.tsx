@@ -1,13 +1,12 @@
-import { ShoppingBag } from 'lucide-react';
-import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
-import { Link } from 'react-router-dom';
-import { HOME_PRODUCT } from '../../../data/home';
+import { ShoppingBag } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import { Reveal } from "../../common/MotionReveal";
+import { HOME_PRODUCT } from "../../../data/home";
 
 export default function PurchaseSection() {
-  const contentRef = useSmoothScroll<HTMLDivElement>();
-
   return (
-    <section className="purchase-section scroll-reveal fade-up" ref={contentRef}>
+    <Reveal as="section" className="purchase-section">
       <div className="container purchase-section__container">
         <div className="purchase-section__card">
           <p className="purchase-section__eyebrow">Sẵn sàng mở hộp?</p>
@@ -21,6 +20,6 @@ export default function PurchaseSection() {
           <div className="purchase-section__pattern" />
         </div>
       </div>
-    </section>
+    </Reveal>
   );
 }

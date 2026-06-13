@@ -1,5 +1,6 @@
-import { Star, ShieldCheck, Award, Users } from 'lucide-react';
-import { useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
+import { Star } from "lucide-react";
+
+import { Reveal, RevealItem, StaggerReveal } from "../../common/MotionReveal";
 
 const testimonials = [
   {
@@ -31,31 +32,23 @@ const testimonials = [
   }
 ];
 
-const badges = [
-  { id: 'safe', icon: <ShieldCheck size={18} />, label: 'An toàn cho trẻ', sub: 'Chứng nhận TCVN' },
-  { id: 'award', icon: <Award size={18} />, label: 'Giải thưởng EdTech', sub: 'Vietnam 2024' },
-  { id: 'parents', icon: <Users size={18} />, label: 'Phụ huynh dùng thử', sub: 'Phản hồi trải nghiệm' },
-];
-
 export default function Testimonials() {
-  const cardsRef = useSmoothScrollStagger<HTMLDivElement>('.testimonial-card', 150);
-
   return (
     <section className="testimonials-section">
       <div className="container">
         {/* Header */}
-        <div className="testimonials-section__header scroll-reveal fade-up">
+        <Reveal className="testimonials-section__header">
           <p className="testimonials-section__eyebrow">Phụ huynh nói gì?</p>
           <h2 className="testimonials-section__title">
             Phản hồi từ phụ huynh<br />
             <span style={{ color: 'var(--primary)' }}>trải nghiệm thử</span>
           </h2>
-        </div>
+        </Reveal>
 
         {/* Cards */}
-        <div ref={cardsRef} className="testimonials-section__grid">
+        <StaggerReveal className="testimonials-section__grid">
           {testimonials.map((t) => (
-            <div key={t.id} className="testimonial-card scroll-reveal-child fade-up">
+            <RevealItem key={t.id} className="testimonial-card">
               {/* Stars */}
               <div className="testimonial-card__stars">
                 {Array.from({ length: t.stars }, (_, starIndex) => `${t.id}-star-${starIndex + 1}`).map((starKey) => (
@@ -79,22 +72,9 @@ export default function Testimonials() {
                   <p className="testimonial-card__role">{t.role}</p>
                 </div>
               </div>
-            </div>
+            </RevealItem>
           ))}
-        </div>
-
-        {/* Trust badges */}
-        <div className="testimonials-section__badges scroll-reveal fade-up delay-400">
-          {badges.map((b) => (
-            <div key={b.id} className="trust-badge">
-              <div className="trust-badge__icon">{b.icon}</div>
-              <div>
-                <p className="trust-badge__label">{b.label}</p>
-                <p className="trust-badge__sub">{b.sub}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        </StaggerReveal>
       </div>
     </section>
   );

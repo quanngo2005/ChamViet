@@ -1,26 +1,23 @@
-import { PlayCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
-import videoThumbnail from '../../../assets/video-thumbnail.png';
-import videoThumbnailWebp from '../../../assets/video-thumbnail.webp';
+import { PlayCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import { Reveal } from "../../common/MotionReveal";
+import videoThumbnail from "../../../assets/video-thumbnail.png";
+import videoThumbnailWebp from "../../../assets/video-thumbnail.webp";
 
 export default function VideoSection() {
-  const sectionRef = useSmoothScroll<HTMLDivElement>();
   const navigate = useNavigate();
-  const openStory = () => navigate('/story');
+  const openStory = () => navigate("/story");
 
   return (
     <section id="video-section" className="video-section">
       <div className="container">
-        <div
-          ref={sectionRef}
-          className="scroll-reveal fade-up video-section__inner"
-        >
+        <Reveal className="video-section__inner">
           {/* Header */}
           <div className="video-section__header">
             <p className="video-section__eyebrow">Trải nghiệm thực tế</p>
             <h2 className="video-section__title">
-              Pepper's Ghost Demo<br />
+              Xem thử phản chiếu 3D<br />
               <span>câu chuyện hiện lên trong hộp</span>
             </h2>
             <p className="video-section__sub">
@@ -55,7 +52,7 @@ export default function VideoSection() {
             </div>
             <span className="video-section__duration">Trải nghiệm</span>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -1,38 +1,38 @@
 export const PRODUCT_DETAIL_COPY = {
   included: [
-    { title: '02 tranh puzzle gỗ 3D', description: 'Sự tích Hồ Gươm và Sự tích Thánh Gióng, sẵn sàng để bé lắp ghép và mở truyện.' },
-    { title: 'Thẻ QR truyện tương tác', description: 'Quét QR để mở video kể chuyện, audio và trải nghiệm hỏi đáp sau câu chuyện.' },
-    { title: 'Hộp phản chiếu Pepper\'s Ghost', description: 'Hộp được thiết kế để đặt điện thoại và tạo hiệu ứng phản chiếu như sân khấu nhỏ.' },
+    { title: '2 tranh ghép gỗ', description: 'Một tranh Hồ Gươm và một tranh Thánh Gióng để bé bắt đầu từ hai câu chuyện quen thuộc của Việt Nam.' },
+    { title: 'Tranh hướng dẫn ghép', description: 'Tờ hướng dẫn giúp bé và phụ huynh nhìn nhanh cách bắt đầu, không bị rối ngay từ những mảnh đầu tiên.' },
+    { title: 'Hộp phản chiếu 3D', description: 'Dùng để đặt điện thoại lên xem phần kể chuyện theo cách trực quan hơn, không cần cài đặt phức tạp.' },
   ],
   story: {
-    heading: 'Hai truyền thuyết trong một box',
+    heading: 'Hai chủ đề có sẵn trong bộ đầu tiên',
     paragraphs: [
-      'Sự tích Hồ Gươm đưa bé đến câu chuyện thanh gươm thần, vua Lê Lợi và biểu tượng hồ Hoàn Kiếm. Đây là chất liệu gần gũi để phụ huynh kể thêm về lòng yêu nước và ký ức văn hóa của Hà Nội.',
-      'Sự tích Thánh Gióng kể về cậu bé làng Gióng vươn mình thành tráng sĩ. Câu chuyện giúp bé cảm nhận tinh thần dũng cảm, bảo vệ quê hương và sức mạnh đoàn kết.',
+      'Sự tích Hồ Gươm giúp phụ huynh bắt đầu từ một biểu tượng rất quen thuộc. Bé không chỉ nhớ tên nhân vật mà còn hiểu vì sao hồ Hoàn Kiếm luôn được nhắc tới khi nói về Hà Nội.',
+      'Sự tích Thánh Gióng mở ra một câu chuyện dễ kể lại cho trẻ nhỏ: từ một cậu bé bình thường đến khi đứng lên bảo vệ quê hương. Đây cũng là chủ đề phù hợp để cha mẹ nói thêm với con về lòng dũng cảm.',
     ],
   },
   hologram: {
-    heading: 'Trải nghiệm phản chiếu hologram',
-    description: 'Mang những huyền thoại đến cuộc sống với công nghệ chiếu hình hologram',
-    steps: ['Lắp tranh', 'Quét QR', 'Đặt lên hộp', 'Xem và hỏi đáp'],
+    heading: 'Trải nghiệm phản chiếu 3D',
+    description: 'Mang những huyền thoại đến cuộc sống với hộp phản chiếu 3D',
+    steps: ['Ghép tranh gỗ', 'Quét tranh', 'Đặt lên hộp phản chiếu', 'Xem và hỏi đáp cùng AI'],
   },
   sustainability: {
-    heading: 'Giá trị bền vững',
+    heading: 'Thông tin phụ huynh cần biết',
     description:
-      'Mỗi bộ ghép hình được chế tác từ ván ép bạch dương đạt chứng nhận FSC và được hoàn thiện bằng chất phủ không độc hại, thân thiện với môi trường. Chúng tôi tin vào những món đồ chơi có thể tồn tại qua nhiều thế hệ, giống như những câu chuyện mà chúng kể lại.',
+      'Thay vì chỉ nhìn vào số lượng mảnh ghép, phụ huynh thường cần biết bộ này phù hợp với ai, làm từ gì và có thể dùng trong bối cảnh nào. Phần này gom những thông tin đó lại để quyết định mua dễ hơn.',
     specs: [
-      { label: 'Nguyên Liệu', value: 'Gỗ bạch dương' },
-      { label: 'Lứa tuổi', value: '4 - 16 Years' },
-      { label: 'Thiết Kế', value: 'Vietnamese Studio' },
-      { label: 'Tính an toàn', value: 'ASTM Certified' },
+      { label: 'Chất liệu', value: 'Gỗ bạch dương' },
+      { label: 'Độ tuổi gợi ý', value: '6 đến 8 tuổi' },
+      { label: 'Thiết kế', value: 'Thực hiện tại Việt Nam' },
+      { label: 'Độ an toàn', value: 'Hoàn thiện để bé cầm nắm hằng ngày' },
     ],
   },
   education: {
-    heading: 'Lợi ích giáo dục',
+    heading: 'Trẻ nhận được gì sau khi chơi',
     items: [
-      { title: 'Học hỏi văn hóa', description: 'Đào sâu hiểu biết về các truyền thống và giá trị của người Việt.' },
-      { title: 'Fine Motor Skills', description: 'Trò chơi tương tác giúp tăng cường khả năng phối hợp và tư duy không gian.' },
-      { title: 'Tích hợp STEM và Nghệ thuật', description: 'Kết hợp hình học, lịch sử và vật lý ánh sáng trong cùng một bộ sản phẩm.' },
+      { title: 'Dễ nhớ câu chuyện hơn', description: 'Khi đã tự tay ghép xong và xem xong, trẻ thường nhớ nhân vật và sự kiện lâu hơn so với chỉ nghe kể một lần.' },
+      { title: 'Tập trung và quan sát tốt hơn', description: 'Quá trình ghép tranh giúp trẻ chậm lại, để ý chi tiết và kiên nhẫn hơn với từng bước nhỏ.' },
+      { title: 'Biết hỏi thêm sau khi xem', description: 'Phần hỏi đáp mở ra cơ hội để trẻ nói ra điều mình chưa hiểu, thay vì chỉ dừng ở việc xem cho xong.' },
     ],
   },
   related: {

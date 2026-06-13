@@ -71,17 +71,17 @@ function buildIncludedItems(components: ProductVariantComponentApi[]): ProductIn
 
   return [
     {
-      title: `${String(Math.max(puzzleComponents.length, 1)).padStart(2, "0")} tranh puzzle gỗ`,
+      title: `${String(Math.max(puzzleComponents.length, 1)).padStart(2, "0")} tranh ghép gỗ`,
       description: puzzleNames.length > 0
-        ? `${puzzleNames.join(", ")} để bé lắp ghép và mở câu chuyện.`
-        : "Các tranh puzzle gỗ sẵn sàng để bé lắp ghép và mở câu chuyện.",
+        ? `${puzzleNames.join(", ")} để bé ghép tranh và mở câu chuyện.`
+        : "Các tranh ghép gỗ sẵn sàng để bé ghép tranh và mở câu chuyện.",
     },
     {
       title: "Thẻ truyện tương tác",
       description: "Quét để mở video kể chuyện, nghe nội dung và tiếp tục hỏi đáp sau khi xem xong.",
     },
     {
-      title: "Hộp phản chiếu Pepper's Ghost",
+      title: "Hộp phản chiếu 3D",
       description: pepperGhostCount > 0
         ? "Hộp được thiết kế để đặt điện thoại và tạo hiệu ứng phản chiếu như một sân khấu nhỏ."
         : PRODUCT_DETAIL_COPY.included[2].description,
@@ -112,7 +112,7 @@ function mapProduct(productApi: ProductApi): ProductDetailData {
     priceLabel: formatCurrency(primaryVariant?.price),
     compareAtPriceLabel: "",
     discountLabel: "",
-    collectionLabel: productApi.category?.name?.trim() || "Chạm Việt Box",
+    collectionLabel: productApi.category?.name?.trim() || "Bộ kể chuyện Chạm Việt",
     reviewsLabel: primaryVariant?.ageRangeName?.trim()
       ? `Độ tuổi ${primaryVariant.ageRangeName.trim()}`
       : "Phiên bản sẵn sàng trải nghiệm",

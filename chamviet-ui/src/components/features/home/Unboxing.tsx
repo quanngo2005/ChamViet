@@ -1,80 +1,77 @@
-import { Package, CreditCard, Palette, ShieldCheck, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useSmoothScroll, useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
-import unboxingImage from '../../../assets/unboxing-flatlay.png';
-import { HOME_PRODUCT } from '../../../data/home';
+import { Package, CreditCard, Palette, ShieldCheck, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import { Reveal, RevealItem, StaggerReveal } from "../../common/MotionReveal";
+import unboxingImage from "../../../assets/unboxing-flatlay.png";
+import { HOME_PRODUCT } from "../../../data/home";
 
 const contents = [
   {
     id: 1,
-    title: '02 tranh puzzle gỗ 3D',
-    description: 'Bao gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, sẵn sàng để bé lắp ghép và mở truyện.',
+    title: '02 tranh ghép gỗ',
+    description: 'Bao gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, sẵn sàng để bé ghép tranh và mở truyện.',
     icon: <Package size={22} />,
     tag: '01'
   },
   {
     id: 2,
-    title: 'Kính phản chiếu (Pepper\'s Ghost)',
+    title: 'Hộp phản chiếu 3D',
     description: 'Tấm kính mica trong suốt đi kèm để bạn lắp ráp thành sân khấu nhỏ phản chiếu hình ảnh.',
     icon: <Palette size={22} />,
     tag: '02'
   },
   {
     id: 3,
-    title: 'Mã QR & Thẻ câu chuyện',
-    description: 'Quét mã QR để mở video câu chuyện cổ tích, kết hợp với hộp kính để xem nhân vật nổi lên.',
+    title: 'Nội dung câu chuyện',
+    description: 'Quét tranh để mở video câu chuyện văn hóa, kết hợp với hộp phản chiếu 3D để xem nhân vật hiện lên.',
     icon: <CreditCard size={22} />,
     tag: '03'
   }
 ];
 
 export default function Unboxing() {
-  const textRef = useSmoothScroll<HTMLDivElement>();
-  const listRef = useSmoothScrollStagger<HTMLDivElement>('.list-item', 150);
-  const imageRef = useSmoothScroll<HTMLDivElement>();
-
   return (
     <section className="unboxing-section">
       <div className="container">
         <div className="unboxing-section__grid">
 
           {/* ── LEFT: Flat-lay Image ── */}
-          <div
-            ref={imageRef}
-            className="unboxing-section__image-wrap scroll-reveal fade-left"
+          <Reveal
+            className="unboxing-section__image-wrap"
+            variant="left"
           >
             <div className="unboxing-section__image-glow" />
             <div className="unboxing-section__image-frame">
               <img
                 src={unboxingImage}
-                alt="Trọn bộ sản phẩm Chạm Việt: puzzle gỗ, sách hướng dẫn, mã kích hoạt"
+                alt="Trọn bộ sản phẩm Chạm Việt: tranh ghép gỗ, sách hướng dẫn, mã kích hoạt"
                 className="unboxing-section__img"
               />
             </div>
-          </div>
+          </Reveal>
 
           {/* ── RIGHT: Content ── */}
-          <div
-            ref={textRef}
-            className="unboxing-section__content scroll-reveal fade-right"
+          <Reveal
+            className="unboxing-section__content"
+            variant="right"
           >
             {/* Eyebrow */}
             <p className="section-eyebrow">Có gì trong hộp?</p>
 
             <h2 className="unboxing-section__title">
               Mở hộp:<br />
-              <span style={{ color: 'var(--primary)' }}>2 tranh trong 1 box</span>
+              <span style={{ color: 'var(--primary)' }}>2 tranh trong 1 bộ</span>
             </h2>
             <p className="unboxing-section__sub">
               Mỗi chi tiết được thiết kế để phụ huynh hiểu ngay trong hộp có gì và bé sẽ bắt đầu chơi như thế nào.
             </p>
 
             {/* Item list */}
-            <div ref={listRef} className="unboxing-section__list">
+            <StaggerReveal className="unboxing-section__list">
               {contents.map((item) => (
-                <div
+                <RevealItem
                   key={item.id}
-                  className="list-item unboxing-item scroll-reveal-child fade-up"
+                  className="list-item unboxing-item"
                 >
                   <div className="unboxing-item__tag">{item.tag}</div>
                   <div className="unboxing-item__body">
@@ -84,9 +81,9 @@ export default function Unboxing() {
                       <p className="unboxing-item__desc">{item.description}</p>
                     </div>
                   </div>
-                </div>
+                </RevealItem>
               ))}
-            </div>
+            </StaggerReveal>
 
             {/* Trust chips */}
             <div className="unboxing-section__chips">
@@ -105,7 +102,7 @@ export default function Unboxing() {
               <span>{HOME_PRODUCT.ctaLabel}</span>
               <ArrowRight size={16} />
             </Link>
-          </div>
+          </Reveal>
 
         </div>
       </div>

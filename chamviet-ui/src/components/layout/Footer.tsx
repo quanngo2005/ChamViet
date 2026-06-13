@@ -1,13 +1,21 @@
 import { Link as RouterLink } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import SvgIcon from '@mui/material/SvgIcon';
+
+function TiktokIcon(props: any) {
+  return (
+    <SvgIcon {...props} viewBox="0 0 24 24">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+    </SvgIcon>
+  );
+}
 
 const productLinks = [
   { label: 'Chạm Việt Box', to: '/products' },
@@ -24,9 +32,9 @@ const supportLinks = [
 ];
 
 const socialLinks = [
-  { id: 'facebook', label: 'Facebook', Icon: FacebookIcon },
-  { id: 'instagram', label: 'Instagram', Icon: InstagramIcon },
-  { id: 'youtube', label: 'YouTube', Icon: YouTubeIcon },
+  { id: 'facebook', label: 'Facebook', Icon: FacebookIcon, href: 'https://www.facebook.com/chammotcauchuyen' },
+  { id: 'instagram', label: 'TikTok', Icon: TiktokIcon, href: 'https://www.tiktok.com/' },
+  { id: 'youtube', label: 'YouTube', Icon: YouTubeIcon, href: 'https://www.youtube.com/' },
 ];
 
 export default function Footer() {
@@ -54,12 +62,16 @@ export default function Footer() {
             Chạm Việt
           </Typography>
           <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7, maxWidth: 360 }}>
-            Gìn giữ nét Việt trong từng món đồ chơi. Kết nối di sản qua công nghệ tương tác, ánh sáng và câu chuyện.
+            Chạm một câu chuyện, Nhớ một Việt Nam
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
-            {socialLinks.map(({ id, label, Icon }) => (
+            {socialLinks.map(({ id, label, Icon, href }) => (
               <IconButton
                 key={id}
+                component="a"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label={label}
                 sx={{
                   width: 42,
@@ -84,7 +96,7 @@ export default function Footer() {
             Bản tin
           </Typography>
           <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7 }}>
-            Nhận thông báo về bộ sưu tập mới và các câu chuyện di sản cho trẻ.
+            Nhận thông báo về bộ sưu tập mới.
           </Typography>
           <Box component="form" sx={{ display: 'flex', gap: 1 }}>
             <TextField

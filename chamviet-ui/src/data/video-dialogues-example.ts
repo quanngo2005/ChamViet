@@ -34,7 +34,7 @@ export const VIDEO_REGISTRY: VideoRegistry = {
         options: [
           {
             id: "opt_3",
-            label: "Các Vị Anh Hùng Dân Tộc",
+            label: "Hào Khí Việt Nam",
             nextStep: "hero_collection",
             isCta: false,
           },
@@ -148,7 +148,7 @@ export const VIDEO_REGISTRY: VideoRegistry = {
         options: [
           {
             id: "p_4",
-            label: "Có, mình muốn đặt custom!",
+            label: "Có, mình muốn khắc theo yêu cầu!",
             nextStep: "end",
             isCta: true,
           },

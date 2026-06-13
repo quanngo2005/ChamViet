@@ -16,10 +16,10 @@ export type Product = {
 export const PRODUCT_CATALOG: Product[] = [
   {
     id: 'box-tuong-tac-ke-chuyen',
-    collectionLabel: 'Chạm Việt Box',
-    title: 'Box tương tác kể chuyện',
+    collectionLabel: 'Bộ kể chuyện Chạm Việt',
+    title: 'Bộ kể chuyện tương tác',
     shortDescription:
-      'Một box kể chuyện văn hóa Việt gồm 2 tranh lắp ghép: Sự tích Hồ Gươm và Sự tích Thánh Gióng. Bé lắp tranh, quét QR, xem hiệu ứng Pepper\'s Ghost và tiếp tục hỏi đáp sau câu chuyện.',
+      'Một bộ kể chuyện văn hóa Việt gồm 2 tranh ghép gỗ: Sự tích Hồ Gươm và Sự tích Thánh Gióng. Bé ghép tranh, quét tranh nhận diện hình ảnh, xem hiệu ứng phản chiếu 3D và hỏi đáp cùng AI Chíp Bông.',
     badgeLabel: 'Có sẵn 2 tranh',
     reviewsLabel: 'Sẵn sàng mở bán',
     priceLabel: '229.000đ',
@@ -28,7 +28,7 @@ export const PRODUCT_CATALOG: Product[] = [
     listAgeLabel: '4-8 tuổi',
     listTopicLabel: 'Truyền thuyết',
     listCardDescription:
-      '1 box gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, đi kèm trải nghiệm kể chuyện tương tác.',
+      '1 bộ gồm Sự tích Hồ Gươm và Sự tích Thánh Gióng, đi kèm trải nghiệm kể chuyện tương tác.',
   },
 ];
 

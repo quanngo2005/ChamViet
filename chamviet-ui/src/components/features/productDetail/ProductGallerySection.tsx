@@ -1,20 +1,15 @@
 import { useState } from 'react';
 import { Box, ButtonBase, Card, Stack, Typography } from '@mui/material';
-import heroImage from '../../../assets/hero.png';
-import heroChildAr from '../../../assets/hero-child-ar.png';
-import unboxingFlatlay from '../../../assets/unboxing-flatlay.png';
-import videoThumbnail from '../../../assets/video-thumbnail.png';
-
 export interface ProductGallerySectionProps {
   title: string;
   imageUrls?: string[];
 }
 
 const galleryItems = [
-  { label: 'Box Chạm Việt', image: heroImage },
-  { label: 'Tranh trong hộp', image: unboxingFlatlay },
-  { label: 'Hiệu ứng kể chuyện', image: videoThumbnail },
-  { label: 'Bé tương tác', image: heroChildAr },
+  { label: 'Box Chạm Việt', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/2pwithhop.png' },
+  { label: 'Sự tích Hồ Gươm', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/hoguomsingle.png' },
+  { label: 'Sự tích Thánh Gióng', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/thanhgiongsingle.png' },
+  { label: 'Hộp phản chiếu', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/peperghost.png' },
 ];
 
 export function ProductGallerySection({ title, imageUrls }: ProductGallerySectionProps) {

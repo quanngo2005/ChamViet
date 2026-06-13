@@ -1,4 +1,4 @@
-import { useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
+import { Reveal, RevealItem, StaggerReveal } from "../../common/MotionReveal";
 
 const news = [
   {
@@ -10,8 +10,8 @@ const news = [
   },
   {
     id: 2,
-    title: 'Pepper\'s Ghost là gì?',
-    excerpt: 'Tìm hiểu về kỹ thuật ảo ảnh quang học hàng trăm năm tuổi được ứng dụng trong hộp phản chiếu Chạm Việt.',
+    title: 'Hộp phản chiếu 3D hoạt động như thế nào?',
+    excerpt: 'Tìm hiểu về kỹ thuật phản chiếu ánh sáng hàng trăm năm tuổi được ứng dụng trong hộp phản chiếu Chạm Việt.',
     image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=400',
     date: '05 Tháng 4, 2024'
   },
@@ -25,19 +25,17 @@ const news = [
 ];
 
 export default function NewsSection() {
-  const cardsRef = useSmoothScrollStagger<HTMLDivElement>('.news-card', 150);
-
   return (
     <section className="news-section">
       <div className="container">
-        <div className="news-section__header scroll-reveal fade-up">
+        <Reveal className="news-section__header">
           <p className="section-eyebrow">Tin tức & Bài viết</p>
           <h2 className="news-section__title">Góc chia sẻ</h2>
-        </div>
+        </Reveal>
 
-        <div ref={cardsRef} className="news-section__grid">
+        <StaggerReveal className="news-section__grid">
           {news.map((item) => (
-            <div key={item.id} className="news-card scroll-reveal-child fade-up">
+            <RevealItem key={item.id} className="news-card">
               <div className="news-card__image-wrap">
                 <img src={item.image} alt={item.title} className="news-card__image" />
               </div>
@@ -46,9 +44,9 @@ export default function NewsSection() {
                 <h3 className="news-card__title">{item.title}</h3>
                 <p className="news-card__excerpt">{item.excerpt}</p>
               </div>
-            </div>
+            </RevealItem>
           ))}
-        </div>
+        </StaggerReveal>
       </div>
     </section>
   );

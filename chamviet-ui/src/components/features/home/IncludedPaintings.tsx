@@ -1,24 +1,23 @@
-import { ImagePlus } from 'lucide-react';
-import { HOME_PRODUCT } from '../../../data/home';
-import { useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
+import { ImagePlus } from "lucide-react";
+
+import { Reveal, RevealItem, StaggerReveal } from "../../common/MotionReveal";
+import { HOME_PRODUCT } from "../../../data/home";
 
 export default function IncludedPaintings() {
-  const cardsRef = useSmoothScrollStagger<HTMLDivElement>('.included-painting-card', 130);
-
   return (
     <section className="included-paintings-section">
       <div className="container">
-        <div className="included-paintings-section__header scroll-reveal fade-up">
+        <Reveal className="included-paintings-section__header">
           <p className="section-eyebrow">Có trong hộp</p>
           <h2 className="included-paintings-section__title">Hai tranh đã sẵn sàng để mở truyện</h2>
           <p className="included-paintings-section__sub">
             Khu vực ảnh dưới đây đang để placeholder để bạn tự cập nhật hình thật của từng tranh.
           </p>
-        </div>
+        </Reveal>
 
-        <div ref={cardsRef} className="included-paintings-section__grid">
+        <StaggerReveal className="included-paintings-section__grid">
           {HOME_PRODUCT.paintings.map((painting) => (
-            <article key={painting.id} className="included-painting-card scroll-reveal-child fade-up">
+            <RevealItem key={painting.id} as="article" className="included-painting-card">
               <div className="included-painting-card__media" aria-label={`Placeholder ảnh ${painting.title}`}>
                 <div className="included-painting-card__placeholder">
                   <ImagePlus size={34} />
@@ -30,9 +29,9 @@ export default function IncludedPaintings() {
                 <h3 className="included-painting-card__title">{painting.title}</h3>
                 <p className="included-painting-card__desc">{painting.description}</p>
               </div>
-            </article>
+            </RevealItem>
           ))}
-        </div>
+        </StaggerReveal>
       </div>
     </section>
   );

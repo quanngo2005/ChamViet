@@ -15,8 +15,8 @@
     "closing": "Con Rồng Cháu Tiên là lời nhắc nhẹ nhàng rằng người Việt luôn gắn kết với nhau bởi chung một nguồn cội và trách nhiệm cùng nhau gìn giữ đất nước."
   },
   "cta": {
-    "title": "Sẵn sàng mở box kể chuyện tương tác",
-    "description": "Box tương tác kể chuyện gồm 2 puzzle Sự tích Hồ Gươm, Sự tích Thánh Gióng và 1 Pepper's Ghost để bé lắp ghép, xem và hỏi đáp.",
+    "title": "Sẵn sàng mở bộ kể chuyện tương tác",
+    "description": "Bộ kể chuyện tương tác gồm 2 tranh ghép gỗ Sự tích Hồ Gươm, Sự tích Thánh Gióng và 1 hộp phản chiếu 3D để bé ghép tranh, xem và hỏi đáp cùng AI.",
     "buttonLabel": "Mua ngay - 229.000đ",
     "to": "/products/box-tuong-tac-ke-chuyen"
   },
@@ -25,11 +25,11 @@
     "items": [
       {
         "title": "Sự tích Hồ Gươm",
-        "meta": "Có trong box • Truyền thuyết"
+        "meta": "Có trong bộ • Truyền thuyết"
       },
       {
         "title": "Sự tích Thánh Gióng",
-        "meta": "Có trong box • Truyền thuyết"
+        "meta": "Có trong bộ • Truyền thuyết"
       },
       {
         "title": "Con Rồng Cháu Tiên",

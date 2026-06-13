@@ -213,9 +213,9 @@ export default function ScanPage() {
 
   return (
     <section className="scan-page">
-      <h1 className="scan-page__title">Quét Thẻ Gỗ</h1>
+      <h1 className="scan-page__title">Quét tranh Chạm Việt</h1>
       <p className="scan-page__subtitle">
-        Chụp ảnh trực tiếp hoặc tải ảnh lên để nhận diện tác phẩm Chạm Việt
+        Chọn ảnh bức tranh đã ghép xong hoặc mở máy ảnh để hệ thống nhận diện đúng câu chuyện tương ứng.
       </p>
 
       {/* Hidden gallery input */}
@@ -235,20 +235,34 @@ export default function ScanPage() {
             <span className="scan-page__camera-icon" aria-hidden>
               <ScanLine size={54} />
             </span>
-            <span className="scan-page__capture-text">Chọn phương thức bên dưới</span>
-            <span className="scan-page__capture-hint">Đặt thẻ gỗ vào giữa khung hình</span>
+            <span className="scan-page__capture-text">Chọn cách quét phù hợp</span>
+            <span className="scan-page__capture-hint">Đặt trọn bức tranh vào giữa khung hình</span>
           </div>
         )}
 
         {/* CAMERA — live video feed */}
         {mode === "camera" && (
-          <video
-            ref={videoRef}
-            className="scan-page__video"
-            autoPlay
-            playsInline
-            muted
-          />
+          <>
+            <video
+              ref={videoRef}
+              className="scan-page__video"
+              autoPlay
+              playsInline
+              muted
+            />
+            <div className="scan-page__camera-guide" aria-hidden="true">
+              <div className="scan-page__camera-guide-frame">
+                <span className="scan-page__camera-guide-corner scan-page__camera-guide-corner--tl" />
+                <span className="scan-page__camera-guide-corner scan-page__camera-guide-corner--tr" />
+                <span className="scan-page__camera-guide-corner scan-page__camera-guide-corner--bl" />
+                <span className="scan-page__camera-guide-corner scan-page__camera-guide-corner--br" />
+                <span className="scan-page__camera-guide-line" />
+              </div>
+            <div className="scan-page__camera-guide-copy">
+                Đưa bức tranh vào giữa khung để căn dễ hơn
+              </div>
+            </div>
+          </>
         )}
 
         {/* PREVIEW — captured / uploaded image */}
@@ -266,7 +280,7 @@ export default function ScanPage() {
             type="button"
           >
             <Camera size={20} />
-            Mở Máy Ảnh
+            Mở máy ảnh
           </button>
           <button
             className="scan-page__btn scan-page__btn--secondary"
@@ -274,7 +288,7 @@ export default function ScanPage() {
             type="button"
           >
             <ImageUp size={20} />
-            Tải Ảnh Lên
+            Tải ảnh lên
           </button>
         </div>
       )}
@@ -315,7 +329,7 @@ export default function ScanPage() {
             disabled={loading}
             type="button"
           >
-            Chụp Lại
+            Chọn lại ảnh
           </button>
           <button
             className="scan-page__btn scan-page__btn--primary"
@@ -323,7 +337,7 @@ export default function ScanPage() {
             disabled={loading}
             type="button"
           >
-            Nhận Diện
+            Nhận diện tranh
           </button>
         </div>
       )}
@@ -337,9 +351,9 @@ export default function ScanPage() {
 
       {/* ─── Loading overlay ─── */}
       {loading && (
-        <div className="scan-page__overlay" aria-live="assertive">
+          <div className="scan-page__overlay" aria-live="assertive">
           <div className="scan-page__spinner" />
-          <span className="scan-page__overlay-text">Đang nhận diện...</span>
+          <span className="scan-page__overlay-text">Đang tìm đúng câu chuyện...</span>
         </div>
       )}
     </section>

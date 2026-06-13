@@ -59,7 +59,7 @@ const commonIssues = [
     icon: Lightbulb,
     title: 'Phản chiếu bị mờ',
     description:
-      'Giảm ánh sáng xung quanh, tăng độ sáng màn hình và đặt điện thoại đúng vị trí trên hộp Pepper\'s Ghost.',
+      'Giảm ánh sáng xung quanh, tăng độ sáng màn hình và đặt điện thoại đúng vị trí trên hộp phản chiếu 3D.',
   },
   {
     icon: Volume2,
@@ -90,16 +90,15 @@ function HeroSection() {
           <p className="section-eyebrow">Hành trình trải nghiệm</p>
           <h1>Cách chơi Chạm Việt trong một buổi tối</h1>
           <p>
-            Từ lúc mở hộp đến khi bé hỏi AI về câu chuyện, mọi thứ được thiết kế thành
-            một mạch chơi dễ làm tại nhà: lắp tranh, quét tranh, xem sân khấu nhỏ rồi
-            cùng nhau kể lại.
+            Trang này chỉ dành cho việc bắt đầu cho đúng. Từ lúc mở hộp đến lúc bé hỏi tiếp,
+            mỗi bước đều được viết ngắn gọn để phụ huynh biết cần làm gì trước.
           </p>
 
           <div className="how-play-hero__proofs" aria-label="Các phần trong trải nghiệm">
-            <span>Tranh gỗ</span>
-            <span>AI Vision</span>
-            <span>Pepper&apos;s Ghost</span>
-            <span>Hỏi đáp AI</span>
+            <span>Mở hộp</span>
+            <span>Ghép tranh</span>
+            <span>Quét tranh</span>
+            <span>Hỏi tiếp sau khi xem</span>
           </div>
 
           <div className="how-play-hero__ctas">
@@ -175,8 +174,8 @@ function TipsForParentsSection() {
           <p className="section-eyebrow">Dành cho phụ huynh</p>
           <h2>Biến phần chơi thành một cuộc trò chuyện</h2>
           <p>
-            Chạm Việt không chỉ là xem video. Phần hay nhất thường đến sau đó, khi bé
-            tự nói lại điều mình nhớ và đặt thêm câu hỏi về văn hóa Việt.
+            Khi đã biết cách bắt đầu, phần quan trọng nhất là đừng làm thay cho bé.
+            Trang này giúp phụ huynh đứng cạnh để gợi mở đúng lúc.
           </p>
         </div>
 
@@ -209,7 +208,7 @@ function CommonIssuesSection() {
         <div className="how-play-section-head how-play-section-head--left">
           <p className="section-eyebrow">Tối ưu trải nghiệm</p>
           <h2>Lỗi thường gặp khi chơi</h2>
-          <p>Một vài chỉnh sửa nhỏ giúp phần quét tranh và phản chiếu ổn định hơn trên điện thoại.</p>
+          <p>Chỉ cần chỉnh vài điểm nhỏ là phần quét tranh và xem phản chiếu sẽ ổn định hơn nhiều.</p>
         </div>
 
         <div className="how-play-issue-grid">
@@ -238,10 +237,9 @@ function FinalCtaSection() {
       <div className="container">
         <div className="how-play-final__card">
           <p className="section-eyebrow">Sẵn sàng mở hộp?</p>
-          <h2>Bắt đầu với Hồ Gươm và Thánh Gióng trong một box</h2>
+          <h2>Nếu đã nắm cách chơi, bạn có thể bắt đầu</h2>
           <p>
-            Mỗi bộ có đủ tranh, hộp phản chiếu và mạch trải nghiệm để cả nhà cùng đi
-            qua câu chuyện đầu tiên.
+            Khi phụ huynh đã hình dung rõ các bước, việc chọn bộ đầu tiên sẽ dễ hơn nhiều.
           </p>
           <div className="how-play-final__ctas">
             <Link to={`/products/${HOME_PRODUCT.id}`} className="btn btn-primary">

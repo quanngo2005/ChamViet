@@ -1,6 +1,5 @@
 import { BookOpenCheck, Brain, HeartHandshake, Users } from 'lucide-react';
-
-import { useSmoothScrollStagger } from '../../../hooks/useSmoothScroll';
+import { Reveal, RevealItem, StaggerReveal } from "../../common/MotionReveal";
 
 const outcomes = [
   {
@@ -26,30 +25,28 @@ const outcomes = [
 ];
 
 export default function OutcomeSection() {
-  const listRef = useSmoothScrollStagger<HTMLDivElement>('.outcome-card', 120);
-
   return (
     <section className="outcome-section">
       <div className="container">
-        <div className="outcome-section__header scroll-reveal fade-up">
+        <Reveal className="outcome-section__header">
           <p className="section-eyebrow">Kết quả mang lại</p>
           <h2 className="outcome-section__title">Sau một lần mở hộp, trẻ có thể kể lại câu chuyện</h2>
           <p className="outcome-section__sub">
             Landing không chỉ giới thiệu món đồ chơi. Nó cho phụ huynh thấy điều con nhận được sau khi chơi cùng Chạm Việt.
           </p>
-        </div>
+        </Reveal>
 
-        <div ref={listRef} className="outcome-section__grid">
+        <StaggerReveal className="outcome-section__grid">
           {outcomes.map((item) => (
-            <article key={item.title} className="outcome-card scroll-reveal-child fade-up">
+            <RevealItem key={item.title} as="article" className="outcome-card">
               <div className="outcome-card__icon">{item.icon}</div>
               <div>
                 <h3 className="outcome-card__title">{item.title}</h3>
                 <p className="outcome-card__desc">{item.description}</p>
               </div>
-            </article>
+            </RevealItem>
           ))}
-        </div>
+        </StaggerReveal>
       </div>
     </section>
   );

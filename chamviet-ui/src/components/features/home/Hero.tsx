@@ -1,21 +1,36 @@
-import { useEffect, useState } from 'react';
-import { ArrowRight, PlayCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { HOME_COPY, HOME_IMAGES, HOME_PRODUCT } from '../../../data/home';
+import { useState } from "react";
+import { ArrowRight, PlayCircle } from "lucide-react";
+import { motion, useMotionValueEvent, useSpring, useTransform } from "motion/react";
+import { useNavigate } from "react-router-dom";
+
+import { useAppScroll } from "../../../hooks/useAppScroll";
+import { HOME_COPY, HOME_IMAGES, HOME_PRODUCT } from "../../../data/home";
+import { scrollToSection } from "../../common/LenisProvider";
 
 export default function Hero() {
-  const [showStickyCtA, setShowStickyCtA] = useState(false);
+  const [isStickyInteractive, setIsStickyInteractive] = useState(false);
   const navigate = useNavigate();
+  const { scrollY } = useAppScroll();
 
-  useEffect(() => {
-    const onScroll = () => setShowStickyCtA(window.scrollY > 420);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  const stickyProgress = useTransform(scrollY, [320, 420], [0, 1]);
+  const stickyOpacity = useSpring(stickyProgress, {
+    damping: 28,
+    mass: 0.35,
+    stiffness: 280,
+  });
+  const stickyY = useSpring(useTransform(stickyProgress, [0, 1], [24, 0]), {
+    damping: 28,
+    mass: 0.35,
+    stiffness: 280,
+  });
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const next = latest > 380;
+    setIsStickyInteractive((previous) => (previous === next ? previous : next));
+  });
 
   const scrollToVideo = () => {
-    document.getElementById('video-section')?.scrollIntoView({ behavior: 'smooth' });
+    scrollToSection("video-section", 96);
   };
 
   return (
@@ -62,12 +77,14 @@ export default function Hero() {
         </div>
       </section>
 
-      <div
+      <motion.div
         className="hero-sticky-cta"
         style={{
-          transform: showStickyCtA ? 'translateY(0)' : 'translateY(108%)',
-          opacity: showStickyCtA ? 1 : 0,
+          opacity: stickyOpacity,
+          pointerEvents: isStickyInteractive ? "auto" : "none",
+          y: stickyY,
         }}
+        aria-hidden={!isStickyInteractive}
       >
         <span className="hero-sticky-cta__label">Chạm Việt - {HOME_PRODUCT.boxLabel}</span>
         <button
@@ -78,7 +95,7 @@ export default function Hero() {
           <span>{HOME_COPY.hero.primaryCta}</span>
           <ArrowRight size={16} />
         </button>
-      </div>
+      </motion.div>
     </>
   );
 }

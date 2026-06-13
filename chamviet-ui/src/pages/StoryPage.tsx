@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link as RouterLink, useParams } from "react-router-dom";
 
 import Box from "@mui/material/Box";
@@ -19,7 +19,7 @@ import YouTubeStopOverlayPlayer, {
   type VideoRegistry,
   type VideoStopConfig,
 } from "../components/video/YouTubeStopOverlayPlayer";
-import mascotHac from "../assets/be-hac.png";
+import mascot from "@assets/masotknen.webp";
 import { HOME_PRODUCT } from "../data/home";
 import {
   findStoryVideoEntryBySlug,
@@ -52,10 +52,31 @@ const CONTENT = storyVideo as StoryVideoContent;
 const VIDEO_REGISTRY: VideoRegistry = {
   Mb0RWyh3sqQ: {
     stopTime: 30,
-    mascotAvatar: mascotHac,
+    mascotAvatar: mascot,
     dialogue: [],
   },
 };
+
+type WebkitFullscreenDocument = Document & {
+  webkitExitFullscreen?: () => Promise<void> | void;
+  webkitFullscreenElement?: Element | null;
+};
+
+function isMobileSafariBrowser() {
+  if (typeof navigator === "undefined") return false;
+
+  const ua = navigator.userAgent;
+  const vendor = navigator.vendor ?? "";
+  const isAppleMobileDevice =
+    /iPhone|iPad|iPod/i.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isSafari =
+    /Safari/i.test(ua) &&
+    /Apple/i.test(vendor) &&
+    !/CriOS|FxiOS|EdgiOS|OPiOS|OPT\//i.test(ua);
+
+  return isAppleMobileDevice && isSafari;
+}
 
 function DemoIntro({ storyTitle }: { storyTitle: string }) {
   return (
@@ -80,8 +101,8 @@ function DemoIntro({ storyTitle }: { storyTitle: string }) {
               textTransform: "uppercase",
             }}
           >
-            <PlayArrowRoundedIcon sx={{ fontSize: 18 }} />
-            Pepper's Ghost Demo
+            <PlayArrowRoundedIcon sx={{ fontSize: 26 }} />
+            Xem thử video kể chuyện tương tác
           </Box>
 
           <Stack spacing={1.5}>
@@ -89,15 +110,15 @@ function DemoIntro({ storyTitle }: { storyTitle: string }) {
               component="h1"
               sx={{
                 color: COLORS.title,
-                fontSize: { xs: 34, sm: 44, md: 68 },
+                fontSize: { xs: 30, md: 48 },
                 fontWeight: 950,
-                lineHeight: { xs: 1.05, md: 0.98 },
-                letterSpacing: 0,
-                maxWidth: 760,
+                lineHeight: 1.06,
+                maxWidth: 700,
               }}
             >
-              Xem demo kể chuyện tương tác
+              Đây là bản xem thử để phụ huynh hình dung trải nghiệm
             </Typography>
+
             <Typography
               sx={{
                 color: COLORS.body,
@@ -106,8 +127,8 @@ function DemoIntro({ storyTitle }: { storyTitle: string }) {
                 maxWidth: 680,
               }}
             >
-              Đặt điện thoại lên hộp phản chiếu để xem {storyTitle || CONTENT.story.title} hiện lên như một
-              sân khấu nhỏ. Video có thể được lấy từ backend bằng <Box component="span" sx={{ fontWeight: 800 }}>videoUrl</Box> khi dữ liệu sẵn sàng.
+              Trang này không dùng để giải thích sản phẩm. Nó chỉ cho bạn thấy khi câu chuyện bắt đầu,
+              {` ${storyTitle || CONTENT.story.title} `}sẽ hiện lên như thế nào trên điện thoại và trong hộp phản chiếu.
             </Typography>
           </Stack>
         </Stack>
@@ -126,46 +147,71 @@ function CinemaHero({
   const heroRef = useRef<HTMLDivElement | null>(null);
   const [isVideoExpanded, setIsVideoExpanded] = useState(false);
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const prefersViewportFullscreen = useMemo(() => isMobileSafariBrowser(), []);
   const isLandscapePhone = useMediaQuery("(orientation: landscape) and (max-height: 500px)", {
     noSsr: true,
   });
 
   useEffect(() => {
+    const fullscreenDocument = document as WebkitFullscreenDocument;
+
     const handleFullscreenChange = () => {
-      const isHeroFullscreen = document.fullscreenElement === heroRef.current;
+      const activeFullscreenElement =
+        document.fullscreenElement ?? fullscreenDocument.webkitFullscreenElement ?? null;
+      const isHeroFullscreen = activeFullscreenElement === heroRef.current;
       setIsNativeFullscreen(isHeroFullscreen);
       setIsVideoExpanded(isHeroFullscreen);
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange as EventListener);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange as EventListener);
+    };
   }, []);
 
   useEffect(() => {
     if (!isVideoExpanded || isNativeFullscreen) return undefined;
 
-    const originalOverflow = document.body.style.overflow;
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyTouchAction = document.body.style.touchAction;
+    const originalRootOverflow = document.documentElement.style.overflow;
+    const originalRootOverscroll = document.documentElement.style.overscrollBehavior;
+
     document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    document.documentElement.style.overflow = "hidden";
+    document.documentElement.style.overscrollBehavior = "none";
+    window.scrollTo({ top: 0, behavior: "auto" });
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.touchAction = originalBodyTouchAction;
+      document.documentElement.style.overflow = originalRootOverflow;
+      document.documentElement.style.overscrollBehavior = originalRootOverscroll;
     };
   }, [isNativeFullscreen, isVideoExpanded]);
 
   const handleToggleFullscreen = async () => {
     const target = heroRef.current;
     if (!target) return;
+    const fullscreenDocument = document as WebkitFullscreenDocument;
+    const activeFullscreenElement =
+      document.fullscreenElement ?? fullscreenDocument.webkitFullscreenElement ?? null;
 
     if (isVideoExpanded) {
-      if (document.fullscreenElement === target) {
+      if (activeFullscreenElement === target && document.exitFullscreen) {
         await document.exitFullscreen();
+      } else if (activeFullscreenElement === target && fullscreenDocument.webkitExitFullscreen) {
+        await fullscreenDocument.webkitExitFullscreen();
       } else {
         setIsVideoExpanded(false);
       }
       return;
     }
 
-    if (target.requestFullscreen) {
+    if (!prefersViewportFullscreen && target.requestFullscreen) {
       try {
         await target.requestFullscreen();
         return;
@@ -199,26 +245,28 @@ function CinemaHero({
             backgroundColor: "#000000",
             ...(isVideoExpanded && !isNativeFullscreen
               ? {
-                  position: "fixed",
-                  inset: 0,
-                  zIndex: 1300,
-                  width: "100vw",
-                  height: "100vh",
-                  border: "none",
-                  borderRadius: 0,
-                  boxShadow: "none",
-                  "@supports (height: 100dvh)": {
-                    height: "100dvh",
-                  },
-                }
+                position: "fixed",
+                inset: 0,
+                zIndex: 1300,
+                width: "100vw",
+                height: "100vh",
+                minHeight: "100svh",
+                border: "none",
+                borderRadius: 0,
+                boxShadow: "none",
+                "@supports (height: 100dvh)": {
+                  height: "100dvh",
+                  minHeight: "100dvh",
+                },
+              }
               : {}),
             ...(isVideoExpanded
               ? {
-                  ".story-video-frame": {
-                    height: "100%",
-                    width: "100%",
-                  },
-                }
+                ".story-video-frame": {
+                  height: "100%",
+                  width: "100%",
+                },
+              }
               : {}),
             "&:fullscreen": {
               border: "none",
@@ -255,8 +303,14 @@ function CinemaHero({
               onClick={handleToggleFullscreen}
               sx={{
                 position: "absolute",
-                right: { xs: 10, sm: 14 },
-                top: { xs: 10, sm: 14 },
+                right: {
+                  xs: "calc(env(safe-area-inset-right, 0px) + 10px)",
+                  sm: 14,
+                },
+                top: {
+                  xs: "calc(env(safe-area-inset-top, 0px) + 10px)",
+                  sm: 14,
+                },
                 zIndex: 2,
                 width: 44,
                 height: 44,
@@ -295,7 +349,7 @@ function DemoActions() {
           }}
         >
           <Typography sx={{ color: COLORS.muted, fontSize: { xs: 14.5, md: 15.5 }, lineHeight: 1.65 }}>
-            Demo hiện dùng video mặc định khi backend chưa trả <Box component="span" sx={{ fontWeight: 800 }}>videoUrl</Box>.
+            Xem xong bản thử, bạn có thể chuyển sang bước quét tranh hoặc xem kỹ thông tin của bộ sản phẩm.
           </Typography>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
             <Button

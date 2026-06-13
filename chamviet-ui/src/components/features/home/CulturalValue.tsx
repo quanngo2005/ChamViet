@@ -1,8 +1,6 @@
-import { useSmoothScroll } from '../../../hooks/useSmoothScroll';
+import { Reveal } from "../../common/MotionReveal";
 
 export default function CulturalValue() {
-  const scrollRef = useSmoothScroll<HTMLDivElement>();
-
   return (
     <section style={{ 
       minHeight: '100svh', 
@@ -17,9 +15,8 @@ export default function CulturalValue() {
       <div style={{ position: 'absolute', inset: 0, opacity: 0.03, backgroundImage: 'radial-gradient(var(--secondary) 1.5px, transparent 1.5px)', backgroundSize: '36px 36px' }} />
 
       <div className="container" style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-        <div
-          ref={scrollRef}
-          className="scroll-reveal fade-up"
+        <Reveal
+          className="cultural-value__content"
           style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '60px' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -36,7 +33,7 @@ export default function CulturalValue() {
               Sứ mệnh của <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Chạm Việt</span> là kết nối trẻ em với cội nguồn văn hóa dân tộc thông qua ngôn ngữ của công nghệ hiện đại. Chúng tôi tin rằng mỗi mảnh ghép gỗ là một nhịp cầu đưa các em trở về với những câu chuyện cổ tích nghìn năm.
             </p>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
