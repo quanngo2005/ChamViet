@@ -1,6 +1,6 @@
 /**
- * Fallback maps for legacy development flows.
- * Production scan routing should prefer backend-enriched story/puzzle values.
+ * Fallback maps for older label-only responses.
+ * Production scan routing should prefer backend-enriched story/product values.
  */
 export const STORY_ROUTE_MAP: Record<string, string> = {
   auco_laclongquan: "/story/auco-laclongquan",

@@ -1,4 +1,4 @@
-/** Single prediction returned by the legacy AI vision service. */
+/** Single prediction returned by the AI vision recognition service. */
 export interface PredictionData {
   label: string;
   confidence: number;

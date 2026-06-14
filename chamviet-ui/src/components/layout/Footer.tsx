@@ -1,13 +1,11 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Mail } from 'lucide-react';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import YouTubeIcon from '@mui/icons-material/YouTube';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import SvgIcon from '@mui/material/SvgIcon';
+import ContactRequestForm from '../common/ContactRequestForm';
+import { CONTACT_EMAIL, CONTACT_FACEBOOK_URL, CONTACT_TIKTOK_URL } from '../../data/contact';
 
 function TiktokIcon(props: any) {
   return (
@@ -25,16 +23,14 @@ const productLinks = [
 ];
 
 const supportLinks = [
-  { label: 'Giới thiệu', to: '/about' },
-  { label: 'Cách chơi', to: '/how-to-play' },
-  { label: 'Câu chuyện', to: '/story' },
-  { label: 'Liên hệ', to: '/about' },
+  { label: 'Facebook', href: CONTACT_FACEBOOK_URL },
+  { label: 'TikTok', href: CONTACT_TIKTOK_URL },
+  { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` },
 ];
 
 const socialLinks = [
-  { id: 'facebook', label: 'Facebook', Icon: FacebookIcon, href: 'https://www.facebook.com/chammotcauchuyen' },
-  { id: 'instagram', label: 'TikTok', Icon: TiktokIcon, href: 'https://www.tiktok.com/' },
-  { id: 'youtube', label: 'YouTube', Icon: YouTubeIcon, href: 'https://www.youtube.com/' },
+  { id: 'facebook', label: 'Facebook', Icon: FacebookIcon, href: CONTACT_FACEBOOK_URL },
+  { id: 'tiktok', label: 'TikTok', Icon: TiktokIcon, href: CONTACT_TIKTOK_URL },
 ];
 
 export default function Footer() {
@@ -93,33 +89,16 @@ export default function Footer() {
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Typography sx={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 900, color: 'var(--text-h)' }}>
-            Bản tin
+            Nhận thông tin
           </Typography>
           <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7 }}>
-            Nhận thông báo về bộ sưu tập mới.
+            Để lại lời nhắn để Chạm Việt gửi thêm thông tin cho bạn.
           </Typography>
-          <Box component="form" sx={{ display: 'flex', gap: 1 }}>
-            <TextField
-              size="small"
-              placeholder="Email của bạn"
-              aria-label="Email nhận bản tin"
-              sx={{
-                flex: 1,
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                  backgroundColor: 'white',
-                },
-              }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              aria-label="Đăng ký bản tin"
-              sx={{ minWidth: 48, borderRadius: '8px', px: 1.5 }}
-            >
-              <Mail size={19} />
-            </Button>
-          </Box>
+          <ContactRequestForm
+            requestType="info_request"
+            submitLabel="Gửi thông tin"
+            successMessage="Cảm ơn bạn, Chạm Việt đã nhận thông tin và sẽ phản hồi sớm."
+          />
         </Box>
       </Box>
 
@@ -141,15 +120,15 @@ export default function Footer() {
           © 2026 CHẠM VIỆT. ALL RIGHTS RESERVED.
         </Typography>
         <Box sx={{ display: 'flex', gap: { xs: 2, md: 4 } }}>
-          <FooterTextLink to="/about" label="Privacy Policy" />
-          <FooterTextLink to="/about" label="Terms of Service" />
+          <FooterStaticText label="Privacy Policy" />
+          <FooterStaticText label="Terms of Service" />
         </Box>
       </Box>
     </Box>
   );
 }
 
-function FooterColumn({ title, links }: { title: string; links: Array<{ label: string; to: string }> }) {
+function FooterColumn({ title, links }: { title: string; links: Array<{ label: string; to?: string; href?: string }> }) {
   return (
     <Box>
       <Typography sx={{ fontSize: 13, mb: 2.5, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 900, color: 'var(--text-h)' }}>
@@ -157,18 +136,39 @@ function FooterColumn({ title, links }: { title: string; links: Array<{ label: s
       </Typography>
       <Box component="nav" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         {links.map((item) => (
-          <FooterTextLink key={item.label} to={item.to} label={item.label} />
+          <FooterTextLink key={item.label} to={item.to} href={item.href} label={item.label} />
         ))}
       </Box>
     </Box>
   );
 }
 
-function FooterTextLink({ to, label }: { to: string; label: string }) {
+function FooterTextLink({ to, href, label }: { to?: string; href?: string; label: string }) {
+  if (href) {
+    return (
+      <Box
+        component="a"
+        href={href}
+        target={href.startsWith('http') ? '_blank' : undefined}
+        rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+        sx={{
+          width: 'fit-content',
+          color: 'var(--text)',
+          fontSize: 15,
+          fontWeight: 600,
+          textDecoration: 'none',
+          '&:hover': { color: 'var(--primary)' },
+        }}
+      >
+        {label}
+      </Box>
+    );
+  }
+
   return (
     <Box
       component={RouterLink}
-      to={to}
+      to={to ?? '/'}
       sx={{
         width: 'fit-content',
         color: 'var(--text)',
@@ -180,5 +180,13 @@ function FooterTextLink({ to, label }: { to: string; label: string }) {
     >
       {label}
     </Box>
+  );
+}
+
+function FooterStaticText({ label }: { label: string }) {
+  return (
+    <Typography sx={{ color: 'var(--text-sub)', fontSize: 13, fontWeight: 600, cursor: 'default' }}>
+      {label}
+    </Typography>
   );
 }

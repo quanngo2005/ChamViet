@@ -10,7 +10,7 @@ import type {
  *
  * @param file     - The (preferably compressed) image file.
  * @param signal   - Optional AbortSignal to cancel the request on unmount.
- * @returns          Normalized scan result for the supported demo puzzle labels.
+ * @returns          Normalized scan result for the current production scan flow.
  */
 export async function scanImage(
   file: File,
@@ -39,21 +39,60 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
 
   const payload = raw as Record<string, unknown>;
   const status = typeof payload.status === "string" ? payload.status : "unknown";
+  const route = typeof payload.route === "string" ? payload.route.trim() : "";
+  const productId = toOptionalString(payload.productId);
+  const variantId = toOptionalString(payload.variantId);
+  const componentId = toOptionalString(payload.componentId);
+  const componentSku = typeof payload.componentSku === "string" ? payload.componentSku : undefined;
 
   const predictions = extractPredictions(payload.data);
-  if (predictions.length > 0) {
-    const best = [...predictions].sort((a, b) => b.confidence - a.confidence)[0];
-    const route = resolveLegacyLabelRoute(best.label);
+  const bestPrediction = predictions.length > 0
+    ? [...predictions].sort((a, b) => b.confidence - a.confidence)[0]
+    : null;
 
-    if (route) {
+  if (route) {
+    const confidence = bestPrediction?.confidence;
+
+    if (route.startsWith("/products/") && productId) {
+      return {
+        kind: "product",
+        status,
+        productId,
+        route,
+        variantId,
+        componentId,
+        componentSku,
+        confidence,
+        raw,
+      };
+    }
+
+    if (route.startsWith("/story/") || route === "/story") {
       return {
         kind: "story",
         status,
         route,
-        confidence: best.confidence,
+        confidence,
         raw: {
           route,
-          confidence: best.confidence,
+          confidence,
+        },
+      };
+    }
+  }
+
+  if (predictions.length > 0) {
+    const fallbackRoute = resolveLegacyLabelRoute(bestPrediction!.label);
+
+    if (fallbackRoute) {
+      return {
+        kind: "story",
+        status,
+        route: fallbackRoute,
+        confidence: bestPrediction!.confidence,
+        raw: {
+          route: fallbackRoute,
+          confidence: bestPrediction!.confidence,
         },
       };
     }
@@ -61,8 +100,8 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
     return {
       kind: "error",
       status,
-      message: "Recognized label is not supported by the demo scanner",
-      raw: best,
+      message: "Hệ thống đã nhận diện được ảnh nhưng chưa ánh xạ tới nội dung phù hợp.",
+      raw: bestPrediction,
     };
   }
 
@@ -72,6 +111,15 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
     message: "AI response does not contain a supported scan payload",
     raw,
   };
+}
+
+function toOptionalString(value: unknown): string | undefined {
+  if (typeof value === "number" || typeof value === "string") {
+    const normalized = String(value).trim();
+    return normalized ? normalized : undefined;
+  }
+
+  return undefined;
 }
 
 function extractPredictions(value: unknown): PredictionData[] {

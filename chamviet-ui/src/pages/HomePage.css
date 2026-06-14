@@ -2473,6 +2473,7 @@ body.home-page-active section {
   box-shadow: 0 24px 64px rgba(198, 40, 40, 0.24);
   position: relative;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .purchase-section__pattern {
   position: absolute;
@@ -2509,9 +2510,20 @@ body.home-page-active section {
   position: relative;
   z-index: 1;
   border: none;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
-.purchase-section__cta:hover {
+.purchase-section__card:hover,
+.purchase-section__card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 28px 72px rgba(198, 40, 40, 0.28);
+}
+.purchase-section__card:hover .purchase-section__cta,
+.purchase-section__card:focus-within .purchase-section__cta,
+.purchase-section__cta:hover,
+.purchase-section__cta:focus-visible {
   background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(78, 52, 46, 0.18);
 }
 
 /* ═══════════════════════════════════════
