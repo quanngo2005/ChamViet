@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link as RouterLink, NavLink } from "react-router-dom";
-import { useMotionValueEvent } from "motion/react";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -16,7 +15,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { HOME_PRODUCT } from "../../data/home";
-import { useAppScroll } from "../../hooks/useAppScroll";
 
 const productPath = `/products/${HOME_PRODUCT.id}`;
 
@@ -31,12 +29,13 @@ const primaryNavItems = [
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { scrollY } = useAppScroll();
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const next = latest > 18;
-    setScrolled((previous) => (previous === next ? previous : next));
-  });
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 18);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen);
