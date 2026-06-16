@@ -46,7 +46,7 @@ except ImportError:
 from services.llm_service import evaluate_story_answer, preload_embedding_model_async
 from services.story_service import build_question_text, load_story
 from services.stt_service import transcribe_audio_file
-from services.tts_service import synthesize_speech
+from services.tts_service import UNIFIED_VOICE_STYLE, synthesize_speech
 
 
 SAMPLE_RATE = TEST_AUDIO_SAMPLE_RATE
@@ -109,9 +109,9 @@ def play_audio(wav_path: str):
         print(f"[ERR] Loi phat audio: {e}")
 
 
-async def speak(text: str, style: str):
+async def speak(text: str, style: str = UNIFIED_VOICE_STYLE):
     print(f"[BAN] {text}")
-    wav_path = await synthesize_speech(text, style=style)
+    wav_path = await synthesize_speech(text, style=UNIFIED_VOICE_STYLE)
     if not wav_path:
         print("[!] TTS khong tao duoc audio, chi hien thi text.")
         return
@@ -123,7 +123,7 @@ async def ask_and_score_question(story: dict, question: dict, question_index: in
 
     print("\n" + "-" * 60)
     print(f"[Q{question_index + 1}/{len(story['questions'])}] {question['question']}")
-    await speak(question_text, style="cau_hoi")
+    await speak(question_text)
 
     audio_bytes = record_audio_interactive()
     if audio_bytes is None:
@@ -136,7 +136,7 @@ async def ask_and_score_question(story: dict, question: dict, question_index: in
             "To chua nghe ro cau tra loi cua cau. "
             f"Cau tra loi dung la: {question['answer']}"
         )
-        await speak(feedback, style="sai")
+        await speak(feedback)
         return True
 
     print(f"[BE] {user_text}")
@@ -156,7 +156,7 @@ async def ask_and_score_question(story: dict, question: dict, question_index: in
         print(f"[REASON] {evaluation['reason']}")
     print(f"[FEEDBACK] {evaluation['feedback']}")
 
-    await speak(evaluation["feedback"], style="khen" if is_correct else "sai")
+    await speak(evaluation["feedback"])
     return True
 
 
@@ -196,7 +196,7 @@ async def main():
             print("\nKet thuc test theo yeu cau.")
             break
     else:
-        await speak("To va cau da tra loi xong tat ca cau hoi roi. Cau gioi lam!", style="ket_thuc")
+        await speak("To va cau da tra loi xong tat ca cau hoi roi. Cau gioi lam!")
 
     print("\nTest hoan tat.")
 

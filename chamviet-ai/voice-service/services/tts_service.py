@@ -24,7 +24,8 @@ from config import (
 )
 
 _client = None
-LOCAL_TTS_PROMPT_VERSION = f"{TTS_PROMPT_VERSION}|single-child-voice-slower-v3"
+UNIFIED_VOICE_STYLE = "child_story_voice"
+LOCAL_TTS_PROMPT_VERSION = f"{TTS_PROMPT_VERSION}|single-child-voice-full-v4"
 
 CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".cache", "tts"))
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -35,18 +36,6 @@ UNIFIED_STORY_STYLE = (
     "Luôn giữ âm sắc bé gái 6 đến 9 tuổi, hồn nhiên và sáng. "
     "Chỉ thay đổi ngữ điệu nhẹ theo dấu câu, tuyệt đối không đổi sang giọng người lớn, giọng dạy học, người kể chuyện trầm, hoặc phát thanh viên."
 )
-
-STYLE_MAP = {
-    "chao": UNIFIED_STORY_STYLE,
-    "cau_hoi": UNIFIED_STORY_STYLE,
-    "khen": UNIFIED_STORY_STYLE,
-    "giai_thich": UNIFIED_STORY_STYLE,
-    "dong_vien": UNIFIED_STORY_STYLE,
-    "ket_thuc": UNIFIED_STORY_STYLE,
-    "nhac_lai": UNIFIED_STORY_STYLE,
-    "sai": UNIFIED_STORY_STYLE,
-}
-
 
 def _get_client():
     global _client
@@ -62,7 +51,7 @@ def _voice_candidates() -> list[str]:
 
 
 def _normalize_style(style: str) -> str:
-    return "story_friend"
+    return UNIFIED_VOICE_STYLE
 
 
 def _get_cache_path(text: str, style: str) -> str:
@@ -207,8 +196,12 @@ async def synthesize_speech(text: str, style: str = "") -> str:
 
     try:
         client = _get_client()
-        prompt = _build_prompt(text, style)
-        print(f"[TTS] Synthesizing style='{style}' chars={len(text)} text='{text[:80]}'", flush=True)
+        style_key = _normalize_style(style)
+        prompt = _build_prompt(text, style_key)
+        print(
+            f"[TTS] Synthesizing unified_style='{style_key}' voice='{TTS_VOICE}' chars={len(text)} text='{text[:80]}'",
+            flush=True,
+        )
         audio_data = await asyncio.wait_for(
             _generate_tts_async(client, prompt),
             timeout=TTS_TOTAL_TIMEOUT_SECONDS,
@@ -230,7 +223,8 @@ def synthesize_speech_sync(text: str, style: str = "") -> str:
 
     try:
         client = _get_client()
-        prompt = _build_prompt(text, style)
+        style_key = _normalize_style(style)
+        prompt = _build_prompt(text, style_key)
         audio_data = _generate_tts_sync(client, prompt)
         _save_wave(audio_data, cache_path)
         return cache_path

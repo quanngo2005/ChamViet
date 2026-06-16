@@ -84,10 +84,7 @@ def build_feedback_with_next_question(
     completed: bool = False,
 ) -> str:
     if completed:
-        return (
-            f"{feedback} "
-            "Tớ và cậu đã trả lời xong tất cả câu hỏi rồi. Cậu giỏi lắm!"
-        )
+        return f"{feedback} Hoàn thành hết rồi, cậu giỏi lắm!"
     if next_question_text:
-        return f"{feedback} Bây giờ tớ và cậu sang câu tiếp theo nhé. {next_question_text}"
+        return f"{feedback} Sang câu tiếp theo: {next_question_text}"
     return feedback

@@ -14,7 +14,7 @@ from services.llm_service     import (
     get_answer,
     preload_embedding_model_async,
 )
-from services.tts_service     import synthesize_speech
+from services.tts_service     import UNIFIED_VOICE_STYLE, synthesize_speech
 from services.session_service import SessionManager, add_turn, clear_history, format_for_display
 from services.story_service   import (
     StorySessionManager,
@@ -133,7 +133,7 @@ class TTSInput(BaseModel):
 @app.post("/api/speak", tags=["tts"])
 async def speak_api(body: TTSInput):
     """Nhận text, trả về file WAV từ cache hoặc tạo mới bất đồng bộ."""
-    path = await synthesize_speech(body.text, style=body.style)
+    path = await synthesize_speech(body.text, style=UNIFIED_VOICE_STYLE)
     if not path:
         raise HTTPException(500, "TTS thất bại")
     return FileResponse(path, media_type="audio/wav", filename="reply.wav")
@@ -161,7 +161,7 @@ async def story_start_api(session_id: str = "default"):
             raise HTTPException(400, "story.json chưa có câu hỏi.")
         question_text = build_question_text(story, question, story_session.question_index)
 
-    path = await synthesize_speech(question_text, style="cau_hoi")
+    path = await synthesize_speech(question_text, style=UNIFIED_VOICE_STYLE)
     if not path:
         raise HTTPException(500, "TTS thất bại")
 
@@ -257,7 +257,7 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
 
     if already_completed:
         reply_text = "Tớ và cậu đã hoàn thành tất cả câu hỏi rồi. Cậu làm tốt lắm!"
-        path = await synthesize_speech(reply_text, style="ket_thuc")
+        path = await synthesize_speech(reply_text, style=UNIFIED_VOICE_STYLE)
         if not path:
             raise HTTPException(500, "TTS thất bại")
         return _story_audio_response(path, {
@@ -268,10 +268,7 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
             "completed": True,
         })
 
-    style = "khen" if evaluation["is_correct"] else "sai"
-    if completed:
-        style = "ket_thuc"
-    path = await synthesize_speech(reply_text, style=style)
+    path = await synthesize_speech(reply_text, style=UNIFIED_VOICE_STYLE)
     if not path:
         raise HTTPException(500, "TTS thất bại")
 
@@ -365,7 +362,7 @@ async def chat_speak_api(body: ChatSpeakInput):
         reply = await get_answer(body.message, session.system_prompt, session.history)
         session.history = add_turn(session.history, body.message, reply)
         
-    path = await synthesize_speech(reply, style=body.style)
+    path = await synthesize_speech(reply, style=UNIFIED_VOICE_STYLE)
     if not path:
         raise HTTPException(500, "TTS thất bại")
         

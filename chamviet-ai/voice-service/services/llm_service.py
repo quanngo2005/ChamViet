@@ -4,13 +4,15 @@ import re
 import threading
 import unicodedata
 from config import (
-    GOOGLE_API_KEY, GEMINI_LLM_MODEL,
+    GOOGLE_API_KEY, GEMINI_LLM_MODEL, GEMINI_FALLBACK_MODEL,
     GROQ_API_KEY, GROQ_LLM_MODEL, LLM_PROVIDER,
     LLM_DEFAULT_MAX_TOKENS, LLM_DEFAULT_TEMPERATURE,
     LLM_INTENT_MAX_TOKENS, LLM_INTENT_TEMPERATURE,
     LLM_JUDGE_MAX_TOKENS, LLM_JUDGE_TEMPERATURE,
     TTS_PERSONA_STYLE,
     EMBEDDING_ACCEPT_THRESHOLD, EMBEDDING_MODEL_NAME,
+    EMBEDDING_REJECT_THRESHOLD,
+    LLM_RETRY_ATTEMPTS, LLM_RETRY_BASE_DELAY,
 )
 
 _gemini_client = None
@@ -98,21 +100,34 @@ async def get_answer(
     temperature: float = LLM_DEFAULT_TEMPERATURE,
     max_tokens: int = LLM_DEFAULT_MAX_TOKENS,
 ) -> str:
-    try:
-        if LLM_PROVIDER == "groq":
-            return await _groq_answer_async(user_message, system_prompt, history, temperature, max_tokens)
-        return await _gemini_answer_async(user_message, system_prompt, history, temperature, max_tokens)
-    except Exception as e:
-        print(f"LLM async error ({LLM_PROVIDER}): {e}")
-        return ""
+    import asyncio
+    attempts = LLM_RETRY_ATTEMPTS
+    base_delay = LLM_RETRY_BASE_DELAY
+    for attempt in range(1, attempts + 1):
+        try:
+            if LLM_PROVIDER == "groq":
+                return await _groq_answer_async(user_message, system_prompt, history, temperature, max_tokens)
+            model = GEMINI_LLM_MODEL if attempt == 1 else GEMINI_FALLBACK_MODEL
+            return await _gemini_answer_async(user_message, system_prompt, history, temperature, max_tokens, model)
+        except Exception as e:
+            err_msg = str(e).upper()
+            print(f"LLM async error ({LLM_PROVIDER}) attempt {attempt}: {e}")
+            transient = any(code in err_msg for code in ["503", "429", "500", "502", "UNAVAILABLE", "RATE_LIMIT", "RESOURCE_EXHAUSTED", "HIGH DEMAND"])
+            if attempt < attempts and transient:
+                delay = base_delay * (2 ** (attempt - 1)) + random.uniform(0, 0.5)
+                print(f"Retrying LLM in {delay:.2f}s...")
+                await asyncio.sleep(delay)
+                continue
+            return ""
+    return ""
 
 
-async def _gemini_answer_async(user_message, system_prompt, history, temperature, max_tokens) -> str:
+async def _gemini_answer_async(user_message, system_prompt, history, temperature, max_tokens, model=None) -> str:
     import asyncio
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         None,
-        lambda: _gemini_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens)
+        lambda: _gemini_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens, model)
     )
 
 
@@ -135,16 +150,29 @@ def get_answer_sync(
     temperature: float = LLM_DEFAULT_TEMPERATURE,
     max_tokens: int = LLM_DEFAULT_MAX_TOKENS,
 ) -> str:
-    try:
-        if LLM_PROVIDER == "groq":
-            return _groq_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens)
-        return _gemini_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens)
-    except Exception as e:
-        print(f"LLM sync error ({LLM_PROVIDER}): {e}")
-        return ""
+    import time
+    attempts = LLM_RETRY_ATTEMPTS
+    base_delay = LLM_RETRY_BASE_DELAY
+    for attempt in range(1, attempts + 1):
+        try:
+            if LLM_PROVIDER == "groq":
+                return _groq_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens)
+            model = GEMINI_LLM_MODEL if attempt == 1 else GEMINI_FALLBACK_MODEL
+            return _gemini_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens, model)
+        except Exception as e:
+            err_msg = str(e).upper()
+            print(f"LLM sync error ({LLM_PROVIDER}) attempt {attempt}: {e}")
+            transient = any(code in err_msg for code in ["503", "429", "500", "502", "UNAVAILABLE", "RATE_LIMIT", "RESOURCE_EXHAUSTED", "HIGH DEMAND"])
+            if attempt < attempts and transient:
+                delay = base_delay * (2 ** (attempt - 1)) + random.uniform(0, 0.5)
+                print(f"Retrying LLM in {delay:.2f}s...")
+                time.sleep(delay)
+                continue
+            return ""
+    return ""
 
 
-def _gemini_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens) -> str:
+def _gemini_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens, model=None) -> str:
     from google.genai import types
     client = _get_gemini_client()
 
@@ -157,7 +185,7 @@ def _gemini_answer_sync_inner(user_message, system_prompt, history, temperature,
         max_output_tokens=max_tokens,
     )
     response = client.models.generate_content(
-        model=GEMINI_LLM_MODEL,
+        model=model or GEMINI_LLM_MODEL,
         contents=contents,
         config=config,
     )
@@ -290,24 +318,50 @@ def _fallback_feedback(is_correct: bool, correct_answer: str, question: str = ""
     correct_answer = correct_answer.strip()
     if is_correct:
         praise_templates = [
-            "Hoan hô cậu, cậu nhớ truyện rất tốt!",
-            "Giỏi quá, cậu đã trả lời đúng ý rồi đó!",
-            "Tớ khen cậu nhé, cậu nắm được ý chính của câu chuyện rồi!",
-            "Tốt lắm, câu trả lời của cậu rất đúng với nội dung truyện!",
-            "Cậu trả lời đúng rồi, tớ vui lắm vì cậu lắng nghe câu chuyện thật kỹ!",
+            "Giỏi quá, cậu trả lời đúng rồi!",
+            "Chuẩn luôn, cậu nhớ truyện tốt quá!",
+            "Chính xác! Cậu giỏi lắm.",
+            "Đúng rồi cậu ơi, xuất sắc!",
         ]
         return random.choice(praise_templates)
 
-    user_part = f'Tớ nghe cậu nói: "{user_answer}". ' if user_answer else ""
-    question_part = f'Câu hỏi này đang hỏi: "{question}". ' if question else ""
     correction_templates = [
-        f"{user_part}Cậu đã cố gắng rồi. {question_part}Tớ nhắc nhẹ nhé, trong truyện là: {correct_answer}",
-        f"{user_part}Gần đúng rồi cậu ạ. {question_part}Tớ và cậu nhớ lại cùng nhau nhé: {correct_answer}",
-        f"{user_part}Không sao đâu, cậu đang tập nhớ truyện mà. {question_part}Ý đúng là: {correct_answer}",
-        f"{user_part}Tớ thấy cậu đã chịu suy nghĩ rồi. {question_part}Chi tiết đúng trong truyện là: {correct_answer}",
-        f"{user_part}Cảm ơn cậu đã trả lời. {question_part}Tớ giúp cậu nhớ lại nhé: {correct_answer}",
+        f"Chưa đúng lắm. Đáp án đúng là: {correct_answer}",
+        f"Gần đúng rồi. Ý đúng là: {correct_answer}",
+        f"Không sao, tớ giúp cậu nhớ lại nhé: {correct_answer}",
+        f"Cậu cố gắng rồi, chi tiết đúng là: {correct_answer}",
     ]
     return random.choice(correction_templates)
+
+
+def _fast_feedback(
+    is_correct: bool,
+    correct_answer: str,
+    question: str = "",
+    user_answer: str = "",
+    reason: str = "",
+) -> str:
+    correct_answer = correct_answer.strip()
+    reason = _normalize_companion_pronouns((reason or "").strip())
+
+    if is_correct:
+        quick_praise_templates = [
+            "Đúng rồi cậu!",
+            "Giỏi quá, cậu trả lời đúng rồi!",
+            "Chuẩn luôn cậu!",
+        ]
+        if reason:
+            return f"{random.choice(quick_praise_templates)} {reason}"
+        return random.choice(quick_praise_templates)
+
+    quick_retry_templates = [
+        "Chưa đúng lắm cậu ơi.",
+        "Không sao đâu.",
+        "Cậu cố gắng rồi.",
+    ]
+    if reason:
+        return f"{random.choice(quick_retry_templates)} {reason} Đáp án là: {correct_answer}"
+    return f"{random.choice(quick_retry_templates)} Đáp án là: {correct_answer}"
 
 
 def _has_enough_feedback_detail(feedback: str, is_correct: bool, correct_answer: str) -> bool:
@@ -372,33 +426,27 @@ async def _judge_story_answer(
 ) -> dict:
     prompt = (
         "Chấm câu trả lời của bé 6 đến 9 tuổi theo Ý LÕI, không bắt khớp văn mẫu.\n"
-        "Feedback sau khi chấm sẽ được đọc bằng TTS với persona cố định này, nên nội dung feedback phải khớp đúng tinh thần giọng đọc:\n"
-        f"{TTS_PERSONA_STYLE}\n"
+        f"Persona thoại của hệ thống: {TTS_PERSONA_STYLE}\n"
         f"Truyện: {story_title}\n"
         f"Câu hỏi: {question}\n"
         f"Đáp án mẫu: {correct_answer}\n"
         f"Bé trả lời: {user_answer}\n"
-        "Đối tượng trả lời là trẻ 6 đến 9 tuổi: các câu có thể rất ngắn, thiếu chủ vị, nói lủng củng, dùng từ đồng nghĩa, "
-        "nói gần đúng, thiếu dấu, hoặc chỉ nêu một vài từ khóa. Hãy rút ý lõi từ đáp án mẫu và xem bé có diễn đạt "
-        "đúng ý chính hay không.\n"
-        "Đúng nếu câu trả lời giữ được ý chính/cốt lõi của đáp án, dù diễn đạt không trọn câu hoặc không giống văn mẫu. "
-        "Sai nếu bé nhầm sự kiện chính, trả lời mâu thuẫn với đáp án, quá mơ hồ để xác định ý, nói không biết, hoặc lạc đề. "
-        "Khi viết feedback, hãy nói như đúng persona TTS ở trên: bạn đồng hành có chất giọng bé gái Việt Nam 6 đến 9 tuổi, vui tươi, tinh nghịch, hồn nhiên, luôn xưng tớ và gọi trẻ là cậu. Hãy khen/động viên tự nhiên, ấm áp, không máy móc, "
-        "không dùng đi dùng lại một mẫu câu. Nếu bé sai, hãy khen sự cố gắng trước, sau đó bắt buộc nhắc lại đáp án mẫu "
-        "một cách nhẹ nhàng để bé học thêm, không ép bé nói theo văn mẫu.\n"
+        "Các câu trả lời của bé có thể rất ngắn, thiếu chủ vị, dùng từ đồng nghĩa, thiếu dấu, hoặc chỉ có vài từ khóa. "
+        "Hãy rút ý lõi từ đáp án mẫu và xem bé có nói đúng ý chính hay không.\n"
+        "Đúng nếu câu trả lời giữ được ý chính/cốt lõi của đáp án, dù diễn đạt chưa trọn câu. "
+        "Sai nếu bé nhầm sự kiện chính, mâu thuẫn với đáp án, quá mơ hồ, nói không biết, hoặc lạc đề.\n"
         "score là mức độ đầy đủ 0-100, không phải ngưỡng quyết định cứng.\n"
-        "Chỉ trả JSON hợp lệ, không markdown, không giải thích ngoài JSON, gồm đúng 4 trường:\n"
-        '{"score": 0-100, "is_correct": true/false, "reason": "lý do ngắn", "feedback": "lời bạn đồng hành"}'
+        "reason phải cực kỳ ngắn gọn, tối đa 6 từ, chỉ rõ ý chính đúng hoặc sai. "
+        "Không tạo feedback dài vì hệ thống sẽ tự tạo feedback để đọc TTS.\n"
+        "Chỉ trả JSON hợp lệ, không markdown, không giải thích ngoài JSON, gồm đúng 3 trường:\n"
+        '{"score": 0-100, "is_correct": true/false, "reason": "lý do rất ngắn"}'
     )
 
     system_prompt = (
-        "Bạn là một bạn đồng hành Việt Nam vui vẻ của trẻ 6 đến 9 tuổi, đang đánh giá câu trả lời truyện của bé. "
-        "Toàn bộ feedback sẽ được đọc bằng TTS theo persona cố định sau, vì vậy phải viết feedback khớp persona này: "
-        f"{TTS_PERSONA_STYLE} "
-        "Bạn chấm công bằng theo ý nghĩa cốt lõi, chấp nhận cách nói ngắn, vụng, đồng nghĩa hoặc chưa đủ chủ vị, "
-        "nhưng không bỏ qua các lỗi sai sự kiện chính. "
-        "Hãy đa dạng hóa cách khen và động viên, giữ giọng nói tinh nghịch, ấm áp, khích lệ, không lên lớp. Luôn xưng tớ và gọi trẻ là cậu trong feedback. "
-        "Luôn trả về JSON chuẩn với đúng 4 trường: score, is_correct, reason, feedback."
+        "Bạn là bộ chấm nhanh câu trả lời truyện cho trẻ 6 đến 9 tuổi. "
+        "Nhiệm vụ duy nhất: quyết định đúng/sai theo ý nghĩa cốt lõi và trả JSON cực ngắn. "
+        "Không viết feedback dài, không giải thích dài dòng. "
+        "Luôn trả về JSON chuẩn với đúng 3 trường: score, is_correct, reason."
     )
 
     result = await get_answer(
@@ -419,7 +467,9 @@ async def evaluate_story_answer(
 ) -> dict:
     """
     Chấm câu trả lời theo flow:
-    embedding cosine local -> auto-pass khi rất giống -> LLM judge mọi trường hợp còn lại.
+    embedding cosine local -> auto-pass khi rất giống
+    -> auto-reject khi rất khác và có tín hiệu không biết/lạc đề
+    -> LLM judge chỉ cho vùng mơ hồ còn lại.
     """
     user_answer = user_answer.strip()
     if not user_answer:
@@ -442,8 +492,43 @@ async def evaluate_story_answer(
             "is_correct": True,
             "embedding_score": embedding_score,
             "judge_source": "embedding_accept",
-            "feedback": _fallback_feedback(True, correct_answer, question=question, user_answer=user_answer),
+            "feedback": _fast_feedback(
+                True,
+                correct_answer,
+                question=question,
+                user_answer=user_answer,
+                reason="Cậu nhớ đúng ý chính rồi.",
+            ),
             "reason": "embedding_similarity_high",
+        }
+
+    user_answer_normalized = _normalize_text(user_answer)
+    obvious_incorrect_phrases = (
+        "khong biet",
+        "hong biet",
+        "khong nho",
+        "hong nho",
+        "quen roi",
+        "quen mat",
+        "khong nghe ro",
+        "chua biet",
+    )
+    if embedding_score <= EMBEDDING_REJECT_THRESHOLD and any(
+        phrase in user_answer_normalized for phrase in obvious_incorrect_phrases
+    ):
+        return {
+            "score": embedding_percent,
+            "is_correct": False,
+            "embedding_score": embedding_score,
+            "judge_source": "embedding_reject",
+            "feedback": _fast_feedback(
+                False,
+                correct_answer,
+                question=question,
+                user_answer=user_answer,
+                reason="Câu trả lời này chưa đúng ý truyện.",
+            ),
+            "reason": "embedding_similarity_low",
         }
 
     raw_data = await _judge_story_answer(
@@ -473,13 +558,12 @@ async def evaluate_story_answer(
     is_correct = data["is_correct"]
     reason = data["reason"]
 
-    feedback = data["feedback"]
-    feedback = _ensure_clear_feedback(
-        feedback,
+    feedback = _fast_feedback(
         is_correct,
         correct_answer=correct_answer,
         question=question,
         user_answer=user_answer,
+        reason=reason,
     )
 
     return {
