@@ -5,19 +5,33 @@ import numpy as np
 from groq import AsyncGroq, Groq
 from config import (
     GROQ_API_KEY,
-    GROQ_STT_MODEL,
     STT_HIGH_NO_SPEECH_THRESHOLD,
+    STT_LANGUAGE,
     STT_LOW_AVG_LOGPROB_THRESHOLD,
+    STT_MAX_GAIN,
+    STT_MIN_SILENCE_THRESHOLD,
+    STT_MODEL,
+    STT_PADDING_SECONDS,
+    STT_PROVIDER,
+    STT_RESPONSE_FORMAT,
     STT_RETRY_ORIGINAL_AUDIO,
+    STT_SILENCE_RATIO,
+    STT_TARGET_PEAK,
+    STT_TEMPERATURE,
 )
 
-STT_MODEL = GROQ_STT_MODEL
 _async_client = None
 _client = None
 
 
+def _ensure_supported_provider():
+    if STT_PROVIDER != "groq":
+        raise ValueError(f"STT_PROVIDER='{STT_PROVIDER}' chua duoc ho tro trong service hien tai")
+
+
 def _get_async_client() -> AsyncGroq:
     global _async_client
+    _ensure_supported_provider()
     if _async_client is None:
         _async_client = AsyncGroq(api_key=GROQ_API_KEY)
     return _async_client
@@ -25,6 +39,7 @@ def _get_async_client() -> AsyncGroq:
 
 def _get_client() -> Groq:
     global _client
+    _ensure_supported_provider()
     if _client is None:
         _client = Groq(api_key=GROQ_API_KEY)
     return _client
@@ -59,19 +74,19 @@ def _boost_audio(audio_bytes: bytes) -> bytes:
     abs_audio = np.abs(audio)
     peak = abs_audio.max()
     if peak > 0:
-        silence_threshold = max(peak * 0.02, 300.0)
+        silence_threshold = max(peak * STT_SILENCE_RATIO, STT_MIN_SILENCE_THRESHOLD)
         speech_indexes = np.where(abs_audio > silence_threshold)[0]
         if speech_indexes.size:
-            padding = int(params.framerate * 0.15)
+            padding = int(params.framerate * STT_PADDING_SECONDS)
             start = max(int(speech_indexes[0]) - padding, 0)
             end = min(int(speech_indexes[-1]) + padding, audio.size - 1)
             audio = audio[start:end + 1]
 
     peak = np.abs(audio).max()
     if peak > 0:
-        target = 27850.0  
+        target = STT_TARGET_PEAK
         calculated_gain = target / peak
-        actual_gain = np.clip(calculated_gain, 1.0, 3.5)
+        actual_gain = np.clip(calculated_gain, 1.0, STT_MAX_GAIN)
         boosted = np.clip(audio * actual_gain, -32768, 32767).astype(np.int16)
     else:
         boosted = audio.astype(np.int16)
@@ -157,8 +172,8 @@ async def _transcribe_once_async(client: AsyncGroq, audio_bytes: bytes, language
         model=STT_MODEL,
         file=("audio.wav", audio_bytes),
         language=language,
-        response_format="verbose_json",
-        temperature=0.0,
+        response_format=STT_RESPONSE_FORMAT,
+        temperature=STT_TEMPERATURE,
     )
     return _extract_text(result), _extract_stt_stats(result)
 
@@ -168,13 +183,13 @@ def _transcribe_once_sync(client: Groq, audio_bytes: bytes, language: str) -> tu
         model=STT_MODEL,
         file=("audio.wav", audio_bytes),
         language=language,
-        response_format="verbose_json",
-        temperature=0.0,
+        response_format=STT_RESPONSE_FORMAT,
+        temperature=STT_TEMPERATURE,
     )
     return _extract_text(result), _extract_stt_stats(result)
 
 
-async def transcribe_audio_file(audio_bytes: bytes, language: str = "vi") -> str:
+async def transcribe_audio_file(audio_bytes: bytes, language: str = STT_LANGUAGE) -> str:
     """
     Nhận dạng giọng nói bất đồng bộ bằng Groq Whisper.
     """
@@ -193,7 +208,7 @@ async def transcribe_audio_file(audio_bytes: bytes, language: str = "vi") -> str
         return ""
 
 
-def transcribe_audio_file_sync(audio_bytes: bytes, language: str = "vi") -> str:
+def transcribe_audio_file_sync(audio_bytes: bytes, language: str = STT_LANGUAGE) -> str:
     """
     Nhận dạng giọng nói đồng bộ bằng Groq Whisper.
     """

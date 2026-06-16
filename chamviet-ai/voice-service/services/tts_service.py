@@ -12,26 +12,28 @@ from config import (
     GOOGLE_API_KEY,
     TTS_LEADING_SILENCE_MS,
     TTS_MODEL,
+    TTS_PERSONA_STYLE,
+    TTS_PROMPT_VERSION,
     TTS_REQUEST_TIMEOUT_SECONDS,
+    TTS_RETRY_ATTEMPTS,
+    TTS_RETRY_DELAY_SECONDS,
+    TTS_OUTPUT_SAMPLE_RATE,
     TTS_TRAILING_SILENCE_MS,
     TTS_TOTAL_TIMEOUT_SECONDS,
     TTS_VOICE,
 )
 
 _client = None
+LOCAL_TTS_PROMPT_VERSION = f"{TTS_PROMPT_VERSION}|single-child-voice-slower-v3"
 
 CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".cache", "tts"))
 os.makedirs(CACHE_DIR, exist_ok=True)
 
-TTS_RETRY_ATTEMPTS = 3
-TTS_RETRY_DELAY_SECONDS = 2
-TTS_FALLBACK_VOICES = ["Sulafat", "Achird", "Vindemiatrix", "Zephyr", "Kore"]
-TTS_PROMPT_VERSION = "story-teacher-unified-v3"
 UNIFIED_STORY_STYLE = (
-    "Mot giong duy nhat: co giao ke chuyen co tich am ap, cham rai, diu dang, "
-    "ro rang va gan gui. Khong tao bat ky khac biet nao giua luc doc cau hoi "
-    "va luc doc cau tra loi/phai hoi. Giu cung toc do, cung muc nang luong, "
-    "cung do am va cung cach ngat nghi."
+    f"{TTS_PERSONA_STYLE} "
+    "Đây là chất giọng duy nhất cho mọi loại câu: chào, hỏi, khen, giải thích, động viên. "
+    "Luôn giữ âm sắc bé gái 6 đến 9 tuổi, hồn nhiên và sáng. "
+    "Chỉ thay đổi ngữ điệu nhẹ theo dấu câu, tuyệt đối không đổi sang giọng người lớn, giọng dạy học, người kể chuyện trầm, hoặc phát thanh viên."
 )
 
 STYLE_MAP = {
@@ -56,17 +58,16 @@ def _get_client():
 
 
 def _voice_candidates() -> list[str]:
-    voices = [TTS_VOICE, *TTS_FALLBACK_VOICES]
-    return list(dict.fromkeys([voice for voice in voices if voice]))
+    return [TTS_VOICE] if TTS_VOICE else []
 
 
 def _normalize_style(style: str) -> str:
-    return "story_teacher" if style in STYLE_MAP else style.strip()
+    return "story_friend"
 
 
 def _get_cache_path(text: str, style: str) -> str:
     style_key = _normalize_style(style)
-    key = f"{TTS_PROMPT_VERSION}||{text.strip()}||{style_key}||{TTS_VOICE}||{TTS_MODEL}"
+    key = f"{LOCAL_TTS_PROMPT_VERSION}||{text.strip()}||{style_key}||{TTS_VOICE}||{TTS_MODEL}"
     hash_val = hashlib.md5(key.encode("utf-8")).hexdigest()
     return os.path.join(CACHE_DIR, f"{hash_val}.wav")
 
@@ -76,7 +77,7 @@ def _silence_bytes(sample_rate: int, duration_ms: int, channels: int = 1, sampwi
     return b"\x00" * frame_count * channels * sampwidth
 
 
-def _save_wave(pcm_data: bytes, output_path: str, sample_rate: int = 24000):
+def _save_wave(pcm_data: bytes, output_path: str, sample_rate: int = TTS_OUTPUT_SAMPLE_RATE):
     fd, tmp_path = tempfile.mkstemp(suffix=".wav", dir=CACHE_DIR)
     os.close(fd)
     try:
@@ -98,21 +99,21 @@ def _save_wave(pcm_data: bytes, output_path: str, sample_rate: int = 24000):
 
 def _build_prompt(text: str, style: str = "") -> str:
     base_instruction = (
-        "Doc hoan toan bang tieng Viet Nam. Phat am ro dau thanh va ro tung tu, "
-        "khong nuot chu, khong bo bat ky tu nao o dau cau hoac cuoi cau, "
-        "khong doc bang giong Anh-Viet. Truoc khi bat dau noi hay nghi mot nhip rat ngan; "
-        "sau khi doc xong toan bo van ban hay giu mot nhip im lang rat ngan. "
         f"{UNIFIED_STORY_STYLE} "
-        "Neu van ban la cau hoi hay cau nhan xet, van phai doc bang chinh xac cung mot giong; "
-        "chi ngu dieu len xuong theo dau cau mot cach tu nhien, khong doi tone."
+        "Đọc hoàn toàn bằng tiếng Việt Nam, rõ dấu và rõ từng từ. "
+        "Giữ tốc độ tự nhiên của trẻ nhỏ nhưng chậm hơn hiện tại một chút, khoảng 8 đến 12 phần trăm, không kéo giọng và không già giọng. "
+        "Không nuốt chữ, không bỏ bất kỳ từ nào ở đầu câu hoặc cuối câu, không đọc bằng giọng Anh-Việt. "
+        "Trước khi bắt đầu nói hãy nghỉ một nhịp rất ngắn; sau khi đọc xong toàn bộ văn bản hãy giữ một nhịp im lặng rất ngắn. "
+        "Nếu văn bản là câu hỏi hay câu nhận xét, vẫn phải đọc bằng chính xác cùng một giọng; "
+        "chỉ ngữ điệu lên xuống theo dấu câu một cách tự nhiên, không đổi tone."
     )
 
     return (
         f"{base_instruction}\n\n"
-        "Chi doc noi dung trong muc VAN BAN. Khong doc phan huong dan. "
-        "Doc day du tu dau tien den tu cuoi cung trong VAN BAN.\n"
+        "Chỉ đọc nội dung trong mục VĂN BẢN. Không đọc phần hướng dẫn. "
+        "Đọc đầy đủ từ đầu tiên đến từ cuối cùng trong VĂN BẢN.\n"
         f"VAN BAN:\n{text.strip()}\n"
-        "HET VAN BAN."
+        "HẾT VĂN BẢN."
     )
 
 

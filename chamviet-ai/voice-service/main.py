@@ -256,7 +256,7 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
                 completed = story_session.completed
 
     if already_completed:
-        reply_text = "Chúng mình đã hoàn thành tất cả câu hỏi rồi. Con làm tốt lắm!"
+        reply_text = "Tớ và cậu đã hoàn thành tất cả câu hỏi rồi. Cậu làm tốt lắm!"
         path = await synthesize_speech(reply_text, style="ket_thuc")
         if not path:
             raise HTTPException(500, "TTS thất bại")
@@ -301,7 +301,7 @@ class ChatInput(BaseModel):
 
 @app.post("/api/chat", tags=["chat"])
 async def chat_api(body: ChatInput):
-    """Gửi text nhận phản hồi dạng text của cô giáo bất đồng bộ."""
+    """Gửi text nhận phản hồi dạng text của bạn đồng hành bất đồng bộ."""
     if not GLOBAL_SYSTEM_PROMPT:
         raise HTTPException(400, "Chưa load nội dung. Gọi /api/load-content trước.")
     
@@ -356,7 +356,7 @@ class ChatSpeakInput(BaseModel):
 
 @app.post("/api/chat-speak", tags=["chat"])
 async def chat_speak_api(body: ChatSpeakInput):
-    """Trò chuyện và trả về âm thanh cô giáo trong cùng 1 request bất đồng bộ."""
+    """Trò chuyện và trả về âm thanh bạn đồng hành trong cùng 1 request bất đồng bộ."""
     if not GLOBAL_SYSTEM_PROMPT:
         raise HTTPException(400, "Chưa load nội dung. Gọi /api/load-content trước.")
     

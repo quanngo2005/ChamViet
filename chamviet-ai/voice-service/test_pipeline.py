@@ -23,7 +23,18 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 import numpy as np
 
-from config import EMBEDDING_MODEL_NAME, GEMINI_LLM_MODEL, GROQ_LLM_MODEL, LLM_PROVIDER
+from config import (
+    EMBEDDING_MODEL_NAME,
+    LLM_PROVIDER,
+    STT_LANGUAGE,
+    STT_MODEL,
+    STT_PROVIDER,
+    TEST_AUDIO_CHANNELS,
+    TEST_AUDIO_DTYPE,
+    TEST_AUDIO_SAMPLE_RATE,
+    TEST_MIN_AUDIO_SECONDS,
+    get_active_llm_model,
+)
 
 try:
     import sounddevice as sd
@@ -34,13 +45,13 @@ except ImportError:
 
 from services.llm_service import evaluate_story_answer, preload_embedding_model_async
 from services.story_service import build_question_text, load_story
-from services.stt_service import STT_MODEL, transcribe_audio_file
+from services.stt_service import transcribe_audio_file
 from services.tts_service import synthesize_speech
 
 
-SAMPLE_RATE = 16000
-CHANNELS = 1
-DTYPE = "int16"
+SAMPLE_RATE = TEST_AUDIO_SAMPLE_RATE
+CHANNELS = TEST_AUDIO_CHANNELS
+DTYPE = TEST_AUDIO_DTYPE
 
 
 def record_audio_interactive() -> bytes | None:
@@ -74,8 +85,8 @@ def record_audio_interactive() -> bytes | None:
         return None
 
     audio_np = np.concatenate(frames, axis=0)
-    if audio_np.shape[0] < SAMPLE_RATE * 0.3:
-        print("[!] Am thanh qua ngan (< 0.3s), bo qua.")
+    if audio_np.shape[0] < SAMPLE_RATE * TEST_MIN_AUDIO_SECONDS:
+        print(f"[!] Am thanh qua ngan (< {TEST_MIN_AUDIO_SECONDS}s), bo qua.")
         return None
 
     buf = io.BytesIO()
@@ -99,7 +110,7 @@ def play_audio(wav_path: str):
 
 
 async def speak(text: str, style: str):
-    print(f"[CO] {text}")
+    print(f"[BAN] {text}")
     wav_path = await synthesize_speech(text, style=style)
     if not wav_path:
         print("[!] TTS khong tao duoc audio, chi hien thi text.")
@@ -118,11 +129,11 @@ async def ask_and_score_question(story: dict, question: dict, question_index: in
     if audio_bytes is None:
         return False
 
-    print(f"\n[STT] Dang nhan dang giong noi bang Groq {STT_MODEL}...", flush=True)
-    user_text = await transcribe_audio_file(audio_bytes, language="vi")
+    print(f"\n[STT] Dang nhan dang giong noi bang {STT_PROVIDER} {STT_MODEL}...", flush=True)
+    user_text = await transcribe_audio_file(audio_bytes, language=STT_LANGUAGE)
     if not user_text:
         feedback = (
-            "Co chua nghe ro cau tra loi cua con. "
+            "To chua nghe ro cau tra loi cua cau. "
             f"Cau tra loi dung la: {question['answer']}"
         )
         await speak(feedback, style="sai")
@@ -176,9 +187,8 @@ async def main():
 
     print(f"\n[STORY] {story['story']}")
     print(f"[TOTAL] {len(story['questions'])} cau hoi")
-    print(f"[STT] Model: {STT_MODEL}")
-    llm_model = GROQ_LLM_MODEL if LLM_PROVIDER == "groq" else GEMINI_LLM_MODEL
-    print(f"[LLM] Provider: {LLM_PROVIDER} | Model: {llm_model}")
+    print(f"[STT] Provider: {STT_PROVIDER} | Model: {STT_MODEL}")
+    print(f"[LLM] Provider: {LLM_PROVIDER} | Model: {get_active_llm_model()}")
 
     for index, question in enumerate(story["questions"]):
         should_continue = await ask_and_score_question(story, question, index)
@@ -186,7 +196,7 @@ async def main():
             print("\nKet thuc test theo yeu cau.")
             break
     else:
-        await speak("Chung minh da tra loi xong tat ca cau hoi roi. Con gioi lam!", style="ket_thuc")
+        await speak("To va cau da tra loi xong tat ca cau hoi roi. Cau gioi lam!", style="ket_thuc")
 
     print("\nTest hoan tat.")
 
