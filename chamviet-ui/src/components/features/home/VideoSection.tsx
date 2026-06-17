@@ -15,13 +15,12 @@ export default function VideoSection() {
         <Reveal className="video-section__inner">
           {/* Header */}
           <div className="video-section__header">
-            <p className="video-section__eyebrow">Trải nghiệm thực tế</p>
+
             <h2 className="video-section__title">
-              Xem thử phản chiếu 3D<br />
-              <span>câu chuyện hiện lên trong hộp</span>
+              <span>Biến một bức tranh thành cả một sân khấu 3D</span>
             </h2>
             <p className="video-section__sub">
-              Sự kết hợp giữa video trên điện thoại và hộp phản chiếu tạo cảm giác như một sân khấu thu nhỏ.
+              Từ những mảnh ghép trên tay đến một câu chuyện sống động ngay trước mắt.
             </p>
           </div>
 

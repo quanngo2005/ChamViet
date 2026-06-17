@@ -2503,6 +2503,15 @@ body.home-page-active section {
   position: relative;
   z-index: 1;
 }
+.purchase-section__description {
+  font-size: clamp(16px, 2vw, 18px);
+  color: rgba(255, 241, 191, 0.85);
+  margin: 0 auto 32px;
+  line-height: 1.6;
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+}
 .purchase-section__cta {
   background: var(--bg-main);
   color: var(--primary);

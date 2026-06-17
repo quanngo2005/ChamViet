@@ -83,7 +83,6 @@ export function PuzzleVisual({ step }: { step: WorkflowStep }) {
       />
       <div className="workflow-visual__veil" aria-hidden="true" />
       <div className="workflow-visual__badge">{step.screenLabel}</div>
-      <div className="workflow-visual__caption">{step.screenLabel}</div>
     </motion.figure>
   );
 }
@@ -156,9 +155,8 @@ export default function Workflow() {
     <section className="workflow-section">
       <div className="container">
         <Reveal className="workflow-section__header">
-          <p className="section-eyebrow">Hành trình 4 bước</p>
-          <h2 className="workflow-section__title">{copy.steps.title}</h2>
-          <p className="workflow-section__sub">{copy.steps.description}</p>
+          <h2 className="workflow-section__title">Hành trình đánh thức một câu chuyện</h2>
+          <p className="workflow-section__sub"> Chỉ với 4 bước, cả một truyền thuyết Việt sẽ sống dậy trước mắt con </p>
         </Reveal>
 
         <div className="workflow-section__track">
@@ -189,7 +187,7 @@ export default function Workflow() {
                           </span>
                           <span className="step-card__num">{String(step.number).padStart(2, '0')}</span>
                         </span>
-                        <span className="step-card__category">{step.screenLabel}</span>
+
                       </div>
                       <h4 className="step-card__title">{step.title}</h4>
                       <p className="step-card__desc">{step.description}</p>

@@ -24,11 +24,11 @@ import type { Product } from '../types/product';
 const PREORDER_PRODUCT: Product = {
   id: HOME_PRODUCT.id,
   title: HOME_PRODUCT.boxLabel,
-  collectionLabel: 'Bộ sư tập: Hào Khí Việt Nam',
+  collectionLabel: 'Bộ sư tập: Xếp hình tranh gỗ - xem video 3D - tương tác & hỏi đáp cùng AI - khám phá văn hóa Việt',
   priceLabel: HOME_PRODUCT.price,
   reviewsLabel: 'Dành cho gia đình yêu văn hóa Việt',
   shortDescription:
-    "Trang này trả lời những câu hỏi cụ thể trước khi mua: trong hộp có gì, bé hợp với bộ nào, và gia đình sẽ dùng bộ này ra sao ở nhà.",
+    "BST “Hào khí việt nam” bao gồm: 2 tranh ghép câu chuyện thánh gióng & hồ gươm, hộp chiếu 3D hologram, 2 video tương tác, AI Chíp Bông tương tác & hỏi đáp cùng bé, 2 phần quà bí mật, Gắn kết gia đình",
   badgeLabel: 'Đặt trước',
   image: HOME_IMAGES.unboxingFlatlayWebp,
 };
@@ -89,29 +89,27 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
                 {PREORDER_PRODUCT.title}
               </Typography>
 
-              <Typography sx={{ color: 'var(--text-sub)', fontSize: { xs: 16, md: 18 }, lineHeight: 1.78 }}>
-                {PREORDER_PRODUCT.shortDescription}
-              </Typography>
-            </Stack>
-
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-              <Typography sx={{ color: 'primary.main', fontSize: { xs: 34, md: 40 }, fontWeight: 950 }}>
-                {PREORDER_PRODUCT.priceLabel}
-              </Typography>
-              <Box
-                sx={{
-                  px: 1.5,
-                  py: 0.65,
-                  borderRadius: '8px',
-                  color: 'var(--secondary)',
-                  backgroundColor: 'rgba(139, 94, 60, 0.10)',
-                  fontSize: 13,
-                  fontWeight: 850,
-                }}
-              >
-                {PREORDER_PRODUCT.badgeLabel}
+              <Box sx={{ color: 'var(--text-sub)', fontSize: { xs: 16, md: 18 }, lineHeight: 1.78 }}>
+                <Typography sx={{ fontSize: 'inherit', fontWeight: 700, mb: 1, color: 'var(--text-h)' }}>
+                  BST “Hào khí Việt Nam” bao gồm:
+                </Typography>
+                <Box component="ul" sx={{ m: 0, pl: 3, listStyleType: 'disc' }}>
+                  <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>2 tranh ghép câu chuyện Thánh Gióng & Hồ Gươm</Typography>
+                  <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>Hộp chiếu 3D hologram</Typography>
+                  <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>2 Video tương tác</Typography>
+                  <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>AI Chíp Bông tương tác & hỏi đáp cùng bé</Typography>
+                  <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>2 phần quà bí mật</Typography>
+                  <Typography component="li" sx={{ fontSize: 'inherit' }}>Gắn kết gia đình</Typography>
+                </Box>
               </Box>
             </Stack>
+
+
+            <Typography sx={{ color: 'primary.main', fontSize: { xs: 34, md: 40 }, fontWeight: 950 }}>
+              {PREORDER_PRODUCT.priceLabel}
+            </Typography>
+
+
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25}>
               <Button
@@ -132,7 +130,7 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
                   '&:hover': { backgroundColor: 'primary.dark' },
                 }}
               >
-                Liên hệ để đặt trước
+                Mua ngay
               </Button>
 
               <Button
@@ -158,40 +156,6 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
                 Xem cách chơi
               </Button>
             </Stack>
-
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
-                gap: 1.25,
-              }}
-            >
-              {[
-                { icon: PackageCheck, label: '2 tranh ghép gỗ trong bộ' },
-                { icon: Sparkles, label: "Hộp phản chiếu 3D đi kèm" },
-              ].map(({ icon: Icon, label }) => (
-                <Box
-                  key={label}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.25,
-                    minHeight: 54,
-                    px: 1.5,
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.68)',
-                    border: '1px solid rgba(78, 52, 46, 0.10)',
-                    color: 'var(--text-h)',
-                    fontWeight: 750,
-                  }}
-                >
-                  <Box sx={{ color: 'primary.main', display: 'flex' }}>
-                    <Icon size={20} />
-                  </Box>
-                  {label}
-                </Box>
-              ))}
-            </Box>
           </Stack>
         </Box>
       </ContentContainer>
@@ -226,7 +190,7 @@ function PreorderContactDialog({
       <DialogContent sx={{ pt: '8px !important' }}>
         <Stack spacing={2}>
           <Typography sx={{ color: 'var(--text-sub)', fontSize: 15, lineHeight: 1.72 }}>
-            Chọn kênh thuận tiện nhất để đội ngũ Chạm Việt hỗ trợ tư vấn và xác nhận thông tin đặt trước.
+            Chọn kênh thuận tiện nhất để đội ngũ Chạm Việt hỗ trợ tư vấn và xác nhận thông tin đặt hàng.
           </Typography>
 
           <Stack spacing={1.25}>
@@ -340,7 +304,6 @@ export default function ProductDetailPage() {
   return (
     <Box sx={{ backgroundColor: 'var(--bg)' }}>
       <ProductHero onOpenContactDialog={() => setIsPreorderDialogOpen(true)} />
-      <ProductIncludedSection />
       <ProductStorySection />
       <ProductEducationSection />
       <PreorderInfoSection />

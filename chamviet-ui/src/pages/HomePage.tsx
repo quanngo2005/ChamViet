@@ -43,7 +43,7 @@ function ExperienceBento() {
   const benefits = HOME_COPY.learning.cards;
 
   return (
-    <section className="experience-bento" aria-label="Tại sao nên mua Chạm Việt">
+    <section className="experience-bento" aria-label=" Điều khiến Chạm Việt khác biệt">
       <div className="container">
         <div className="experience-bento__heading">
 
