@@ -2,26 +2,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { StoryConfig } from "../data/video-story-qa";
 import { buildApiUrl } from "../utils/apiBase";
 
-const UNCLEAR_SCORE_THRESHOLD = 40;
-const DEFAULT_SILENT_RETRY = "Cô chưa nghe rõ, con nói to hơn một chút nhé.";
-const MIN_RECORDING_MS = 450;
-const MIN_RECORDING_RMS = 0.008;
-const MAX_TTS_CACHE_ITEMS = 48;
 const MAX_RECORDING_GAIN = 2.4;
 const TRIM_THRESHOLD_FLOOR = 0.01;
 const TRIM_PADDING_MS = 140;
 const FADE_MS = 12;
 const AUDIO_WORKLET_NAME = "pcm-capture-processor";
 const TTS_PLAYBACK_RATE = 1.18;
-
-const FILLER_WORDS = new Set([
-  "a",
-  "ah",
-  "uh",
-  "uhm",
-  "um",
-  "u",
-]);
+const VOICE_META_HEADER = "X-Voice-Meta";
 
 export type SessionPhase =
   | "idle"
@@ -44,33 +31,30 @@ interface UseVoiceAIOptions {
   onError?: (error: unknown) => void;
 }
 
-interface ChatResponse {
-  reply: string;
-}
-
-interface TextResponse {
-  text: string;
-}
-
-interface ClassifyResponse {
-  intent: string;
-}
-
-interface AnswerEvalResponse {
-  score: number;
-  is_correct: boolean;
-  feedback?: string;
-  reason?: string;
-  embedding_score?: number;
-  judge_source?: string;
-}
-
 interface PreparedSpeechPlayback {
   playToEnd: () => Promise<boolean>;
   stop: () => void;
 }
 
-const speechBlobCache = new Map<string, Blob>();
+interface VoiceMeta {
+  text?: string;
+  phase?: SessionPhase | string;
+  session_id?: string;
+  transcript?: string;
+  intent?: string;
+  question_index?: number;
+  total_questions?: number;
+  completed?: boolean;
+  score?: number;
+  is_correct?: boolean;
+  question?: string;
+  question_text?: string;
+}
+
+interface VoiceAudioResult {
+  blob: Blob;
+  meta: VoiceMeta;
+}
 
 function createSessionId(seed?: string): string {
   const normalizedSeed = (seed ?? "").trim().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
@@ -82,76 +66,82 @@ function createSessionId(seed?: string): string {
   return normalizedSeed ? `${normalizedSeed}-${uniquePart}` : `voice-${uniquePart}`;
 }
 
-async function postJson<T>(url: string, body: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal,
-  });
+function decodeVoiceMeta(value: string | null): VoiceMeta {
+  if (!value) {
+    throw new Error("Voice AI response omitted metadata");
+  }
 
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes)) as VoiceMeta;
+}
+
+async function readVoiceAudioResponse(response: Response, url: string): Promise<VoiceAudioResult> {
   if (!response.ok) {
     throw new Error(`${url} -> ${response.status}`);
   }
 
-  return response.json() as Promise<T>;
-}
-
-async function fetchSpeechBlob(
-  backendUrl: string,
-  text: string,
-  sessionId: string,
-  signal?: AbortSignal,
-): Promise<Blob | null> {
-  const cacheKey = `${backendUrl}::${text.trim()}`;
-  const cached = speechBlobCache.get(cacheKey);
-  if (cached) {
-    return cached;
+  const blob = await response.blob();
+  if (blob.size === 0) {
+    throw new Error("Voice AI returned empty audio");
   }
 
-  const response = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/speak"), {
+  return {
+    blob,
+    meta: decodeVoiceMeta(response.headers.get(VOICE_META_HEADER)),
+  };
+}
+
+async function startVoiceSession(
+  backendUrl: string,
+  config: StoryConfig,
+  sessionId: string,
+  signal?: AbortSignal,
+): Promise<VoiceAudioResult> {
+  const url = buildApiUrl(backendUrl, "/api/v1/voice/session/start");
+  const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, session_id: sessionId }),
+    body: JSON.stringify({
+      session_id: sessionId,
+      story_title: config.storyTitle,
+      story_content: config.storyContent,
+      child_age: config.childAge,
+      qa_list: config.qaList,
+    }),
     signal,
   });
 
-  if (!response.ok) {
-    return null;
-  }
-
-  const blob = await response.blob();
-  if (blob.size === 0) {
-    return null;
-  }
-
-  speechBlobCache.set(cacheKey, blob);
-  if (speechBlobCache.size > MAX_TTS_CACHE_ITEMS) {
-    const oldestKey = speechBlobCache.keys().next().value;
-    if (oldestKey) {
-      speechBlobCache.delete(oldestKey);
-    }
-  }
-
-  return blob;
+  return readVoiceAudioResponse(response, url);
 }
 
-async function warmSpeechCache(backendUrl: string, text: string, sessionId: string): Promise<void> {
-  await fetchSpeechBlob(backendUrl, text, sessionId);
+async function answerVoiceSession(
+  backendUrl: string,
+  audioBlob: Blob,
+  sessionId: string,
+  signal?: AbortSignal,
+): Promise<VoiceAudioResult> {
+  const url = buildApiUrl(backendUrl, "/api/v1/voice/session/answer");
+  const formData = new FormData();
+  formData.append("audio", audioBlob, "recording.wav");
+  formData.append("session_id", sessionId);
+
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData,
+    signal,
+  });
+
+  return readVoiceAudioResponse(response, url);
 }
 
 async function prepareSpeechPlayback(
-  backendUrl: string,
-  text: string,
-  sessionId: string,
+  blob: Blob,
   signal?: AbortSignal,
 ): Promise<PreparedSpeechPlayback | null> {
   if (signal?.aborted) {
-    return null;
-  }
-
-  const blob = await fetchSpeechBlob(backendUrl, text, sessionId, signal);
-  if (!blob) {
     return null;
   }
 
@@ -334,52 +324,6 @@ function preprocessRecordedSamples(samples: Float32Array, sampleRate: number): F
   return normalized;
 }
 
-function normalizeText(value: string): string {
-  const tokens = value
-    .toLocaleLowerCase("vi-VN")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (tokens.length === 1 && FILLER_WORDS.has(tokens[0])) {
-    return "";
-  }
-
-  return value
-    .toLocaleLowerCase("vi-VN")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/[^a-z0-9\s]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean)
-    .filter((token) => !FILLER_WORDS.has(token))
-    .join(" ")
-    .trim();
-}
-
-function isUsableRecording(samples: Float32Array, sampleRate: number): boolean {
-  if (samples.length === 0) {
-    return false;
-  }
-
-  const durationMs = (samples.length / sampleRate) * 1000;
-  if (durationMs < MIN_RECORDING_MS) {
-    return false;
-  }
-
-  let energy = 0;
-  for (let index = 0; index < samples.length; index += 1) {
-    energy += samples[index] * samples[index];
-  }
-
-  const rms = Math.sqrt(energy / samples.length);
-  return rms >= MIN_RECORDING_RMS;
-}
-
 async function createPcmCaptureNode(
   audioContext: AudioContext,
   onChunk: (chunk: Float32Array) => void,
@@ -417,85 +361,6 @@ async function createPcmCaptureNode(
   return node;
 }
 
-function buildGreetingText(config: StoryConfig): string {
-  return `Chào con. Bây giờ mình cùng ôn lại câu chuyện ${config.storyTitle} bằng vài câu hỏi ngắn nhé.`;
-}
-
-function buildQuestionText(question: string, index: number, total: number): string {
-  return `Bây giờ là câu ${index + 1} trên ${total}. ${question}`;
-}
-
-function buildCorrectText(): string {
-  return "Giỏi quá, con trả lời đúng rồi.";
-}
-
-function buildUnclearText(): string {
-  return "Cô nghe chưa rõ ý lắm, con thử nói rõ hơn một chút nhé.";
-}
-
-function buildWrongText(answer: string): string {
-  return `Con đã rất cố gắng rồi. Cô gợi ý đáp án là: ${answer}. Mình sang câu tiếp theo nhé.`;
-}
-
-function buildEndingText(score: number, total: number): string {
-  if (score === total) {
-    return `Con làm rất tuyệt. Con trả lời đúng cả ${total} câu rồi.`;
-  }
-  if (score === 0) {
-    return `Hôm nay con đã rất chăm lắng nghe. Lần sau mình cùng cố gắng hơn nhé.`;
-  }
-  return `Con đã trả lời đúng ${score} trên ${total} câu. Cô khen con đã cố gắng lắm.`;
-}
-
-function buildQuestionPrompt(config: StoryConfig, question: string, childQuestion: string): string {
-  return [
-    `Con ${config.childAge} tuổi đang hỏi thêm về câu chuyện ${config.storyTitle}.`,
-    `Câu hỏi của bé là: "${childQuestion}".`,
-    `Hãy trả lời thật ngắn gọn, dễ hiểu cho trẻ em, tối đa 2 câu.`,
-    `Sau đó nhắc bé quay lại trả lời câu hỏi này: "${question}".`,
-    "Không dùng bullet points."
-  ].join(" ");
-}
-
-function buildConfusedPrompt(config: StoryConfig, question: string, answer: string): string {
-  return [
-    `Con ${config.childAge} tuổi đang chưa biết trả lời câu hỏi trong truyện ${config.storyTitle}.`,
-    `Câu hỏi là: "${question}".`,
-    `Đáp án đúng là: "${answer}".`,
-    "Hãy đưa ra một gợi ý ngắn, thân thiện, không nói nguyên văn toàn bộ đáp án nếu không cần thiết.",
-    "Không dùng bullet points."
-  ].join(" ");
-}
-
-function buildPrewarmTexts(config: StoryConfig): string[] {
-  const texts = new Set<string>();
-  const totalQuestions = config.qaList.length;
-
-  texts.add(buildGreetingText(config));
-  texts.add(buildCorrectText());
-  texts.add(buildUnclearText());
-
-  for (let index = 0; index < totalQuestions; index += 1) {
-    const qa = config.qaList[index];
-    texts.add(buildQuestionText(qa.question, index, totalQuestions));
-    texts.add(buildWrongText(qa.answer));
-  }
-
-  for (let currentScore = 0; currentScore <= totalQuestions; currentScore += 1) {
-    texts.add(buildEndingText(currentScore, totalQuestions));
-  }
-
-  return Array.from(texts);
-}
-
-function buildStoryCacheKey(config: StoryConfig): string {
-  return JSON.stringify({
-    title: config.storyTitle,
-    age: config.childAge,
-    qaList: config.qaList,
-  });
-}
-
 export function useVoiceAI({
   backendUrl,
   storyConfig,
@@ -523,7 +388,6 @@ export function useVoiceAI({
   const silenceGainRef = useRef<GainNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pcmChunksRef = useRef<Float32Array[]>([]);
-  const prewarmedStoryKeyRef = useRef<string | null>(null);
   const currentQuestionIndexRef = useRef(0);
   const scoreRef = useRef(0);
   const sessionPhaseRef = useRef<SessionPhase>("idle");
@@ -597,56 +461,68 @@ export function useVoiceAI({
     };
   }, [stopSession]);
 
-  useEffect(() => {
-    if (!storyConfig) {
-      prewarmedStoryKeyRef.current = null;
-      return;
+  const resolveMetaPhase = useCallback((meta: VoiceMeta): SessionPhase => {
+    if (meta.completed || meta.phase === "done") {
+      return "done";
     }
 
-    const storyKey = buildStoryCacheKey(storyConfig);
-    if (prewarmedStoryKeyRef.current === storyKey) {
-      return;
+    const phase = meta.phase;
+    if (
+      phase === "idle" ||
+      phase === "loading" ||
+      phase === "greeting" ||
+      phase === "asking" ||
+      phase === "listening" ||
+      phase === "evaluating" ||
+      phase === "responding"
+    ) {
+      return phase;
     }
 
-    prewarmedStoryKeyRef.current = storyKey;
+    return "listening";
+  }, []);
 
-    let cancelled = false;
+  const applyVoiceMeta = useCallback(
+    (meta: VoiceMeta, phaseOverride?: SessionPhase) => {
+      const text = (meta.text ?? "").trim();
+      if (text) {
+        setAiText(text);
+        onAiMessage?.(text);
+      }
 
-    void (async () => {
-      const texts = buildPrewarmTexts(storyConfig);
-      for (const text of texts) {
-        if (cancelled) {
-          return;
-        }
-
-        try {
-          await warmSpeechCache(backendUrl, text, sessionIdRef.current);
-        } catch {
-          return;
+      if (typeof meta.transcript === "string") {
+        setUserText(meta.transcript);
+        if (meta.transcript.trim()) {
+          onUserText?.(meta.transcript);
         }
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [backendUrl, storyConfig]);
+      if (typeof meta.question_index === "number") {
+        setCurrentQuestionIndex(meta.question_index);
+        currentQuestionIndexRef.current = meta.question_index;
+      }
 
-  const speakAndNotify = useCallback(
-    async (text: string) => {
-      const generation = sessionGenerationRef.current;
+      if (typeof meta.score === "number") {
+        setScore(meta.score);
+        scoreRef.current = meta.score;
+      }
+
+      if (meta.question_text && !meta.completed) {
+        onQuestionRead?.(meta.question_text);
+      }
+
+      const nextPhase = phaseOverride ?? resolveMetaPhase(meta);
+      setSessionPhase(nextPhase);
+      sessionPhaseRef.current = nextPhase;
+    },
+    [onAiMessage, onQuestionRead, onUserText, resolveMetaPhase],
+  );
+
+  const playVoiceBlob = useCallback(
+    async (blob: Blob, controller: AbortController, generation: number) => {
       stopCurrentSpeech();
-      setAiText(text);
-      onAiMessage?.(text);
-
-      const controller = new AbortController();
       speechAbortRef.current = controller;
-      const preparedSpeech = await prepareSpeechPlayback(
-        backendUrl,
-        text,
-        sessionIdRef.current,
-        controller.signal,
-      );
+      const preparedSpeech = await prepareSpeechPlayback(blob, controller.signal);
       if (!preparedSpeech) {
         if (speechAbortRef.current === controller) {
           speechAbortRef.current = null;
@@ -672,73 +548,33 @@ export function useVoiceAI({
       }
       return completed && generation === sessionGenerationRef.current;
     },
-    [backendUrl, onAiMessage, stopCurrentSpeech],
+    [stopCurrentSpeech],
   );
 
-  const askQuestion = useCallback(
-    async (questionIndex: number) => {
-      const config = configRef.current;
-      if (!config) {
-        return;
+  const playAndApplyVoiceResult = useCallback(
+    async (
+      result: VoiceAudioResult,
+      controller: AbortController,
+      generation: number,
+      speakingPhase: SessionPhase,
+    ) => {
+      const finalPhase = resolveMetaPhase(result.meta);
+      applyVoiceMeta(result.meta, speakingPhase);
+      const completed = await playVoiceBlob(result.blob, controller, generation);
+      if (!completed || generation !== sessionGenerationRef.current || controller.signal.aborted) {
+        return false;
       }
 
-      const qa = config.qaList[questionIndex];
-      if (!qa) {
-        return;
+      setSessionPhase(finalPhase);
+      sessionPhaseRef.current = finalPhase;
+
+      if (finalPhase === "done" || result.meta.completed) {
+        onSessionEnd?.(result.meta.score ?? scoreRef.current, result.meta.total_questions ?? configRef.current?.qaList.length ?? 0);
       }
 
-      setCurrentQuestionIndex(questionIndex);
-      currentQuestionIndexRef.current = questionIndex;
-      setSessionPhase("asking");
-      const questionText = buildQuestionText(qa.question, questionIndex, config.qaList.length);
-      onQuestionRead?.(questionText);
-      if (!(await speakAndNotify(questionText))) {
-        return;
-      }
-      setSessionPhase("listening");
-      sessionPhaseRef.current = "listening";
+      return true;
     },
-    [onQuestionRead, speakAndNotify],
-  );
-
-  const finishSession = useCallback(
-    async (finalScore: number) => {
-      const config = configRef.current;
-      if (!config) {
-        return;
-      }
-
-      setSessionPhase("responding");
-      sessionPhaseRef.current = "responding";
-      if (!(await speakAndNotify(buildEndingText(finalScore, config.qaList.length)))) {
-        return;
-      }
-      await fetch(
-        `${buildApiUrl(backendUrl, "/api/v1/voice/reset")}?session_id=${encodeURIComponent(sessionIdRef.current)}`,
-        { method: "POST", signal: sessionAbortRef.current?.signal },
-      );
-      setSessionPhase("done");
-      sessionPhaseRef.current = "done";
-      onSessionEnd?.(finalScore, config.qaList.length);
-    },
-    [backendUrl, onSessionEnd, speakAndNotify],
-  );
-
-  const advanceToNext = useCallback(
-    async (nextIndex: number, currentScore: number) => {
-      const config = configRef.current;
-      if (!config) {
-        return;
-      }
-
-      if (nextIndex >= config.qaList.length) {
-        await finishSession(currentScore);
-        return;
-      }
-
-      await askQuestion(nextIndex);
-    },
-    [askQuestion, finishSession],
+    [applyVoiceMeta, onSessionEnd, playVoiceBlob, resolveMetaPhase],
   );
 
   const initSession = useCallback(async () => {
@@ -764,9 +600,10 @@ export function useVoiceAI({
       setUserText("");
       setAiText("");
 
-      await postJson<unknown>(
-        buildApiUrl(backendUrl, "/api/v1/voice/load-content"),
-        { content: config.storyContent, session_id: sessionIdRef.current },
+      const result = await startVoiceSession(
+        backendUrl,
+        config,
+        sessionIdRef.current,
         sessionController.signal,
       );
 
@@ -774,12 +611,7 @@ export function useVoiceAI({
         return;
       }
 
-      setSessionPhase("greeting");
-      sessionPhaseRef.current = "greeting";
-      if (!(await speakAndNotify(buildGreetingText(config)))) {
-        return;
-      }
-      await askQuestion(0);
+      await playAndApplyVoiceResult(result, sessionController, generation, "greeting");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         return;
@@ -793,62 +625,11 @@ export function useVoiceAI({
         sessionAbortRef.current = null;
       }
     }
-  }, [askQuestion, backendUrl, onError, speakAndNotify]);
-
-  const handleQuestionBranch = useCallback(
-    async (transcribed: string, question: string, signal?: AbortSignal) => {
-      const config = configRef.current;
-      if (!config) {
-        return;
-      }
-
-      const { reply } = await postJson<ChatResponse>(
-        buildApiUrl(backendUrl, "/api/v1/voice/chat"),
-        {
-          message: buildQuestionPrompt(config, question, transcribed),
-          session_id: sessionIdRef.current,
-        },
-        signal,
-      );
-
-      if (!(await speakAndNotify(reply))) {
-        return;
-      }
-      setSessionPhase("listening");
-      sessionPhaseRef.current = "listening";
-    },
-    [backendUrl, speakAndNotify],
-  );
-
-  const handleConfusedBranch = useCallback(
-    async (question: string, answer: string, signal?: AbortSignal) => {
-      const config = configRef.current;
-      if (!config) {
-        return;
-      }
-
-      const { reply } = await postJson<ChatResponse>(
-        buildApiUrl(backendUrl, "/api/v1/voice/chat"),
-        {
-          message: buildConfusedPrompt(config, question, answer),
-          session_id: sessionIdRef.current,
-        },
-        signal,
-      );
-
-      if (!(await speakAndNotify(reply))) {
-        return;
-      }
-      setSessionPhase("listening");
-      sessionPhaseRef.current = "listening";
-    },
-    [backendUrl, speakAndNotify],
-  );
+  }, [backendUrl, onError, playAndApplyVoiceResult]);
 
   const processVoiceFlow = useCallback(
     async (audioBlob: Blob) => {
-      const config = configRef.current;
-      if (!config) {
+      if (!configRef.current) {
         setIsAwaitingUserText(false);
         return;
       }
@@ -862,107 +643,14 @@ export function useVoiceAI({
         setSessionPhase("evaluating");
         sessionPhaseRef.current = "evaluating";
 
-        const questionIndex = currentQuestionIndexRef.current;
-        const currentScore = scoreRef.current;
-        const qa = config.qaList[questionIndex];
-        if (!qa) {
-          return;
-        }
-
-        const formData = new FormData();
-        formData.append("audio", audioBlob, "recording.wav");
-        formData.append("session_id", sessionIdRef.current);
-
-        const sttResponse = await fetch(buildApiUrl(backendUrl, "/api/v1/voice/transcribe"), {
-          method: "POST",
-          body: formData,
-          signal: controller.signal,
-        });
-        if (!sttResponse.ok) {
-          throw new Error(`Transcribe failed -> ${sttResponse.status}`);
-        }
-
-        const { text: transcribed } = (await sttResponse.json()) as TextResponse;
-        const normalizedTranscript = normalizeText(transcribed || "");
-        if (!normalizedTranscript) {
-          setIsAwaitingUserText(false);
-          setSessionPhase("responding");
-          sessionPhaseRef.current = "responding";
-          if (!(await speakAndNotify(DEFAULT_SILENT_RETRY))) {
-            return;
-          }
-          setSessionPhase("listening");
-          sessionPhaseRef.current = "listening";
-          return;
-        }
-
+        const result = await answerVoiceSession(
+          backendUrl,
+          audioBlob,
+          sessionIdRef.current,
+          controller.signal,
+        );
         setIsAwaitingUserText(false);
-        setUserText(transcribed);
-        onUserText?.(transcribed);
-
-        const { intent } = await postJson<ClassifyResponse>(
-          buildApiUrl(backendUrl, "/api/v1/voice/classify"),
-          {
-            current_question: qa.question,
-            user_text: transcribed,
-            session_id: sessionIdRef.current,
-          },
-          controller.signal,
-        );
-        const normalizedIntent = (intent || "").trim().toUpperCase();
-
-        setSessionPhase("responding");
-        sessionPhaseRef.current = "responding";
-
-        if (normalizedIntent.includes("QUESTION")) {
-          await handleQuestionBranch(transcribed, qa.question, controller.signal);
-          return;
-        }
-
-        if (normalizedIntent.includes("CONFUSED")) {
-          await handleConfusedBranch(qa.question, qa.answer, controller.signal);
-          return;
-        }
-
-        const evaluation = await postJson<AnswerEvalResponse>(
-          buildApiUrl(backendUrl, "/api/v1/voice/evaluate-answer"),
-          {
-            story_title: config.storyTitle,
-            child_age: config.childAge,
-            question: qa.question,
-            child_answer: transcribed,
-            correct_answer: qa.answer,
-            session_id: sessionIdRef.current,
-          },
-          controller.signal,
-        );
-        const feedback = evaluation.feedback?.trim();
-        const isCorrect = evaluation.is_correct || evaluation.score >= 75;
-
-        if (isCorrect) {
-          const nextScore = currentScore + 1;
-          setScore(nextScore);
-          scoreRef.current = nextScore;
-          if (!(await speakAndNotify(feedback || buildCorrectText()))) {
-            return;
-          }
-          await advanceToNext(questionIndex + 1, nextScore);
-          return;
-        }
-
-        if (normalizedIntent.includes("CONFIRM") || evaluation.score >= UNCLEAR_SCORE_THRESHOLD) {
-          if (!(await speakAndNotify(feedback || buildUnclearText()))) {
-            return;
-          }
-          setSessionPhase("listening");
-          sessionPhaseRef.current = "listening";
-          return;
-        }
-
-        if (!(await speakAndNotify(feedback || buildWrongText(qa.answer)))) {
-          return;
-        }
-        await advanceToNext(questionIndex + 1, currentScore);
+        await playAndApplyVoiceResult(result, controller, sessionGenerationRef.current, "responding");
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
@@ -978,15 +666,7 @@ export function useVoiceAI({
         }
       }
     },
-    [
-      advanceToNext,
-      backendUrl,
-      handleConfusedBranch,
-      handleQuestionBranch,
-      onError,
-      onUserText,
-      speakAndNotify,
-    ],
+    [backendUrl, onError, playAndApplyVoiceResult],
   );
 
   const startRecording = useCallback(async () => {
@@ -1074,23 +754,10 @@ export function useVoiceAI({
     }
 
     const processed = preprocessRecordedSamples(merged, sampleRate);
-    if (!isUsableRecording(processed, sampleRate)) {
-      setIsAwaitingUserText(false);
-      setSessionPhase("responding");
-      sessionPhaseRef.current = "responding";
-      void (async () => {
-        if (await speakAndNotify(DEFAULT_SILENT_RETRY)) {
-          setSessionPhase("listening");
-          sessionPhaseRef.current = "listening";
-        }
-      })();
-      return;
-    }
-
     const wavBlob = encodeWav(processed, sampleRate);
     setIsAwaitingUserText(true);
     void processVoiceFlow(wavBlob);
-  }, [processVoiceFlow, speakAndNotify]);
+  }, [processVoiceFlow]);
 
   return {
     isRecording,

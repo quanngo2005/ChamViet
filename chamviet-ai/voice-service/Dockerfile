@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM python:3.11-slim-bookworm AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -13,10 +14,12 @@ RUN python -m venv "$VIRTUAL_ENV"
 
 COPY requirements.txt ./
 
-RUN pip install --upgrade pip setuptools wheel \
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel \
     && pip install --index-url https://download.pytorch.org/whl/cpu torch \
     && pip install -r requirements.txt \
     && pip check \
+    && pip uninstall -y pip setuptools wheel \
     && find /opt/venv -type d -name "__pycache__" -prune -exec rm -rf {} +
 
 
@@ -28,6 +31,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     VIRTUAL_ENV=/opt/venv \
     PATH="/opt/venv/bin:$PATH" \
+    HOME=/app \
     HF_HOME=/app/.cache/huggingface \
     SENTENCE_TRANSFORMERS_HOME=/app/.cache/sentence-transformers \
     TOKENIZERS_PARALLELISM=false \

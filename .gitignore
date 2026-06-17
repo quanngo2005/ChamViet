@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 figma-how-to.json
 figma-main.json
 figma-product-detail.json
@@ -49,7 +47,6 @@ chamviet-api/.github/copilot-instructions.md
 ChamViet_AI.postman_collection.json
 # Added by code-review-graph
 .code-review-graph/
->>>>>>> Stashed changes
 /.codex
 /.gitnexus
 /.gitnexus

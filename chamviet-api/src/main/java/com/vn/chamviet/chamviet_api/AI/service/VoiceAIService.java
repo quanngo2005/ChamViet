@@ -10,11 +10,14 @@ import com.vn.chamviet.chamviet_api.AI.dto.voice.ContentRequest;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ContentResponse;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.TextRequest;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.TextResponse;
+import com.vn.chamviet.chamviet_api.AI.dto.voice.VoiceAudioResponse;
+import com.vn.chamviet.chamviet_api.AI.dto.voice.VoiceQAStartRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +32,8 @@ import java.util.function.Supplier;
 
 @Service
 public class VoiceAIService {
+
+    private static final String VOICE_META_HEADER = "X-Voice-Meta";
 
     private final WebClient voiceClient;
 
@@ -124,6 +129,49 @@ public class VoiceAIService {
         return audioBytes;
     }
 
+    public VoiceAudioResponse startSession(VoiceQAStartRequest request) {
+        ResponseEntity<byte[]> response = execute("start voice session", () -> voiceClient.post()
+            .uri("/api/session/start")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(request)
+            .retrieve()
+            .toEntity(byte[].class)
+            .block());
+
+        return toVoiceAudioResponse(response, "start voice session");
+    }
+
+    public VoiceAudioResponse answerSession(MultipartFile audio, String sessionId) {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        try {
+            builder.part("audio", new ByteArrayResource(audio.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return audio.getOriginalFilename() != null
+                        ? audio.getOriginalFilename()
+                        : "recording.wav";
+                }
+            }).contentType(MediaType.parseMediaType(
+                audio.getContentType() != null ? audio.getContentType() : "audio/wav"
+            ));
+            if (sessionId != null && !sessionId.isBlank()) {
+                builder.part("session_id", sessionId);
+            }
+        } catch (Exception exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot read uploaded audio", exception);
+        }
+
+        ResponseEntity<byte[]> response = execute("answer voice session", () -> voiceClient.post()
+            .uri("/api/session/answer")
+            .contentType(MediaType.MULTIPART_FORM_DATA)
+            .body(BodyInserters.fromMultipartData(builder.build()))
+            .retrieve()
+            .toEntity(byte[].class)
+            .block());
+
+        return toVoiceAudioResponse(response, "answer voice session");
+    }
+
     public Map<String, Object> history(String sessionId) {
         return execute("get history", () -> voiceClient.get()
             .uri(uriBuilder -> uriBuilder
@@ -151,6 +199,19 @@ public class VoiceAIService {
             return null;
         }
         return value;
+    }
+
+    private VoiceAudioResponse toVoiceAudioResponse(ResponseEntity<byte[]> response, String action) {
+        if (response == null || response.getBody() == null || response.getBody().length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Voice AI returned empty audio for " + action);
+        }
+
+        String voiceMeta = response.getHeaders().getFirst(VOICE_META_HEADER);
+        if (voiceMeta == null || voiceMeta.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Voice AI omitted metadata for " + action);
+        }
+
+        return new VoiceAudioResponse(response.getBody(), voiceMeta);
     }
 
     private <T> T execute(String action, Supplier<T> supplier) {

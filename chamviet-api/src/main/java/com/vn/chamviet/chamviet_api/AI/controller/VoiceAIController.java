@@ -10,6 +10,8 @@ import com.vn.chamviet.chamviet_api.AI.dto.voice.ContentRequest;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.ContentResponse;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.TextRequest;
 import com.vn.chamviet.chamviet_api.AI.dto.voice.TextResponse;
+import com.vn.chamviet.chamviet_api.AI.dto.voice.VoiceAudioResponse;
+import com.vn.chamviet.chamviet_api.AI.dto.voice.VoiceQAStartRequest;
 import com.vn.chamviet.chamviet_api.AI.service.VoiceAIService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,6 +29,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/voice")
 public class VoiceAIController {
+
+    private static final String VOICE_META_HEADER = "X-Voice-Meta";
 
     private final VoiceAIService voiceAIService;
 
@@ -71,6 +75,21 @@ public class VoiceAIController {
             .body(audioBytes);
     }
 
+    @PostMapping("/session/start")
+    public ResponseEntity<byte[]> startSession(@RequestBody VoiceQAStartRequest request) {
+        VoiceAudioResponse response = voiceAIService.startSession(request);
+        return voiceAudioResponse(response);
+    }
+
+    @PostMapping(value = "/session/answer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<byte[]> answerSession(
+        @RequestParam("audio") MultipartFile audio,
+        @RequestParam(value = "session_id", required = false) String sessionId
+    ) {
+        VoiceAudioResponse response = voiceAIService.answerSession(audio, sessionId);
+        return voiceAudioResponse(response);
+    }
+
     @GetMapping("/history")
     public ResponseEntity<Map<String, Object>> history(
         @RequestParam(value = "session_id", required = false) String sessionId
@@ -83,5 +102,13 @@ public class VoiceAIController {
         @RequestParam(value = "session_id", required = false) String sessionId
     ) {
         return ResponseEntity.ok(voiceAIService.reset(sessionId));
+    }
+
+    private ResponseEntity<byte[]> voiceAudioResponse(VoiceAudioResponse response) {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reply.wav")
+            .header(VOICE_META_HEADER, response.voiceMeta())
+            .contentType(MediaType.parseMediaType("audio/wav"))
+            .body(response.audioBytes());
     }
 }

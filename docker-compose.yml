@@ -16,7 +16,7 @@ services:
       retries: 10
 
   ai-service:
-    image: quanngo205/voice-service:${CHAMVIET_IMAGE_TAG:-2026-06-08}
+    image: quanngo205/voice-service:${CHAMVIET_IMAGE_TAG:-1.0.0}
     build:
       context: ./chamviet-ai/voice-service
       dockerfile: Dockerfile
@@ -38,7 +38,7 @@ services:
       retries: 10
 
   vision-service:
-    image: chamviet-vision-service:${CHAMVIET_IMAGE_TAG:-2026-06-08}
+    image: chamviet-vision-service:${CHAMVIET_IMAGE_TAG:-1.0.0}
     build:
       context: ./chamviet-ai/vision-service
     restart: unless-stopped
@@ -61,7 +61,7 @@ services:
       retries: 10
 
   backend:
-    image: quanngo205/chamviet-api:${CHAMVIET_IMAGE_TAG:-2026-06-08}
+    image: quanngo205/chamviet-api:${CHAMVIET_IMAGE_TAG:-1.0.0}
     build:
       context: ./chamviet-api
     restart: unless-stopped
