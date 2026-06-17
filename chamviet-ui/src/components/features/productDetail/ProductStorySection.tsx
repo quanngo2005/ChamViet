@@ -16,13 +16,13 @@ export function ProductStorySection({ heading, paragraphs }: ProductStorySection
   const storyParagraphs = paragraphs && paragraphs.length > 0 ? paragraphs : story.paragraphs;
 
   return (
-    <PageSection sx={{ py: { xs: 8, md: 10 } }}>
+    <PageSection sx={{ py: { xs: 18, md: 10 } }}>
       <ContentContainer>
         <Box
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: { xs: 6, md: '48px' },
+            gap: { xs: 6, md: '55px' },
             alignItems: 'center',
           }}
         >
@@ -31,17 +31,18 @@ export function ProductStorySection({ heading, paragraphs }: ProductStorySection
             <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
               <Box
                 sx={{
-                  width: 38,
-                  height: 35.5,
+                  width: 55,
+                  height: 55,
                   borderRadius: '4px',
                   backgroundColor: 'rgba(168, 50, 50, 0.10)',
                   display: 'flex',
+                  padding: '5',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'primary.main',
                 }}
               >
-                <BookOpen size={22} />
+                <BookOpen size={32} />
               </Box>
               <Typography sx={{ fontWeight: 700, color: 'grey.900', fontSize: 30 }}>
                 {storyHeading}

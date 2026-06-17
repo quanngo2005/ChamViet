@@ -51,12 +51,12 @@ export default function Hero() {
 
         <div className="container hero-section__inner">
           <div className="hero-section__copy">
-            <p className="hero-section__kicker">Câu chuyện Việt qua góc nhìn 3D.</p>
+            <p className="hero-section__kicker">Chạm một câu chuyện - Nhớ một Việt Nam</p>
             <h1 className="hero-card__heading">
-              Chạm một câu chuyện - Nhớ một Việt Nam.
+              Chạm Việt
             </h1>
             <p className="hero-card__sub">
-              {HOME_COPY.hero.description}
+              Xếp hình tranh gỗ kết hợp 3D và kể chuyện tương tác, giúp bé khám phá những câu chuyện Việt một cách trực quan và thú vị
             </p>
             <div className="hero-card__ctas">
               <button
@@ -64,12 +64,12 @@ export default function Hero() {
                 onClick={() => navigate(`/products/${HOME_PRODUCT.id}`)}
                 type="button"
               >
-                <span>{HOME_COPY.hero.primaryCta}</span>
+                <span>Khám phá ngay</span>
                 <ArrowRight size={18} />
               </button>
               <button className="btn btn-outline hero-card__cta-secondary" onClick={scrollToVideo} type="button">
                 <PlayCircle size={18} />
-                <span>{HOME_COPY.hero.secondaryCta}</span>
+                <span>Xem cách hoạt động</span>
               </button>
             </div>
           </div>

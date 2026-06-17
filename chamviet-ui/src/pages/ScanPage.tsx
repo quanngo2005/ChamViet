@@ -162,6 +162,15 @@ export default function ScanPage() {
     try {
       const resolution = await scanImage(selectedFile, controller.signal);
 
+      if (
+        (resolution.kind === "product" || resolution.kind === "story")
+        && resolution.confidence !== undefined
+        && resolution.confidence < MIN_CONFIDENCE
+      ) {
+        setMessage({ text: "Vui lòng đưa camera lại gần hơn", kind: "warning" });
+        return;
+      }
+
       if (resolution.kind === "product") {
         navigate(resolution.route);
         return;
@@ -188,7 +197,7 @@ export default function ScanPage() {
         return;
       }
 
-      setMessage({ text: "Không nhận diện được, vui lòng chụp lại", kind: "error" });
+      setMessage({ text: resolution.message, kind: "error" });
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "CanceledError") return;
       setMessage({ text: "Có lỗi xảy ra, vui lòng thử lại", kind: "error" });

@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Sparkles,
   Volume2,
+  Brain,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -30,42 +31,48 @@ const workflowIcons: Record<string, LucideIcon> = {
 const parentTips = [
   {
     icon: ShieldCheck,
-    title: 'Cùng con đi từng bước',
+    title: 'Cùng con quan sát',
     description:
-      'Hãy để bé tự lắp và tự quét trước, sau đó ba mẹ gợi mở thêm bằng câu hỏi về nhân vật, hành động và bài học trong chuyện.',
+      'Hỏi bé nhìn thấy nhân vật nào, chi tiết nào khiến bé nhớ nhất.',
   },
   {
     icon: Lightbulb,
     title: 'Giữ ánh sáng vừa đủ',
     description:
-      'Không gian hơi dịu sáng giúp phần phản chiếu rõ hơn, nhưng vẫn đủ sáng để bé thao tác với tranh và điện thoại an toàn.',
+      'Không gian hơi dịu sáng giúp phần phản chiếu rõ hơn, nhưng vẫn đủ sáng để bé thao tác với tranh',
+  },
+  {
+    icon: Brain,
+    title: 'Gợi mở thay vì kiểm tra',
+    description:
+      'Thay vì hỏi đúng-sai, hãy hỏi "Điều gì xảy ra tiếp theo?" hoặc "Nếu con ở đó con sẽ làm gì?"',
   },
   {
     icon: Sparkles,
-    title: 'Kể lại sau khi xem',
+    title: 'Kể lại bằng lời của bé',
     description:
-      'Khi video kết thúc, thử để bé dùng tranh gỗ kể lại câu chuyện theo cách riêng rồi hỏi AI những chi tiết bé tò mò.',
+      'Sau khi xem, để bé tự kể lại câu chuyện theo cách mình hiểu.',
   },
 ];
 
 const commonIssues = [
   {
     icon: Camera,
-    title: 'Camera chưa nhận tranh',
+    title: 'Ảnh chụp chưa nhận diện được',
     description:
-      'Đặt tranh trên mặt phẳng sáng, đưa trọn bức tranh vào khung quét và giữ điện thoại ổn định vài giây.',
+      'Hãy đặt tranh trong khung hình rõ nét, đủ sáng và tránh nghiêng quá nhiều.',
   },
   {
     icon: Lightbulb,
-    title: 'Phản chiếu bị mờ',
+    title: 'Hologram chưa nổi rõ',
     description:
-      'Giảm ánh sáng xung quanh, tăng độ sáng màn hình và đặt điện thoại đúng vị trí trên hộp phản chiếu 3D.',
+      'Giảm bớt ánh sáng xung quanh nhưng không quá tối và đặt điện thoại đúng vị trí trên hộp chiếu.',
   },
   {
     icon: Volume2,
-    title: 'Âm thanh quá nhỏ',
+    title: 'Âm thanh nhỏ',
     description:
-      'Bật âm lượng điện thoại trước khi đặt lên hộp, hoặc dùng loa ngoài khi bé xem cùng cả gia đình.',
+      'Tăng âm lượng điện thoại để cả nhà cùng nghe và tương tác hỏi đáp cùng AI',
   },
 ];
 
@@ -88,10 +95,9 @@ function HeroSection() {
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
           <p className="section-eyebrow">Hành trình trải nghiệm</p>
-          <h1>Cách chơi Chạm Việt trong một buổi tối</h1>
+          <h1>4 bước để truyền thuyết Việt sống dậy trong căn nhà của bạn </h1>
           <p>
-            Trang này chỉ dành cho việc bắt đầu cho đúng. Từ lúc mở hộp đến lúc bé hỏi tiếp,
-            mỗi bước đều được viết ngắn gọn để phụ huynh biết cần làm gì trước.
+            Từ ghép tranh, quét hình đến xem hologram và hỏi đáp cùng AI Chíp Bông - tất cả chỉ cần một chiếc điện thoại và hộp chiếu đi kèm.
           </p>
 
           <div className="how-play-hero__proofs" aria-label="Các phần trong trải nghiệm">
@@ -102,13 +108,9 @@ function HeroSection() {
           </div>
 
           <div className="how-play-hero__ctas">
-            <Link to={`/products/${HOME_PRODUCT.id}`} className="btn btn-primary">
-              <span>{HOME_PRODUCT.ctaLabel}</span>
-              <ArrowRight size={18} />
-            </Link>
             <Link to="/scan" className="btn btn-outline">
               <ScanLine size={18} />
-              <span>Thử quét tranh</span>
+              <span>Bắt đầu ngay</span>
             </Link>
           </div>
         </motion.div>
@@ -172,10 +174,10 @@ function TipsForParentsSection() {
       <div className="container how-play-guidance__inner">
         <div className="how-play-guidance__copy">
           <p className="section-eyebrow">Dành cho phụ huynh</p>
-          <h2>Biến phần chơi thành một cuộc trò chuyện</h2>
+          <h2>Hãy biến mỗi câu chuyện thành một cuộc trò chuyện nhỏ trong gia đình.</h2>
           <p>
-            Khi đã biết cách bắt đầu, phần quan trọng nhất là đừng làm thay cho bé.
-            Trang này giúp phụ huynh đứng cạnh để gợi mở đúng lúc.
+            Không có cách nào tốt hơn việc cùng con chơi và trò chuyện. Khi đã biết cách bắt đầu, việc cùng con
+            hỏi đáp và trao đổi sau mỗi buổi học sẽ giúp con ghi nhớ lâu hơn.
           </p>
         </div>
 
@@ -207,8 +209,7 @@ function CommonIssuesSection() {
       <div className="container">
         <div className="how-play-section-head how-play-section-head--left">
           <p className="section-eyebrow">Tối ưu trải nghiệm</p>
-          <h2>Lỗi thường gặp khi chơi</h2>
-          <p>Chỉ cần chỉnh vài điểm nhỏ là phần quét tranh và xem phản chiếu sẽ ổn định hơn nhiều.</p>
+          <h2>Mẹo nhỏ để trải nghiệm mượt hơn</h2>
         </div>
 
         <div className="how-play-issue-grid">
@@ -236,10 +237,9 @@ function FinalCtaSection() {
     <section className="how-play-final">
       <div className="container">
         <div className="how-play-final__card">
-          <p className="section-eyebrow">Sẵn sàng mở hộp?</p>
-          <h2>Nếu đã nắm cách chơi, bạn có thể bắt đầu</h2>
+          <h2>Sẵn sàng để bé tự tay đánh thức câu chuyện Việt đầu tiên?</h2>
           <p>
-            Khi phụ huynh đã hình dung rõ các bước, việc chọn bộ đầu tiên sẽ dễ hơn nhiều.
+            Chỉ với vài bước đơn giản, cả gia đình đã có thể cùng ghép tranh, xem video 3D hologram và trò chuyện về những truyền thuyết văn hóa Việt.
           </p>
           <div className="how-play-final__ctas">
             <Link to={`/products/${HOME_PRODUCT.id}`} className="btn btn-primary">

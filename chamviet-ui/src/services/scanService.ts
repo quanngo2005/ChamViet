@@ -39,6 +39,7 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
 
   const payload = raw as Record<string, unknown>;
   const status = typeof payload.status === "string" ? payload.status : "unknown";
+  const message = typeof payload.message === "string" ? payload.message.trim() : "";
   const route = typeof payload.route === "string" ? payload.route.trim() : "";
   const productId = toOptionalString(payload.productId);
   const variantId = toOptionalString(payload.variantId);
@@ -108,7 +109,7 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
   return {
     kind: "error",
     status,
-    message: "AI response does not contain a supported scan payload",
+    message: message || "AI response does not contain a supported scan payload",
     raw,
   };
 }

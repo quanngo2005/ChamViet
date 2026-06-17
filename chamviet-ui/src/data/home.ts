@@ -26,7 +26,7 @@ export const HOME_PRODUCT = {
   id: 'box-tuong-tac-ke-chuyen',
   price: '229.000đ',
   ctaLabel: 'Mua ngay - 229.000đ',
-  boxLabel: 'Bộ kể chuyện tương tác',
+  boxLabel: 'Hào khí Việt Nam',
   paintings: [
     {
       id: 'ho-guom',
@@ -57,30 +57,30 @@ export const HOME_COPY = {
     productTitle: 'Khám phá Sự tích Hồ Gươm và Sự tích Thánh Gióng',
   },
   learning: {
-    title: 'Tại sao nên mua?',
-    description: 'Phần này chỉ giữ lại lý do phụ huynh nên chọn Chạm Việt, không lặp lại hướng dẫn chơi hay giới thiệu từng chủ đề.',
+    title: 'Điều khiến Chạm Việt khác biệt',
+    description: 'Mỗi chi tiết được thiết kế để biến mỗi câu chuyện Việt thành trải nghiệm đáng nhớ.',
     cards: [
       {
-        icon: 'hands',
-        title: 'Tự tay hoàn thành',
+        icon: 'puzzle',
+        title: 'Ghép để hiểu',
         color: 'rgba(139, 94, 60, 0.1)',
-        description: 'Tranh ghép gỗ giúp bé tập trung, kiên nhẫn và có cảm giác tự hào khi hoàn thành tranh.',
+        description: 'Không chỉ lắp hình, con từng bước khám phá câu chuyện phía sau.',
       },
       {
         icon: 'stage',
-        title: 'Xem chuyện hiện lên',
+        title: 'Xem để nhớ',
         color: 'rgba(198, 40, 40, 0.08)',
-        description: 'Hộp phản chiếu biến điện thoại thành sân khấu nhỏ, dễ hiểu ngay khi đặt lên hộp.',
+        description: 'Hiệu ứng 3D biến truyền thuyết thành trải nghiệm sống động.',
       },
       {
         icon: 'qa',
-        title: 'Hỏi tiếp sau khi xem',
+        title: 'Hỏi để tư duy',
         color: 'rgba(212, 175, 55, 0.14)',
-        description: 'Hỏi đáp cùng AI Chíp Bông giúp bé nhớ nhân vật, sự kiện và ý nghĩa câu chuyện lâu hơn.',
+        description: 'Những câu hỏi sau mỗi phần giúp con ghi nhớ và suy nghĩ sâu hơn.',
       },
       {
-        icon: 'gift',
-        title: 'Quà tặng có chiều sâu',
+        icon: 'family',
+        title: 'Gắn kết gia đình',
         color: 'rgba(78, 52, 46, 0.08)',
         description: 'Phù hợp làm quà cho bé và cũng là cách gia đình cùng nói chuyện về văn hóa Việt.',
       },
@@ -92,8 +92,8 @@ export const HOME_COPY = {
     items: [
       {
         number: '1',
-        title: 'Bé tự tay ghép tranh',
-        description: 'Các mảnh gỗ ghép vào nhau để dần hiện ra bức tranh văn hóa.',
+        title: 'Ghép tranh & truy cập website Chạm Việt',
+        description: 'Hoàn thành bức tranh và truy cập website để mở cánh cửa bước vào câu chuyện.',
         screenLabel: 'Ghép tranh gỗ',
         image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/demo01.png',
         alt: 'Các mảnh tranh gỗ đang được ghép',
@@ -103,8 +103,8 @@ export const HOME_COPY = {
       },
       {
         number: '2',
-        title: 'Quét tranh trên website',
-        description: 'Đưa điện thoại vào màn hình quét của website để nhận diện hình ảnh bức tranh đã hoàn thành.',
+        title: 'Chụp ảnh/ tải ảnh lên để kích hoạt',
+        description: 'Đưa/chụp thành quả của bạn lên website, AI sẽ nhận diện và chuẩn bị cho điều kỳ diệu.',
         screenLabel: 'Nhận diện hình ảnh',
         image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/scanner.png',
         alt: 'Điện thoại đang quét bức tranh ghép gỗ đã hoàn thiện',
@@ -114,8 +114,8 @@ export const HOME_COPY = {
       },
       {
         number: '3',
-        title: 'Xem sân khấu nhỏ',
-        description: 'Đặt điện thoại lên hộp phản chiếu 3D để câu chuyện hiện lên như sân khấu nhỏ.',
+        title: 'Khám phá truyền thuyết 3D',
+        description: 'Đặt điện thoại lên hộp chiếu để khám phá câu chuyện hiện lên bằng hiệu ứng hologram sống động.',
         screenLabel: 'Hộp phản chiếu 3D',
         image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/3d.png',
         alt: 'Điện thoại được đặt lên hộp phản chiếu 3D',
@@ -125,8 +125,8 @@ export const HOME_COPY = {
       },
       {
         number: '4',
-        title: 'Hỏi đáp với Chíp Bông',
-        description: 'Đặt câu hỏi để khám phá câu chuyện qua giao diện trò chuyện AI Chíp Bông.',
+        title: 'Tương tác & hỏi đáp',
+        description: 'Cùng Chíp Bông trả lời những câu hỏi thú vị, trò chuyện và ghi nhớ câu chuyện theo cách tự nhiên nhất.',
         screenLabel: 'Hỏi đáp với Chíp Bông',
         image: HOME_IMAGES.howToPlay.step4,
         alt: 'Bé đang hỏi đáp trong giao diện trò chuyện AI Chíp Bông',

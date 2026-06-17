@@ -52,6 +52,7 @@ RUN apt-get update \
 
 COPY --from=builder --chown=appuser:appgroup /opt/venv /opt/venv
 COPY --chown=appuser:appgroup main.py ./
+COPY --chown=appuser:appgroup models ./models
 
 USER appuser
 

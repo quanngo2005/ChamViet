@@ -5,7 +5,7 @@ export const PRODUCT_DETAIL_COPY = {
     { title: 'Hộp phản chiếu 3D', description: 'Dùng để đặt điện thoại lên xem phần kể chuyện theo cách trực quan hơn, không cần cài đặt phức tạp.' },
   ],
   story: {
-    heading: 'Hai chủ đề có sẵn trong bộ đầu tiên',
+    heading: 'Hai truyền thuyết đầu tiên mở ra hành trình khám phá Việt Nam',
     paragraphs: [
       'Sự tích Hồ Gươm giúp phụ huynh bắt đầu từ một biểu tượng rất quen thuộc. Bé không chỉ nhớ tên nhân vật mà còn hiểu vì sao hồ Hoàn Kiếm luôn được nhắc tới khi nói về Hà Nội.',
       'Sự tích Thánh Gióng mở ra một câu chuyện dễ kể lại cho trẻ nhỏ: từ một cậu bé bình thường đến khi đứng lên bảo vệ quê hương. Đây cũng là chủ đề phù hợp để cha mẹ nói thêm với con về lòng dũng cảm.',
@@ -21,18 +21,20 @@ export const PRODUCT_DETAIL_COPY = {
     description:
       'Thay vì chỉ nhìn vào số lượng mảnh ghép, phụ huynh thường cần biết bộ này phù hợp với ai, làm từ gì và có thể dùng trong bối cảnh nào. Phần này gom những thông tin đó lại để quyết định mua dễ hơn.',
     specs: [
-      { label: 'Chất liệu', value: 'Gỗ bạch dương' },
-      { label: 'Độ tuổi gợi ý', value: '6 đến 8 tuổi' },
-      { label: 'Thiết kế', value: 'Thực hiện tại Việt Nam' },
-      { label: 'Độ an toàn', value: 'Hoàn thiện để bé cầm nắm hằng ngày' },
+      { label: '🪵 Gỗ plywood nhập khẩu ', value: 'Bề mặt , hoàn thiện kỹ lưỡng, an toàn và phù hợp cho trẻ nhỏ.' },
+      { label: '👶 Phù hợp cho trẻ 4-8 tuổi', value: 'Độ khó vừa đủ để vừa chơi vừa học.' },
+      { label: '🇻🇳 Thiết kế và phát triển tại Việt Nam', value: 'Lấy cảm hứng từ chính những câu chuyện Việt.' },
+      { label: '✨ Bo góc an toàn, dễ cầm nắm', value: 'Phù hợp để trẻ sử dụng hằng ngày.' },
+      { label: '📦 Không cần thiết bị chuyên dụng', value: 'Chỉ cần điện thoại và hộp chiếu đi kèm là có thể trải nghiệm..' },
+      { label: '🌐 Tương tác cùng AI sau mỗi câu chuyện', value: 'Khuyến khích con tư duy, trả lời các câu hỏi về câu chuyện và nhân vật' }
     ],
   },
   education: {
     heading: 'Trẻ nhận được gì sau khi chơi',
     items: [
-      { title: 'Dễ nhớ câu chuyện hơn', description: 'Khi đã tự tay ghép xong và xem xong, trẻ thường nhớ nhân vật và sự kiện lâu hơn so với chỉ nghe kể một lần.' },
-      { title: 'Tập trung và quan sát tốt hơn', description: 'Quá trình ghép tranh giúp trẻ chậm lại, để ý chi tiết và kiên nhẫn hơn với từng bước nhỏ.' },
-      { title: 'Biết hỏi thêm sau khi xem', description: 'Phần hỏi đáp mở ra cơ hội để trẻ nói ra điều mình chưa hiểu, thay vì chỉ dừng ở việc xem cho xong.' },
+      { title: 'Ghi nhớ văn hóa Việt qua trải nghiệm', description: 'Không chỉ đọc hay nghe kể, con tự tay ghép và nhìn thấy câu chuyện hiện lên, giúp ghi nhớ tự nhiên hơn.' },
+      { title: 'Chủ động đặt câu hỏi và khám phá', description: 'Nhờ phần tương tác sau khi xem, trẻ học cách suy nghĩ và diễn đạt thay vì chỉ tiếp nhận thông tin.' },
+      { title: 'Tạo những khoảnh khắc đáng nhớ', description: 'Mỗi câu chuyện trở thành cơ hội để bố mẹ cùng con trò chuyện và chia sẻ những bài học ý nghĩa.' },
     ],
   },
   related: {

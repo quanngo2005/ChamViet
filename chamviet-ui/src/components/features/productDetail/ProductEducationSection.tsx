@@ -79,7 +79,8 @@ export function ProductEducationSection() {
             <Typography
               sx={{ color: '#fdfbf7', fontWeight: 700, fontSize: 30, position: 'relative' }}
             >
-              {education.heading}
+              Con nhận được gì?
+
             </Typography>
 
             <Stack spacing={3} sx={{ position: 'relative' }}>
@@ -91,14 +92,11 @@ export function ProductEducationSection() {
 
           {/* Right: sustainability specs */}
           <Stack spacing={4} sx={{ py: { md: '36px' }, justifyContent: 'center' }}>
-            <Stack spacing={2}>
-              <Typography sx={{ fontWeight: 700, color: 'grey.900', fontSize: 30 }}>
-                {sustainability.heading}
-              </Typography>
-              <Typography sx={{ color: '#475569', fontSize: 16, lineHeight: 2 }}>
-                {sustainability.description}
-              </Typography>
-            </Stack>
+
+            <Typography sx={{ fontWeight: 700, color: 'grey.900', fontSize: 30 }}>
+              Vì sao phụ huynh có thể yên tâm lựa chọn?
+            </Typography>
+
 
             {/* 2×2 spec grid, gap 24px per Figma */}
             <Box

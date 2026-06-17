@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AIService {
@@ -48,12 +50,38 @@ public class AIService {
                     // Xử lý lỗi kết nối hoặc lỗi từ AI Service
                     AiResponseDTO errorRes = new AiResponseDTO();
                     errorRes.setStatus("error");
+                    errorRes.setMessage("Không thể kết nối dịch vụ nhận diện. Vui lòng thử lại.");
                     return Mono.just(errorRes);
                 })
                 .block(visionTimeout);
 
+        if (hasMultipleDetectedLabels(response)) {
+            response.setStatus("error");
+            response.setMessage("Vui lòng chỉ chụp 1 sản phẩm.");
+            response.setRoute(null);
+            response.setProductId(null);
+            response.setVariantId(null);
+            response.setComponentId(null);
+            response.setComponentSku(null);
+            return response;
+        }
+
         enrichWithProductRoute(response);
         return response;
+    }
+
+    private boolean hasMultipleDetectedLabels(AiResponseDTO response) {
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            return false;
+        }
+
+        Set<String> labels = response.getData().stream()
+            .map(AiResponseDTO.PredictionData::getLabel)
+            .filter(label -> label != null && !label.isBlank())
+            .map(this::normalizeVisionLabel)
+            .collect(Collectors.toSet());
+
+        return labels.size() > 1;
     }
 
     private void enrichWithProductRoute(AiResponseDTO response) {
@@ -80,5 +108,9 @@ public class AIService {
         response.setComponentId(lookup.getComponentId());
         response.setComponentSku(lookup.getComponentSku());
         response.setRoute(lookup.getRoute());
+    }
+
+    private String normalizeVisionLabel(String label) {
+        return label.trim().toLowerCase().replaceAll("[\\s-]+", "_");
     }
 }
