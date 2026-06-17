@@ -25,7 +25,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductStoryService {
     private static final Map<String, String> LABEL_COMPONENT_SKU_MAP = Map.of(
-        "auco_laclongquan", "PUZ-LLQ-01"
+        "auco_laclongquan", "PUZ-LLQ-01",
+        "laclongquan_auco", "PUZ-LLQ-01",
+        "hoguom", "PUZ-HG-01",
+        "ho_guom", "PUZ-HG-01",
+        "thanhgiong", "PUZ-TG-01",
+        "thanh_giong", "PUZ-TG-01"
     );
 
     private final ComponentContentRepo componentContentRepo;
@@ -44,12 +49,19 @@ public class ProductStoryService {
 
     @Transactional(readOnly = true)
     public Optional<ComponentLookupDTO> lookupByLabel(String label) {
-        String componentSku = LABEL_COMPONENT_SKU_MAP.get(label);
+        String componentSku = LABEL_COMPONENT_SKU_MAP.get(normalizeVisionLabel(label));
         if (componentSku == null || componentSku.isBlank()) {
             return Optional.empty();
         }
 
         return lookupByComponentSku(componentSku);
+    }
+
+    private String normalizeVisionLabel(String label) {
+        if (label == null) {
+            return "";
+        }
+        return label.trim().toLowerCase().replaceAll("[\\s-]+", "_");
     }
 
     @Transactional(readOnly = true)

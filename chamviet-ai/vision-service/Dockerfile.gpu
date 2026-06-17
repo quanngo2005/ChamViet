@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /install /install
 COPY main.py ./
+COPY models ./models
 
 USER appuser
 

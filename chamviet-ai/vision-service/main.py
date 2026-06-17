@@ -13,7 +13,7 @@ logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger("chamviet-vision")
 
 MODEL_PATH = os.getenv("MODEL_PATH", "models/vision.pt")
-CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.25"))
+CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.70"))
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))
 MAX_CONCURRENT_PREDICTIONS = int(os.getenv("MAX_CONCURRENT_PREDICTIONS", "2"))
 TORCH_NUM_THREADS = int(os.getenv("TORCH_NUM_THREADS", "2"))
@@ -100,7 +100,7 @@ async def predict(file: UploadFile = File(...)):
             (time.perf_counter() - started) * 1000,
             DEVICE,
         )
-        return {"status": "success", "data": predictions}
+        return {"status": "success", "data": predictions or None}
     except Exception as e:
         logger.exception("prediction_failed")
         raise HTTPException(status_code=500, detail=f"Lỗi nhận diện ảnh: {e}") from e

@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class AiResponseDTO {
     private String status;
+    private String message;
     private List<PredictionData> data;
     private Long productId;
     private Long variantId;

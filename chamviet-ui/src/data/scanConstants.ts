@@ -4,7 +4,9 @@
  */
 export const STORY_ROUTE_MAP: Record<string, string> = {
   auco_laclongquan: "/story/auco-laclongquan",
+  hoguom: "/story/su-tich-ho-guom",
   laclongquan_auco: "/story/auco-laclongquan",
+  thanhgiong: "/story/su-tich-thanh-giong",
 };
 
 export function resolveLegacyLabelRoute(label: string): string | undefined {
