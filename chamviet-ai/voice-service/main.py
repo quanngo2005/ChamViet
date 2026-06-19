@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
 
-from services.content_service import load_content, build_system_prompt, estimate_token_count
 from services.stt_service     import transcribe_audio_file
 from services.llm_service     import (
     classify_intent,
@@ -16,12 +15,14 @@ from services.llm_service     import (
 )
 from services.tts_service     import UNIFIED_VOICE_STYLE, synthesize_speech
 from services.session_service import SessionManager, add_turn, clear_history, format_for_display
+from services.content_service import load_content, build_system_prompt, estimate_token_count
 from services.story_service   import (
     StorySessionManager,
     build_feedback_with_next_question,
     build_question_text,
     get_question,
     load_story,
+    load_story_from_payload,
 )
 
 app = FastAPI(title="CoTich Voice Bot")
@@ -143,14 +144,39 @@ async def speak_api(body: TTSInput):
 # STORY QUESTION FLOW
 # ════════════════════════════════════════════════════════
 
+class StoryStartInput(BaseModel):
+    session_id: str = "default"
+    story_title: str = ""
+    story_content: str = ""
+    child_age: int = 6
+    qa_list: list[dict] = []
+
+
 @app.post("/api/story/start", tags=["story"])
-async def story_start_api(session_id: str = "default"):
+async def story_start_api(body: StoryStartInput = None):
     """
-    Load story.json, reset session câu hỏi và đọc câu hỏi đầu tiên bằng TTS.
-    Metadata nằm trong header X-Story-Meta dạng base64 JSON UTF-8.
+    Nhận payload từ backend (story_title, story_content, child_age, qa_list)
+    hoặc fallback về story.json.
+    Trả về WAV audio với header X-Story-Meta dạng base64 JSON UTF-8.
     """
+    session_id = body.session_id if body else "default"
+
     try:
-        story = _load_story_data()
+        if body and body.qa_list:
+            global STORY_DATA, GLOBAL_SYSTEM_PROMPT
+            story = load_story_from_payload(
+                story_title=body.story_title,
+                qa_list=body.qa_list,
+                child_age=body.child_age,
+            )
+            STORY_DATA = story
+            if body.story_content:
+                cleaned = load_content(body.story_content)
+                GLOBAL_SYSTEM_PROMPT = build_system_prompt(cleaned)
+                await session_manager.clear_session("default")
+                await session_manager.get_or_create_session("default", GLOBAL_SYSTEM_PROMPT)
+        else:
+            story = _load_story_data()
     except Exception as e:
         raise HTTPException(400, str(e))
 

@@ -67,6 +67,7 @@ public class AIService {
         }
 
         enrichWithProductRoute(response);
+        enrichWithStoryRoute(response);
         return response;
     }
 
@@ -100,6 +101,24 @@ public class AIService {
 
         productStoryService.lookupByLabel(bestPrediction.getLabel())
             .ifPresent(lookup -> applyLookup(response, lookup));
+    }
+
+    private void enrichWithStoryRoute(AiResponseDTO response) {
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            return;
+        }
+
+        AiResponseDTO.PredictionData bestPrediction = response.getData().stream()
+            .filter(prediction -> prediction.getLabel() != null && prediction.getConfidence() != null)
+            .max(Comparator.comparing(AiResponseDTO.PredictionData::getConfidence))
+            .orElse(null);
+
+        if (bestPrediction == null) {
+            return;
+        }
+
+        productStoryService.lookupStorySlugByLabel(bestPrediction.getLabel())
+            .ifPresent(slug -> response.setRoute("/story/" + slug));
     }
 
     private void applyLookup(AiResponseDTO response, ComponentLookupDTO lookup) {

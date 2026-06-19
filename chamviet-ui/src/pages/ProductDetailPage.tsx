@@ -9,12 +9,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { ArrowRight, MessageCircle, PackageCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, MessageCircle } from 'lucide-react';
 
 import {
   ProductEducationSection,
   ProductGallerySection,
-  ProductIncludedSection,
   ProductStorySection,
 } from '../components/features/productDetail';
 import { ContentContainer, PageSection } from '../components/common/layout';

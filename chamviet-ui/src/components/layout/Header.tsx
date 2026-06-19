@@ -1,5 +1,6 @@
+import type { MouseEvent } from "react";
 import { useEffect, useState } from "react";
-import { Link as RouterLink, NavLink } from "react-router-dom";
+import { Link as RouterLink, NavLink, useLocation } from "react-router-dom";
 
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -8,27 +9,72 @@ import Container from "@mui/material/Container";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
 import Link from "@mui/material/Link";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import Stack from "@mui/material/Stack";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { HOME_PRODUCT } from "../../data/home";
+import { getFeaturedStoryVideoEntries } from "../../data/storyVideoRegistry";
 
 const productPath = `/products/${HOME_PRODUCT.id}`;
+
+const storyMenuItems = getFeaturedStoryVideoEntries().map((entry) => ({
+  label: entry.title,
+  to: `/story/${entry.slug}`,
+}));
 
 const primaryNavItems = [
   { label: "Sản phẩm", to: productPath },
   { label: "Cách chơi", to: "/how-to-play" },
-  { label: "Câu chuyện", to: "/story" },
   { label: "Quét tranh", to: "/scan" },
   { label: "Giới thiệu", to: "/about" },
 ];
 
+const desktopNavButtonSx = {
+  fontWeight: 600,
+  textTransform: "none",
+  color: "var(--text-sub)",
+  px: 1.75,
+  py: 1,
+  borderRadius: "999px",
+  position: "relative",
+  WebkitTapHighlightColor: "transparent",
+  transition: "color 160ms ease, background-color 160ms ease, transform 160ms ease",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    left: 14,
+    right: 14,
+    bottom: 7,
+    height: 2,
+    borderRadius: "999px",
+    background: "linear-gradient(90deg, var(--primary), var(--accent))",
+    transform: "scaleX(0)",
+    transformOrigin: "center",
+    transition: "transform 180ms ease",
+  },
+  "&:hover": {
+    color: "var(--primary)",
+    backgroundColor: "rgba(198, 40, 40, 0.05)",
+    transform: "translateY(-1px)",
+  },
+  "&:hover::after": {
+    transform: "scaleX(1)",
+  },
+};
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [storyMenuAnchorEl, setStoryMenuAnchorEl] = useState<HTMLElement | null>(null);
+  const location = useLocation();
+  const storyMenuOpen = Boolean(storyMenuAnchorEl);
+  const isStoryRoute = location.pathname === "/story" || location.pathname.startsWith("/story/");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 18);
@@ -43,6 +89,14 @@ export default function Header() {
 
   const handleMobileMenuClose = () => {
     setMobileMenuOpen(false);
+  };
+
+  const handleStoryMenuOpen = (event: MouseEvent<HTMLElement>) => {
+    setStoryMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleStoryMenuClose = () => {
+    setStoryMenuAnchorEl(null);
   };
 
   return (
@@ -106,42 +160,31 @@ export default function Header() {
                 to={item.to}
                 color="inherit"
                 disableRipple
-                sx={{
-                  fontWeight: 600,
-                  textTransform: "none",
-                  color: "var(--text-sub)",
-                  px: 1.75,
-                  py: 1,
-                  borderRadius: "999px",
-                  position: "relative",
-                  WebkitTapHighlightColor: "transparent",
-                  transition: "color 160ms ease, background-color 160ms ease, transform 160ms ease",
-                  "&::after": {
-                    content: '""',
-                    position: "absolute",
-                    left: 14,
-                    right: 14,
-                    bottom: 7,
-                    height: 2,
-                    borderRadius: "999px",
-                    background: "linear-gradient(90deg, var(--primary), var(--accent))",
-                    transform: "scaleX(0)",
-                    transformOrigin: "center",
-                    transition: "transform 180ms ease",
-                  },
-                  "&:hover": {
-                    color: "var(--primary)",
-                    backgroundColor: "rgba(198, 40, 40, 0.05)",
-                    transform: "translateY(-1px)",
-                  },
-                  "&:hover::after": {
-                    transform: "scaleX(1)",
-                  },
-                }}
+                sx={desktopNavButtonSx}
               >
                 {item.label}
               </Button>
             ))}
+            <Button
+              id="story-menu-button"
+              color="inherit"
+              disableRipple
+              aria-controls={storyMenuOpen ? "story-menu" : undefined}
+              aria-expanded={storyMenuOpen ? "true" : undefined}
+              aria-haspopup="menu"
+              onClick={handleStoryMenuOpen}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
+              sx={{
+                ...desktopNavButtonSx,
+                color: isStoryRoute ? "var(--primary)" : desktopNavButtonSx.color,
+                "&::after": {
+                  ...desktopNavButtonSx["&::after"],
+                  transform: isStoryRoute ? "scaleX(1)" : "scaleX(0)",
+                },
+              }}
+            >
+              Câu chuyện
+            </Button>
           </Stack>
 
           <Button
@@ -315,9 +358,101 @@ export default function Header() {
                 {item.label}
               </Button>
             ))}
+            <Box
+              sx={{
+                borderRadius: "12px",
+                backgroundColor: "rgba(198, 40, 40, 0.03)",
+                border: "1px solid rgba(198, 40, 40, 0.08)",
+                px: 1,
+                py: 1,
+              }}
+            >
+              <Typography
+                sx={{
+                  px: 1,
+                  pb: 0.75,
+                  color: "var(--primary)",
+                  fontSize: 13,
+                  fontWeight: 800,
+                  letterSpacing: 0.2,
+                  textTransform: "uppercase",
+                }}
+              >
+                Câu chuyện
+              </Typography>
+              <Stack spacing={0.5}>
+                {storyMenuItems.map((item) => (
+                  <Button
+                    key={item.to}
+                    component={NavLink}
+                    to={item.to}
+                    onClick={handleMobileMenuClose}
+                    fullWidth
+                    color="inherit"
+                    sx={{
+                      fontWeight: 600,
+                      textTransform: "none",
+                      color: "var(--text-sub)",
+                      justifyContent: "flex-start",
+                      fontSize: "0.96rem",
+                      minHeight: 44,
+                      px: 1.25,
+                      borderRadius: "10px",
+                      WebkitTapHighlightColor: "transparent",
+                      "&:hover": {
+                        backgroundColor: "rgba(198, 40, 40, 0.05)",
+                        color: "var(--primary)",
+                      },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                ))}
+              </Stack>
+            </Box>
           </Stack>
         </Box>
       </Drawer>
+      <Menu
+        id="story-menu"
+        anchorEl={storyMenuAnchorEl}
+        open={storyMenuOpen}
+        onClose={handleStoryMenuClose}
+        MenuListProps={{ "aria-labelledby": "story-menu-button" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            minWidth: 240,
+            borderRadius: "18px",
+            border: "1px solid rgba(78, 52, 46, 0.10)",
+            boxShadow: "0 20px 44px rgba(24, 14, 13, 0.18)",
+            overflow: "hidden",
+          },
+        }}
+      >
+        {storyMenuItems.map((item) => (
+          <MenuItem
+            key={item.to}
+            component={RouterLink}
+            to={item.to}
+            onClick={handleStoryMenuClose}
+            sx={{
+              minHeight: 48,
+              fontSize: "0.98rem",
+              fontWeight: 600,
+              color: "var(--text-sub)",
+              "&:hover": {
+                color: "var(--primary)",
+                backgroundColor: "rgba(198, 40, 40, 0.05)",
+              },
+            }}
+          >
+            {item.label}
+          </MenuItem>
+        ))}
+      </Menu>
     </AppBar>
   );
 }

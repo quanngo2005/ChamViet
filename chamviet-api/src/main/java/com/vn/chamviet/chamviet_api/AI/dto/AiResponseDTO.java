@@ -17,6 +17,8 @@ public class AiResponseDTO {
     private Long componentId;
     private String componentSku;
     private String route;
+    private String videoId;
+    private String videoUrl;
 
     @Data
     @NoArgsConstructor

@@ -33,6 +33,21 @@ public class ProductStoryService {
         "thanh_giong", "PUZ-TG-01"
     );
 
+    private static final Map<String, String> STORY_LABEL_SLUG_MAP = Map.of(
+        "auco_laclongquan", "auco-laclongquan",
+        "laclongquan_auco", "auco-laclongquan",
+        "hoguom", "su-tich-ho-guom",
+        "ho_guom", "su-tich-ho-guom",
+        "thanhgiong", "su-tich-thanh-giong",
+        "thanh_giong", "su-tich-thanh-giong"
+    );
+
+    private static final Map<String, String> SLUG_COMPONENT_SKU_MAP = Map.of(
+        "auco-laclongquan", "PUZ-LLQ-01",
+        "su-tich-ho-guom", "PUZ-HG-01",
+        "su-tich-thanh-giong", "PUZ-TG-01"
+    );
+
     private final ComponentContentRepo componentContentRepo;
     private final ProductVariantComponentRepo productVariantComponentRepo;
     private final ObjectMapper objectMapper;
@@ -45,6 +60,32 @@ public class ProductStoryService {
             .orElseThrow(() -> new EntityNotFoundException("Puzzle story not found for video ID: " + videoId));
 
         return toStoryConfig(content, videoId);
+    }
+
+    @Transactional(readOnly = true)
+    public StoryConfigDTO getStoryBySlug(String slug) {
+        String componentSku = SLUG_COMPONENT_SKU_MAP.get(slug);
+        if (componentSku == null || componentSku.isBlank()) {
+            throw new EntityNotFoundException("Story slug not found: " + slug);
+        }
+
+        ProductVariantComponent variantComponent = productVariantComponentRepo
+            .findFirstByComponentSkuOrderBySortOrderAsc(componentSku)
+            .orElseThrow(() -> new EntityNotFoundException("Component not found for slug: " + slug));
+
+        Component component = variantComponent.getComponent();
+        ComponentContent content = component.getContent();
+        if (content == null) {
+            throw new EntityNotFoundException("Story content not found for slug: " + slug);
+        }
+
+        String videoId = extractVideoId(content.getVideoUrl());
+        return toStoryConfig(content, videoId);
+    }
+
+    public Optional<String> lookupStorySlugByLabel(String label) {
+        String slug = STORY_LABEL_SLUG_MAP.get(normalizeVisionLabel(label));
+        return Optional.ofNullable(slug);
     }
 
     @Transactional(readOnly = true)

@@ -33,6 +33,40 @@ class StorySessionManager:
             return self._sessions[session_id]
 
 
+def load_story_from_payload(
+    story_title: str,
+    qa_list: list[dict],
+    child_age: int = 6,
+) -> dict:
+    cleaned_title = str(story_title or "").strip()
+    if not cleaned_title:
+        raise ValueError("Payload missing 'story_title'.")
+
+    if not isinstance(qa_list, list) or not qa_list:
+        raise ValueError("Payload 'qa_list' is empty or invalid.")
+
+    questions = []
+    for idx, item in enumerate(qa_list, start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"QA item #{idx} is not a dict.")
+        question = str(item.get("question") or "").strip()
+        answer = str(item.get("answer") or "").strip()
+        if not question or not answer:
+            raise ValueError(f"QA item #{idx} missing question or answer.")
+        questions.append({
+            "id": item.get("id", idx),
+            "question": question,
+            "answer": answer,
+        })
+
+    return {
+        "story": cleaned_title,
+        "child_age": child_age,
+        "questions": questions,
+        "_source": "db",
+    }
+
+
 def load_story(path: str = DEFAULT_STORY_PATH) -> dict:
     with open(path, "r", encoding="utf-8-sig") as f:
         data = json.load(f)

@@ -131,7 +131,7 @@ public class VoiceAIService {
 
     public VoiceAudioResponse startSession(VoiceQAStartRequest request) {
         ResponseEntity<byte[]> response = execute("start voice session", () -> voiceClient.post()
-            .uri("/api/session/start")
+            .uri("/api/story/start")
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(request)
             .retrieve()
