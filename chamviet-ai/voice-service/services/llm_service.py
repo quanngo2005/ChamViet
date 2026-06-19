@@ -103,12 +103,19 @@ async def get_answer(
     import asyncio
     attempts = LLM_RETRY_ATTEMPTS
     base_delay = LLM_RETRY_BASE_DELAY
+    timeout = 15.0 if max_tokens <= LLM_INTENT_MAX_TOKENS else 30.0
     for attempt in range(1, attempts + 1):
         try:
             if LLM_PROVIDER == "groq":
-                return await _groq_answer_async(user_message, system_prompt, history, temperature, max_tokens)
+                return await asyncio.wait_for(
+                    _groq_answer_async(user_message, system_prompt, history, temperature, max_tokens),
+                    timeout=timeout,
+                )
             model = GEMINI_LLM_MODEL if attempt == 1 else GEMINI_FALLBACK_MODEL
-            return await _gemini_answer_async(user_message, system_prompt, history, temperature, max_tokens, model)
+            return await asyncio.wait_for(
+                _gemini_answer_async(user_message, system_prompt, history, temperature, max_tokens, model),
+                timeout=timeout,
+            )
         except Exception as e:
             err_msg = str(e).upper()
             print(f"LLM async error ({LLM_PROVIDER}) attempt {attempt}: {e}")
@@ -189,7 +196,7 @@ def _gemini_answer_sync_inner(user_message, system_prompt, history, temperature,
         contents=contents,
         config=config,
     )
-    return response.text.strip()
+    return (response.text or "").strip()
 
 
 def _groq_answer_sync_inner(user_message, system_prompt, history, temperature, max_tokens) -> str:

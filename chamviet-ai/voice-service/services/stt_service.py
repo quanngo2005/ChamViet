@@ -168,12 +168,15 @@ def _choose_better_transcript(first: tuple[str, dict], second: tuple[str, dict])
 
 
 async def _transcribe_once_async(client: AsyncGroq, audio_bytes: bytes, language: str) -> tuple[str, dict]:
-    result = await client.audio.transcriptions.create(
-        model=STT_MODEL,
-        file=("audio.wav", audio_bytes),
-        language=language,
-        response_format=STT_RESPONSE_FORMAT,
-        temperature=STT_TEMPERATURE,
+    result = await asyncio.wait_for(
+        client.audio.transcriptions.create(
+            model=STT_MODEL,
+            file=("audio.wav", audio_bytes),
+            language=language,
+            response_format=STT_RESPONSE_FORMAT,
+            temperature=STT_TEMPERATURE,
+        ),
+        timeout=15.0,
     )
     return _extract_text(result), _extract_stt_stats(result)
 
@@ -189,10 +192,21 @@ def _transcribe_once_sync(client: Groq, audio_bytes: bytes, language: str) -> tu
     return _extract_text(result), _extract_stt_stats(result)
 
 
+def _get_audio_duration(audio_bytes: bytes) -> float:
+    try:
+        with wave.open(io.BytesIO(audio_bytes), "rb") as wf:
+            return wf.getnframes() / max(wf.getframerate(), 1)
+    except Exception:
+        return 0.0
+
+
 async def transcribe_audio_file(audio_bytes: bytes, language: str = STT_LANGUAGE) -> str:
     """
     Nhận dạng giọng nói bất đồng bộ bằng Groq Whisper.
     """
+    if _get_audio_duration(audio_bytes) < 0.3:
+        return ""
+
     try:
         boosted = _boost_audio(audio_bytes)
         client = _get_async_client()

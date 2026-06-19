@@ -1,6 +1,6 @@
 import base64
 import json
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -23,14 +23,6 @@ from services.story_service   import (
     get_question,
     load_story,
 )
-from services.voice_qa_service import (
-    VoiceQASessionManager,
-    build_meta,
-    build_start_text,
-    handle_answer_turn,
-    normalize_qa_list,
-    normalize_session_id,
-)
 
 app = FastAPI(title="CoTich Voice Bot")
 app.add_middleware(
@@ -43,7 +35,6 @@ app.add_middleware(
 # Khởi tạo quản lý phiên đa người dùng bất đồng bộ
 session_manager = SessionManager()
 story_session_manager = StorySessionManager()
-voice_qa_session_manager = VoiceQASessionManager()
 GLOBAL_SYSTEM_PROMPT = ""
 STORY_DATA = None
 
@@ -65,15 +56,6 @@ def _story_audio_response(path: str, meta: dict):
         media_type="audio/wav",
         filename="story.wav",
         headers={"X-Story-Meta": _encode_json_header(meta)},
-    )
-
-
-def _voice_audio_response(path: str, meta: dict):
-    return FileResponse(
-        path,
-        media_type="audio/wav",
-        filename="reply.wav",
-        headers={"X-Voice-Meta": _encode_json_header(meta)},
     )
 
 
@@ -155,74 +137,6 @@ async def speak_api(body: TTSInput):
     if not path:
         raise HTTPException(500, "TTS thất bại")
     return FileResponse(path, media_type="audio/wav", filename="reply.wav")
-
-
-# ════════════════════════════════════════════════════════
-# VOICE QA SESSION
-# ════════════════════════════════════════════════════════
-
-class VoiceQAItemInput(BaseModel):
-    question: str
-    answer: str
-
-
-class VoiceQAStartInput(BaseModel):
-    session_id   : str | None = None
-    story_title  : str
-    story_content: str
-    child_age    : int = 6
-    qa_list      : list[VoiceQAItemInput]
-
-
-@app.post("/api/session/start", tags=["voice-session"])
-async def voice_session_start_api(body: VoiceQAStartInput):
-    """
-    Bắt đầu phiên hỏi đáp do AI service điều phối.
-    Trả WAV và metadata trong X-Voice-Meta.
-    """
-    session_id = normalize_session_id(body.session_id)
-    qa_list = normalize_qa_list(body.qa_list)
-    if not qa_list:
-        raise HTTPException(400, "qa_list cần có ít nhất một câu hỏi và đáp án.")
-
-    session = await voice_qa_session_manager.start_session(
-        session_id=session_id,
-        story_title=body.story_title,
-        story_content=body.story_content,
-        child_age=body.child_age,
-        qa_list=qa_list,
-    )
-    text = build_start_text(session)
-    meta = build_meta(session_id, session, text, "listening")
-    path = await synthesize_speech(text, style=UNIFIED_VOICE_STYLE)
-    if not path:
-        raise HTTPException(500, "TTS thất bại")
-    return _voice_audio_response(path, meta)
-
-
-@app.post("/api/session/answer", tags=["voice-session"])
-async def voice_session_answer_api(
-    audio: UploadFile = File(...),
-    session_id: str | None = Form(default=None),
-):
-    """
-    Nhận audio của bé, AI service tự STT, phân loại, chấm, quyết định bước tiếp theo,
-    rồi trả WAV và metadata trong X-Voice-Meta.
-    """
-    resolved_session_id = normalize_session_id(session_id)
-    session = await voice_qa_session_manager.get_session(resolved_session_id)
-    if not session:
-        raise HTTPException(400, "Chưa bắt đầu phiên hỏi đáp. Gọi /api/session/start trước.")
-
-    audio_bytes = await audio.read()
-    transcript = await transcribe_audio_file(audio_bytes) if audio_bytes else ""
-    async with session.lock:
-        meta = await handle_answer_turn(resolved_session_id, session, transcript)
-
-    path = await synthesize_speech(meta["text"], style=UNIFIED_VOICE_STYLE)
-    if not path:
-        raise HTTPException(500, "TTS thất bại")
-    return _voice_audio_response(path, meta)
 
 
 # ════════════════════════════════════════════════════════

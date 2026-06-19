@@ -4,8 +4,9 @@ import { buildApiUrl } from "../utils/apiBase";
 
 const MAX_RECORDING_GAIN = 2.4;
 const TRIM_THRESHOLD_FLOOR = 0.01;
-const TRIM_PADDING_MS = 140;
+const TRIM_PADDING_MS = 200;
 const FADE_MS = 12;
+const MIN_RECORDING_SEC = 0.3;
 const AUDIO_WORKLET_NAME = "pcm-capture-processor";
 const TTS_PLAYBACK_RATE = 1.18;
 const VOICE_META_HEADER = "X-Voice-Meta";
@@ -273,7 +274,7 @@ function preprocessRecordedSamples(samples: Float32Array, sampleRate: number): F
     return centered;
   }
 
-  const threshold = Math.max(TRIM_THRESHOLD_FLOOR, peak * 0.08);
+  const threshold = Math.max(TRIM_THRESHOLD_FLOOR, peak * 0.04);
   let start = 0;
   while (start < centered.length && Math.abs(centered[start]) < threshold) {
     start += 1;
@@ -745,8 +746,13 @@ export function useVoiceAI({
 
     const chunks = pcmChunksRef.current;
     const totalLength = chunks.reduce((length, chunk) => length + chunk.length, 0);
-    const merged = new Float32Array(totalLength);
+    const durationSec = totalLength / sampleRate;
+    if (durationSec < MIN_RECORDING_SEC) {
+      onError?.(new Error("Âm thanh quá ngắn, hãy nói lại nhé."));
+      return;
+    }
 
+    const merged = new Float32Array(totalLength);
     let offset = 0;
     for (const chunk of chunks) {
       merged.set(chunk, offset);
@@ -757,7 +763,7 @@ export function useVoiceAI({
     const wavBlob = encodeWav(processed, sampleRate);
     setIsAwaitingUserText(true);
     void processVoiceFlow(wavBlob);
-  }, [processVoiceFlow]);
+  }, [processVoiceFlow, onError]);
 
   return {
     isRecording,

@@ -596,7 +596,7 @@ export default function YouTubeStopOverlayPlayer({
                           variant="subtitle1"
                           sx={{ fontWeight: 800, color: COLORS.titleDark, lineHeight: 1.2 }}
                         >
-                          Hỏi đáp cùng Bé hạc
+                          Hỏi đáp cùng Chíp Bông
                         </Typography>
                         <Typography variant="caption" sx={{ color: COLORS.mutedDark }}>
                           {storyConfig ? "Nhấn giữ micro để trả lời" : "Chưa tải được dữ liệu câu hỏi"}
@@ -735,7 +735,7 @@ export default function YouTubeStopOverlayPlayer({
                             variant="caption"
                             sx={{ color: COLORS.mutedDark, pr: 1, fontWeight: 600, textAlign: "right" }}
                           >
-                            Bé hạc đã nhận giọng nói của con...
+                            Chíp Bông đã nhận giọng nói của cậu...
                           </Typography>
                         </Box>
                       </Box>
@@ -749,7 +749,7 @@ export default function YouTubeStopOverlayPlayer({
                             variant="caption"
                             sx={{ color: COLORS.mutedDark, pl: 1, fontWeight: 600 }}
                           >
-                            Bé hạc đang suy nghĩ...
+                            Chíp Bông đang suy nghĩ...
                           </Typography>
                         </Box>
                       </Box>
