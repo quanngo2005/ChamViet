@@ -12,10 +12,12 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import MicIcon from "@mui/icons-material/Mic";
 import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import { useVoiceAI } from "../../hooks/useVoiceAi";
-import { fetchStoryConfigByVideoId, type StoryConfig } from "../../data/video-story-qa";
+import { createVoiceService } from "../../services/voiceService";
 import { resolveApiOrigin } from "../../utils/apiBase";
+import { fetchStoryConfigByVideoId, type StoryConfig } from "../../data/video-story-qa";
 import mascot from "../../assets/masotknen.webp";
 
+const voiceService = createVoiceService();
 const API_BASE_URL = resolveApiOrigin(import.meta.env.VITE_API_BASE_URL as string | undefined);
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
@@ -258,7 +260,7 @@ export default function YouTubeStopOverlayPlayer({
     stopRecording,
     stopSession,
   } = useVoiceAI({
-    backendUrl: API_BASE_URL,
+    voiceService,
     storyConfig,
     onUserText: (text) => addMessage("user", text),
     onAiMessage: (text) => addMessage("ai", text),
@@ -533,7 +535,7 @@ export default function YouTubeStopOverlayPlayer({
                       fontSize: "0.65rem",
                     }}
                   >
-                    Bé hạc
+                    Chíp Bông
                   </Typography>
                 </Box>
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { StoryConfig } from "../data/video-story-qa";
-import { buildApiUrl } from "../utils/apiBase";
+import type { VoiceService } from "../services/voiceService";
+import type { VoiceMeta, VoiceSessionResult } from "../types/voice";
 
 const MAX_RECORDING_GAIN = 2.4;
 const TRIM_THRESHOLD_FLOOR = 0.01;
@@ -9,7 +10,6 @@ const FADE_MS = 12;
 const MIN_RECORDING_SEC = 0.3;
 const AUDIO_WORKLET_NAME = "pcm-capture-processor";
 const TTS_PLAYBACK_RATE = 1.18;
-const VOICE_META_HEADER = "X-Voice-Meta";
 
 export type SessionPhase =
   | "idle"
@@ -22,7 +22,7 @@ export type SessionPhase =
   | "done";
 
 interface UseVoiceAIOptions {
-  backendUrl: string;
+  voiceService: VoiceService;
   storyConfig?: StoryConfig;
   sessionId?: string;
   onUserText?: (text: string) => void;
@@ -37,25 +37,7 @@ interface PreparedSpeechPlayback {
   stop: () => void;
 }
 
-interface VoiceMeta {
-  text?: string;
-  phase?: SessionPhase | string;
-  session_id?: string;
-  transcript?: string;
-  intent?: string;
-  question_index?: number;
-  total_questions?: number;
-  completed?: boolean;
-  score?: number;
-  is_correct?: boolean;
-  question?: string;
-  question_text?: string;
-}
 
-interface VoiceAudioResult {
-  blob: Blob;
-  meta: VoiceMeta;
-}
 
 function createSessionId(seed?: string): string {
   const normalizedSeed = (seed ?? "").trim().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
@@ -65,77 +47,6 @@ function createSessionId(seed?: string): string {
       : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
   return normalizedSeed ? `${normalizedSeed}-${uniquePart}` : `voice-${uniquePart}`;
-}
-
-function decodeVoiceMeta(value: string | null): VoiceMeta {
-  if (!value) {
-    throw new Error("Voice AI response omitted metadata");
-  }
-
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
-  const binary = atob(padded);
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return JSON.parse(new TextDecoder().decode(bytes)) as VoiceMeta;
-}
-
-async function readVoiceAudioResponse(response: Response, url: string): Promise<VoiceAudioResult> {
-  if (!response.ok) {
-    throw new Error(`${url} -> ${response.status}`);
-  }
-
-  const blob = await response.blob();
-  if (blob.size === 0) {
-    throw new Error("Voice AI returned empty audio");
-  }
-
-  return {
-    blob,
-    meta: decodeVoiceMeta(response.headers.get(VOICE_META_HEADER)),
-  };
-}
-
-async function startVoiceSession(
-  backendUrl: string,
-  config: StoryConfig,
-  sessionId: string,
-  signal?: AbortSignal,
-): Promise<VoiceAudioResult> {
-  const url = buildApiUrl(backendUrl, "/api/v1/voice/session/start");
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      session_id: sessionId,
-      story_title: config.storyTitle,
-      story_content: config.storyContent,
-      child_age: config.childAge,
-      qa_list: config.qaList,
-    }),
-    signal,
-  });
-
-  return readVoiceAudioResponse(response, url);
-}
-
-async function answerVoiceSession(
-  backendUrl: string,
-  audioBlob: Blob,
-  sessionId: string,
-  signal?: AbortSignal,
-): Promise<VoiceAudioResult> {
-  const url = buildApiUrl(backendUrl, "/api/v1/voice/session/answer");
-  const formData = new FormData();
-  formData.append("audio", audioBlob, "recording.wav");
-  formData.append("session_id", sessionId);
-
-  const response = await fetch(url, {
-    method: "POST",
-    body: formData,
-    signal,
-  });
-
-  return readVoiceAudioResponse(response, url);
 }
 
 async function prepareSpeechPlayback(
@@ -363,7 +274,7 @@ async function createPcmCaptureNode(
 }
 
 export function useVoiceAI({
-  backendUrl,
+  voiceService,
   storyConfig,
   sessionId,
   onUserText,
@@ -554,7 +465,7 @@ export function useVoiceAI({
 
   const playAndApplyVoiceResult = useCallback(
     async (
-      result: VoiceAudioResult,
+      result: VoiceSessionResult,
       controller: AbortController,
       generation: number,
       speakingPhase: SessionPhase,
@@ -601,10 +512,14 @@ export function useVoiceAI({
       setUserText("");
       setAiText("");
 
-      const result = await startVoiceSession(
-        backendUrl,
-        config,
-        sessionIdRef.current,
+      const result = await voiceService.startSession(
+        {
+          session_id: sessionIdRef.current,
+          story_title: config.storyTitle,
+          story_content: config.storyContent,
+          child_age: config.childAge,
+          qa_list: config.qaList,
+        },
         sessionController.signal,
       );
 
@@ -626,7 +541,7 @@ export function useVoiceAI({
         sessionAbortRef.current = null;
       }
     }
-  }, [backendUrl, onError, playAndApplyVoiceResult]);
+  }, [voiceService, onError, playAndApplyVoiceResult]);
 
   const processVoiceFlow = useCallback(
     async (audioBlob: Blob) => {
@@ -644,8 +559,7 @@ export function useVoiceAI({
         setSessionPhase("evaluating");
         sessionPhaseRef.current = "evaluating";
 
-        const result = await answerVoiceSession(
-          backendUrl,
+        const result = await voiceService.answerSession(
           audioBlob,
           sessionIdRef.current,
           controller.signal,
@@ -667,7 +581,7 @@ export function useVoiceAI({
         }
       }
     },
-    [backendUrl, onError, playAndApplyVoiceResult],
+    [voiceService, onError, playAndApplyVoiceResult],
   );
 
   const startRecording = useCallback(async () => {
