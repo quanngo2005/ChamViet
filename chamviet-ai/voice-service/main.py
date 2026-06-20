@@ -18,10 +18,8 @@ from services.session_service import SessionManager, add_turn, clear_history, fo
 from services.content_service import load_content, build_system_prompt, estimate_token_count
 from services.story_service   import (
     StorySessionManager,
-    build_feedback_with_next_question,
     build_question_text,
     get_question,
-    load_story,
     load_story_from_payload,
 )
 
@@ -36,8 +34,8 @@ app.add_middleware(
 # Khởi tạo quản lý phiên đa người dùng bất đồng bộ
 session_manager = SessionManager()
 story_session_manager = StorySessionManager()
+
 GLOBAL_SYSTEM_PROMPT = ""
-STORY_DATA = None
 
 
 @app.on_event("startup")
@@ -59,11 +57,13 @@ def _story_audio_response(path: str, meta: dict):
         headers={"X-Story-Meta": _encode_json_header(meta)},
     )
 
-
-def _load_story_data() -> dict:
-    global STORY_DATA
-    STORY_DATA = load_story()
-    return STORY_DATA
+def _require_story_data(story: dict | None, session_id: str) -> dict:
+    if story:
+        return story
+    raise HTTPException(
+        409,
+        f"Session '{session_id}' has no story payload. Start or preload the session from backend first.",
+    )
 
 
 # ════════════════════════════════════════════════════════
@@ -155,36 +155,29 @@ class StoryStartInput(BaseModel):
 @app.post("/api/story/start", tags=["story"])
 async def story_start_api(body: StoryStartInput = None):
     """
-    Nhận payload từ backend (story_title, story_content, child_age, qa_list)
-    hoặc fallback về story.json.
+    Nhận payload story từ backend và khởi tạo session runtime.
     Trả về WAV audio với header X-Story-Meta dạng base64 JSON UTF-8.
     """
-    session_id = body.session_id if body else "default"
+    if not body or not body.qa_list or not body.story_title:
+        raise HTTPException(400, "Backend story payload is required for session start")
+
+    session_id = body.session_id if body.session_id else "default"
 
     try:
-        if body and body.qa_list:
-            global STORY_DATA, GLOBAL_SYSTEM_PROMPT
-            story = load_story_from_payload(
-                story_title=body.story_title,
-                qa_list=body.qa_list,
-                child_age=body.child_age,
-            )
-            STORY_DATA = story
-            if body.story_content:
-                cleaned = load_content(body.story_content)
-                GLOBAL_SYSTEM_PROMPT = build_system_prompt(cleaned)
-                await session_manager.clear_session("default")
-                await session_manager.get_or_create_session("default", GLOBAL_SYSTEM_PROMPT)
-        else:
-            story = _load_story_data()
+        story = load_story_from_payload(
+            story_title=body.story_title,
+            qa_list=body.qa_list,
+            child_age=body.child_age,
+        )
     except Exception as e:
         raise HTTPException(400, str(e))
 
     story_session = await story_session_manager.reset_session(session_id)
     async with story_session.lock:
+        story_session.story_data = story
         question = get_question(story, story_session.question_index)
         if not question:
-            raise HTTPException(400, "story.json chưa có câu hỏi.")
+            raise HTTPException(400, "Story payload chưa có câu hỏi.")
         question_text = build_question_text(story, question, story_session.question_index)
 
     path = await synthesize_speech(question_text, style=UNIFIED_VOICE_STYLE)
@@ -193,12 +186,15 @@ async def story_start_api(body: StoryStartInput = None):
 
     return _story_audio_response(path, {
         "status": "started",
+        "phase": "asking",
         "story": story["story"],
         "session_id": session_id,
-        "question_index": 1,
+        "question_index": story_session.question_index,
         "total_questions": len(story["questions"]),
         "question_id": question["id"],
         "question": question["question"],
+        "text": question_text,
+        "question_text": question_text,
         "completed": False,
     })
 
@@ -206,9 +202,9 @@ async def story_start_api(body: StoryStartInput = None):
 @app.get("/api/story/status", tags=["story"])
 async def story_status_api(session_id: str = "default"):
     """Lấy trạng thái câu hỏi hiện tại của session."""
-    story = STORY_DATA or _load_story_data()
     story_session = await story_session_manager.get_or_create_session(session_id)
     async with story_session.lock:
+        story = _require_story_data(story_session.story_data, session_id)
         question = get_question(story, story_session.question_index)
         return {
             "story": story["story"],
@@ -220,18 +216,20 @@ async def story_status_api(session_id: str = "default"):
         }
 
 
+
+
 @app.post("/api/story/answer", tags=["story"])
 async def story_answer_api(audio: UploadFile = File(...), session_id: str = "default"):
     """
     Nhận audio câu trả lời của bé, STT, chấm bằng LLM, trả audio phản hồi.
     Sau mỗi câu trả lời, service tự chuyển sang câu hỏi kế tiếp.
     """
-    story = STORY_DATA or _load_story_data()
     story_session = await story_session_manager.get_or_create_session(session_id)
     audio_bytes = await audio.read()
 
     already_completed = False
     async with story_session.lock:
+        story = _require_story_data(story_session.story_data, session_id)
         if story_session.completed:
             already_completed = True
             question_index = None
@@ -247,6 +245,7 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
 
     if not already_completed:
         async with story_session.lock:
+            story = _require_story_data(story_session.story_data, session_id)
             if story_session.completed:
                 already_completed = True
             else:
@@ -274,15 +273,11 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
                         next_question,
                         story_session.question_index,
                     )
-                reply_text = build_feedback_with_next_question(
-                    evaluation["feedback"],
-                    next_question_text=next_question_text,
-                    completed=story_session.completed,
-                )
+                feedback_text = evaluation["feedback"]
                 completed = story_session.completed
 
     if already_completed:
-        reply_text = "Tớ và cậu đã hoàn thành tất cả câu hỏi rồi. Cậu làm tốt lắm!"
+        reply_text = "Hoàn thành tất cả câu hỏi!"
         path = await synthesize_speech(reply_text, style=UNIFIED_VOICE_STYLE)
         if not path:
             raise HTTPException(500, "TTS thất bại")
@@ -291,9 +286,11 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
             "story": story["story"],
             "session_id": session_id,
             "transcript": user_text,
+            "text": reply_text,
             "completed": True,
         })
 
+    reply_text = feedback_text
     path = await synthesize_speech(reply_text, style=UNIFIED_VOICE_STYLE)
     if not path:
         raise HTTPException(500, "TTS thất bại")
@@ -308,10 +305,51 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
         "score": evaluation["score"],
         "is_correct": evaluation["is_correct"],
         "feedback": evaluation["feedback"],
-        "next_question_index": story_session.question_index + 1 if next_question else None,
+        "next_question_index": story_session.question_index if next_question else None,
         "next_question_id": next_question["id"] if next_question else None,
         "next_question": next_question["question"] if next_question else "",
+        "text": feedback_text,
+        "feedback_text": feedback_text,
+        "next_question_text": next_question_text,
         "completed": completed,
+    })
+
+
+@app.post("/api/story/next-question", tags=["story"])
+async def story_next_question_api(session_id: str = "default"):
+    """Trả audio câu hỏi hiện tại của session sau khi đã xử lý feedback riêng."""
+    story_session = await story_session_manager.get_or_create_session(session_id)
+
+    async with story_session.lock:
+        story = _require_story_data(story_session.story_data, session_id)
+        if story_session.completed:
+            raise HTTPException(409, "Session has already completed")
+
+        question = get_question(story, story_session.question_index)
+        if not question:
+            story_session.completed = True
+            raise HTTPException(404, "Không tìm thấy câu hỏi kế tiếp.")
+
+        question_index = story_session.question_index
+        question_text = build_question_text(story, question, question_index)
+        total_questions = len(story["questions"])
+
+    path = await synthesize_speech(question_text, style=UNIFIED_VOICE_STYLE)
+    if not path:
+        raise HTTPException(500, "TTS thất bại")
+
+    return _story_audio_response(path, {
+        "status": "asking",
+        "story": story["story"],
+        "session_id": session_id,
+        "question_index": question_index,
+        "total_questions": total_questions,
+        "question_id": question["id"],
+        "question": question["question"],
+        "text": question_text,
+        "question_text": question_text,
+        "completed": False,
+        "phase": "listening",
     })
 
 

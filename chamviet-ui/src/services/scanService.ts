@@ -1,5 +1,6 @@
 import axiosClient from "../api/axiosClient";
 import { resolveLegacyLabelRoute } from "../data/scanConstants";
+import { resolveStoryFromLabel } from "./visionResolveService";
 import type {
   PredictionData,
   ScanResolution,
@@ -26,6 +27,82 @@ export async function scanImage(
   );
 
   return normalizeScanResponse(data);
+}
+
+/**
+ * Enhanced scan flow: calls vision-service for prediction, then resolves
+ * story via BE or static fallback. Returns rich bootstrap info.
+ */
+export async function scanAndResolveStory(
+  file: File,
+  signal?: AbortSignal,
+): Promise<ScanResolution> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const { data } = await axiosClient.post<unknown>(
+    "/ai/ai-connection",
+    formData,
+    { signal },
+  );
+
+  const raw = normalizeScanResponse(data);
+  console.log(`[scanAndResolveStory] Vision result kind="${raw.kind}"`, raw.kind === "error" ? { message: raw.message } : { label: (raw as any).label, confidence: (raw as any).confidence });
+
+  if (raw.kind === "story" && raw.raw && typeof raw.raw === "object") {
+    const storyData = raw.raw as Record<string, unknown>;
+    const label = (storyData.label as string) ?? "";
+    console.log(`[scanAndResolveStory] Resolving story from label="${label}"`);
+    const resolved = await resolveStoryFromLabel({
+      request_id: `scan_${Date.now()}`,
+      label,
+      confidence: raw.confidence ?? 0,
+    });
+    console.log(`[scanAndResolveStory] Resolved slug="${resolved.storySlug}" fallback=${resolved.fallbackUsed}`);
+
+    return {
+      ...raw,
+      route: `/story/${resolved.storySlug}`,
+      storySlug: resolved.storySlug,
+      videoId: resolved.videoId,
+      raw: {
+        ...storyData,
+        fallbackUsed: resolved.fallbackUsed,
+      },
+      _bootstrap: {
+        fallbackUsed: resolved.fallbackUsed,
+      },
+    };
+  }
+
+  if (raw.kind === "prediction" && raw.label) {
+    console.log(`[scanAndResolveStory] Resolving story from prediction label="${raw.label}"`);
+    const resolved = await resolveStoryFromLabel({
+      request_id: `scan_${Date.now()}`,
+      label: raw.label,
+      confidence: raw.confidence,
+    });
+    console.log(`[scanAndResolveStory] Resolved slug="${resolved.storySlug}" fallback=${resolved.fallbackUsed}`);
+
+    return {
+      kind: "story",
+      status: raw.status,
+      route: `/story/${resolved.storySlug}`,
+      storySlug: resolved.storySlug,
+      videoId: resolved.videoId,
+      confidence: raw.confidence,
+      raw: {
+        route: `/story/${resolved.storySlug}`,
+        confidence: raw.confidence,
+        fallbackUsed: resolved.fallbackUsed,
+      },
+      _bootstrap: {
+        fallbackUsed: resolved.fallbackUsed,
+      },
+    };
+  }
+
+  return raw;
 }
 
 function normalizeScanResponse(raw: unknown): ScanResolution {
@@ -77,6 +154,7 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
         raw: {
           route,
           confidence,
+          label: bestPrediction?.label,
         },
       };
     }
@@ -94,6 +172,7 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
         raw: {
           route: fallbackRoute,
           confidence: bestPrediction!.confidence,
+          label: bestPrediction!.label,
         },
       };
     }
@@ -101,7 +180,7 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
     return {
       kind: "error",
       status,
-      message: "Hệ thống đã nhận diện được ảnh nhưng chưa ánh xạ tới nội dung phù hợp.",
+      message: "Sai rồi, hãy chụp hoặc chọn ảnh khác",
       raw: bestPrediction,
     };
   }
@@ -109,7 +188,7 @@ function normalizeScanResponse(raw: unknown): ScanResolution {
   return {
     kind: "error",
     status,
-    message: message || "AI response does not contain a supported scan payload",
+    message: message || "Sai rồi, hãy chụp hoặc chọn ảnh khác",
     raw,
   };
 }

@@ -2,6 +2,8 @@ package com.vn.chamviet.chamviet_api.AI.controller;
 
 
 import com.vn.chamviet.chamviet_api.AI.dto.AiResponseDTO;
+import com.vn.chamviet.chamviet_api.AI.dto.vision.VisionResolveRequest;
+import com.vn.chamviet.chamviet_api.AI.dto.vision.VisionResolveResponse;
 import com.vn.chamviet.chamviet_api.AI.service.AIService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -18,6 +20,12 @@ public class AIController {
     @PostMapping(value = "/ai-connection", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AiResponseDTO> testConnection(@RequestParam("file") MultipartFile file) {
         AiResponseDTO response = aiService.testAiConnection(file);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/resolve-story")
+    public ResponseEntity<VisionResolveResponse> resolveStory(@RequestBody VisionResolveRequest request) {
+        VisionResolveResponse response = aiService.resolveStory(request);
         return ResponseEntity.ok(response);
     }
 }

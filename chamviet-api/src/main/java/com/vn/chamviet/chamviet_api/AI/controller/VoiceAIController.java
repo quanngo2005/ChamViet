@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -87,6 +88,14 @@ public class VoiceAIController {
         @RequestParam(value = "session_id", required = false) String sessionId
     ) {
         VoiceAudioResponse response = voiceAIService.answerSession(audio, sessionId);
+        return voiceAudioResponse(response);
+    }
+
+    @PostMapping("/session/next-question")
+    public ResponseEntity<byte[]> nextQuestionAudio(
+        @RequestParam(value = "session_id", required = false) String sessionId
+    ) {
+        VoiceAudioResponse response = voiceAIService.nextQuestionAudio(sessionId);
         return voiceAudioResponse(response);
     }
 

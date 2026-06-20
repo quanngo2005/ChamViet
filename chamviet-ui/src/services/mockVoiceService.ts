@@ -11,6 +11,15 @@ export class MockVoiceService implements VoiceService {
   private score = 0;
   private qaList: { question: string; answer: string }[] = [];
 
+  async transcribe(
+    _audioBlob: Blob,
+    _sessionId?: string,
+    _signal?: AbortSignal,
+  ): Promise<string> {
+    const qa = this.qaList[this.questionIndex];
+    return qa?.answer ? `Câu trả lời mô phỏng về: ${qa.answer}` : "";
+  }
+
   async startSession(
     request: VoiceSessionStartRequest,
     _signal?: AbortSignal,
@@ -24,11 +33,11 @@ export class MockVoiceService implements VoiceService {
     const blob = createFakeWavBlob(600);
 
     const meta: VoiceMeta = {
-      phase: "greeting",
+      phase: "asking",
       session_id: request.session_id,
       question_index: 0,
       total_questions: this.totalQuestions,
-      text: "Chào bé! Chúng mình cùng khám phá câu chuyện nhé!",
+      text: firstQuestion?.question ?? "",
       question: firstQuestion?.question,
       question_text: firstQuestion?.question,
       completed: this.totalQuestions === 0,
@@ -55,7 +64,7 @@ export class MockVoiceService implements VoiceService {
 
     const feedback = isCorrect
       ? "Bé trả lời đúng rồi! Giỏi quá!"
-      : "Câu trả lời của bé gần đúng rồi! Cùng nghe câu hỏi tiếp theo nhé!";
+      : "Câu trả lời của bé gần đúng rồi!";
 
     const blob = createFakeWavBlob(800);
 
@@ -70,10 +79,34 @@ export class MockVoiceService implements VoiceService {
       question: qa?.question,
       completed,
       text: feedback,
-      question_text: completed ? undefined : nextQa?.question,
+      feedback_text: feedback,
+      next_question_text: completed ? undefined : nextQa?.question,
+      next_question_index: completed ? undefined : this.questionIndex,
     };
 
     return { blob, meta };
+  }
+
+  async getNextQuestionAudio(
+    sessionId: string,
+    _signal?: AbortSignal,
+  ): Promise<VoiceSessionResult> {
+    const currentQa = this.qaList[this.questionIndex];
+    const blob = createFakeWavBlob(650);
+
+    return {
+      blob,
+      meta: {
+        phase: "listening",
+        session_id: sessionId,
+        question_index: this.questionIndex,
+        total_questions: this.totalQuestions,
+        text: currentQa?.question ?? "",
+        question: currentQa?.question,
+        question_text: currentQa?.question,
+        completed: !currentQa,
+      },
+    };
   }
 }
 

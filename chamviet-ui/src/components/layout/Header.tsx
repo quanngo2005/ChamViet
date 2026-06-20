@@ -76,6 +76,11 @@ export default function Header() {
   const storyMenuOpen = Boolean(storyMenuAnchorEl);
   const isStoryRoute = location.pathname === "/story" || location.pathname.startsWith("/story/");
 
+  const isActiveRoute = (to: string) => {
+    if (to === '/') return location.pathname === '/';
+    return location.pathname === to || location.pathname.startsWith(to + '/');
+  };
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 18);
     onScroll();
@@ -153,18 +158,29 @@ export default function Header() {
               mr: 2
             }}
           >
-            {primaryNavItems.map((item) => (
-              <Button
-                key={item.to}
-                component={NavLink}
-                to={item.to}
-                color="inherit"
-                disableRipple
-                sx={desktopNavButtonSx}
-              >
-                {item.label}
-              </Button>
-            ))}
+            {primaryNavItems.map((item) => {
+              const active = isActiveRoute(item.to);
+              return (
+                <Button
+                  key={item.to}
+                  component={NavLink}
+                  to={item.to}
+                  color="inherit"
+                  disableRipple
+                  sx={{
+                    ...desktopNavButtonSx,
+                    fontWeight: active ? 700 : 600,
+                    color: active ? "var(--primary)" : desktopNavButtonSx.color,
+                    "&::after": {
+                      ...desktopNavButtonSx["&::after"],
+                      transform: active ? "scaleX(1)" : "scaleX(0)",
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              );
+            })}
             <Button
               id="story-menu-button"
               color="inherit"
@@ -176,6 +192,7 @@ export default function Header() {
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
               sx={{
                 ...desktopNavButtonSx,
+                fontWeight: isStoryRoute ? 700 : 600,
                 color: isStoryRoute ? "var(--primary)" : desktopNavButtonSx.color,
                 "&::after": {
                   ...desktopNavButtonSx["&::after"],
@@ -331,33 +348,36 @@ export default function Header() {
               py: 2,
             }}
           >
-            {primaryNavItems.map((item) => (
-              <Button
-                key={item.to}
-                component={NavLink}
-                to={item.to}
-                onClick={handleMobileMenuClose}
-                fullWidth
-                color="inherit"
-                sx={{
-                  fontWeight: 600,
-                  textTransform: "none",
-                  color: "var(--text-sub)",
-                  justifyContent: "flex-start",
-                  fontSize: "1rem",
-                  minHeight: 48,
-                  py: 1.35,
-                  borderRadius: '12px',
-                  WebkitTapHighlightColor: "transparent",
-                  "&:hover": {
-                    backgroundColor: "rgba(198, 40, 40, 0.05)",
-                    color: "var(--primary)"
-                  },
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
+            {primaryNavItems.map((item) => {
+              const active = isActiveRoute(item.to);
+              return (
+                <Button
+                  key={item.to}
+                  component={NavLink}
+                  to={item.to}
+                  onClick={handleMobileMenuClose}
+                  fullWidth
+                  color="inherit"
+                  sx={{
+                    fontWeight: active ? 700 : 600,
+                    textTransform: "none",
+                    color: active ? "var(--primary)" : "var(--text-sub)",
+                    justifyContent: "flex-start",
+                    fontSize: "1rem",
+                    minHeight: 48,
+                    py: 1.35,
+                    borderRadius: '12px',
+                    WebkitTapHighlightColor: "transparent",
+                    "&:hover": {
+                      backgroundColor: "rgba(198, 40, 40, 0.05)",
+                      color: "var(--primary)"
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              );
+            })}
             <Box
               sx={{
                 borderRadius: "12px",
@@ -381,33 +401,36 @@ export default function Header() {
                 Câu chuyện
               </Typography>
               <Stack spacing={0.5}>
-                {storyMenuItems.map((item) => (
-                  <Button
-                    key={item.to}
-                    component={NavLink}
-                    to={item.to}
-                    onClick={handleMobileMenuClose}
-                    fullWidth
-                    color="inherit"
-                    sx={{
-                      fontWeight: 600,
-                      textTransform: "none",
-                      color: "var(--text-sub)",
-                      justifyContent: "flex-start",
-                      fontSize: "0.96rem",
-                      minHeight: 44,
-                      px: 1.25,
-                      borderRadius: "10px",
-                      WebkitTapHighlightColor: "transparent",
-                      "&:hover": {
-                        backgroundColor: "rgba(198, 40, 40, 0.05)",
-                        color: "var(--primary)",
-                      },
-                    }}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
+                {storyMenuItems.map((item) => {
+                  const active = isActiveRoute(item.to);
+                  return (
+                    <Button
+                      key={item.to}
+                      component={NavLink}
+                      to={item.to}
+                      onClick={handleMobileMenuClose}
+                      fullWidth
+                      color="inherit"
+                      sx={{
+                        fontWeight: active ? 700 : 600,
+                        textTransform: "none",
+                        color: active ? "var(--primary)" : "var(--text-sub)",
+                        justifyContent: "flex-start",
+                        fontSize: "0.96rem",
+                        minHeight: 44,
+                        px: 1.25,
+                        borderRadius: "10px",
+                        WebkitTapHighlightColor: "transparent",
+                        "&:hover": {
+                          backgroundColor: "rgba(198, 40, 40, 0.05)",
+                          color: "var(--primary)",
+                        },
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  );
+                })}
               </Stack>
             </Box>
           </Stack>
@@ -432,26 +455,29 @@ export default function Header() {
           },
         }}
       >
-        {storyMenuItems.map((item) => (
-          <MenuItem
-            key={item.to}
-            component={RouterLink}
-            to={item.to}
-            onClick={handleStoryMenuClose}
-            sx={{
-              minHeight: 48,
-              fontSize: "0.98rem",
-              fontWeight: 600,
-              color: "var(--text-sub)",
-              "&:hover": {
-                color: "var(--primary)",
-                backgroundColor: "rgba(198, 40, 40, 0.05)",
-              },
-            }}
-          >
-            {item.label}
-          </MenuItem>
-        ))}
+        {storyMenuItems.map((item) => {
+          const active = isActiveRoute(item.to);
+          return (
+            <MenuItem
+              key={item.to}
+              component={RouterLink}
+              to={item.to}
+              onClick={handleStoryMenuClose}
+              sx={{
+                minHeight: 48,
+                fontSize: "0.98rem",
+                fontWeight: active ? 700 : 600,
+                color: active ? "var(--primary)" : "var(--text-sub)",
+                "&:hover": {
+                  color: "var(--primary)",
+                  backgroundColor: "rgba(198, 40, 40, 0.05)",
+                },
+              }}
+            >
+              {item.label}
+            </MenuItem>
+          );
+        })}
       </Menu>
     </AppBar>
   );

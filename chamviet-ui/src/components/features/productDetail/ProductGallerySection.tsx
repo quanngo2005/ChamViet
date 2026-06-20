@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Box, ButtonBase, Card, Stack, Typography } from '@mui/material';
+import { Box, ButtonBase, Card, IconButton, Stack, Typography } from '@mui/material';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 export interface ProductGallerySectionProps {
   title: string;
   imageUrls?: string[];
@@ -22,9 +23,22 @@ export function ProductGallerySection({ title, imageUrls }: ProductGallerySectio
     : galleryItems;
   const safeActiveIndex = Math.min(activeIndex, Math.max(resolvedGalleryItems.length - 1, 0));
   const active = resolvedGalleryItems[safeActiveIndex];
+  const hasMultipleImages = resolvedGalleryItems.length > 1;
+
+  const showPreviousImage = () => {
+    setActiveIndex((current) => (
+      current === 0 ? resolvedGalleryItems.length - 1 : current - 1
+    ));
+  };
+
+  const showNextImage = () => {
+    setActiveIndex((current) => (
+      current + 1 >= resolvedGalleryItems.length ? 0 : current + 1
+    ));
+  };
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2.25}>
       <Card
         sx={{
           borderRadius: '8px',
@@ -74,6 +88,66 @@ export function ProductGallerySection({ title, imageUrls }: ProductGallerySectio
               {safeActiveIndex + 1}/{resolvedGalleryItems.length}
             </Typography>
           </Box>
+          {hasMultipleImages && (
+            <>
+              <IconButton
+                onClick={showPreviousImage}
+                aria-label="Xem ảnh trước"
+                sx={{
+                  position: 'absolute',
+                  left: { xs: 14, md: 18 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: { xs: 42, md: 48 },
+                  height: { xs: 42, md: 48 },
+                  color: '#ffffff',
+                  backgroundColor: 'rgba(35, 16, 14, 0.62)',
+                  border: '1px solid rgba(255,255,255,0.24)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(35, 16, 14, 0.82)',
+                    transform: 'translateY(-50%) translateX(-2px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.22)',
+                  },
+                  '&:focus-visible': {
+                    outline: '3px solid rgba(255,255,255,0.66)',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <ChevronLeft size={22} />
+              </IconButton>
+              <IconButton
+                onClick={showNextImage}
+                aria-label="Xem ảnh tiếp theo"
+                sx={{
+                  position: 'absolute',
+                  right: { xs: 14, md: 18 },
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: { xs: 42, md: 48 },
+                  height: { xs: 42, md: 48 },
+                  color: '#ffffff',
+                  backgroundColor: 'rgba(35, 16, 14, 0.62)',
+                  border: '1px solid rgba(255,255,255,0.24)',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(35, 16, 14, 0.82)',
+                    transform: 'translateY(-50%) translateX(2px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.22)',
+                  },
+                  '&:focus-visible': {
+                    outline: '3px solid rgba(255,255,255,0.66)',
+                    outlineOffset: 2,
+                  },
+                }}
+              >
+                <ChevronRight size={22} />
+              </IconButton>
+            </>
+          )}
         </Box>
       </Card>
 
@@ -81,7 +155,7 @@ export function ProductGallerySection({ title, imageUrls }: ProductGallerySectio
         sx={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 1.5,
+          gap: { xs: 1.25, md: 1.75 },
         }}
       >
         {resolvedGalleryItems.map((item, index) => (
@@ -96,6 +170,16 @@ export function ProductGallerySection({ title, imageUrls }: ProductGallerySectio
               border: index === safeActiveIndex ? '2px solid' : '1px solid',
               borderColor: index === safeActiveIndex ? 'primary.main' : 'rgba(78, 52, 46, 0.12)',
               display: 'block',
+              transition: 'transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 10px 22px rgba(78, 52, 46, 0.14)',
+                borderColor: index === safeActiveIndex ? 'primary.main' : 'rgba(168, 50, 50, 0.32)',
+              },
+              '&:focus-visible': {
+                outline: '3px solid rgba(168, 50, 50, 0.30)',
+                outlineOffset: 2,
+              },
             }}
           >
             <Box

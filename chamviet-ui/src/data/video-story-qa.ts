@@ -6,7 +6,7 @@ import {
 } from "./mockStoryConfigs";
 
 function isMockEnabled(): boolean {
-  return import.meta.env.VITE_USE_MOCK_STORY_CONFIG !== "false";
+  return import.meta.env.VITE_USE_MOCK_STORY_CONFIG === "true";
 }
 
 export interface StoryQA {

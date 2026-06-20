@@ -5,6 +5,12 @@ import type { VoiceSessionStartRequest, VoiceMeta, VoiceSessionResult } from "..
 const VOICE_META_HEADER = "X-Voice-Meta";
 
 export interface VoiceService {
+  transcribe(
+    audioBlob: Blob,
+    sessionId?: string,
+    signal?: AbortSignal,
+  ): Promise<string>;
+
   startSession(
     request: VoiceSessionStartRequest,
     signal?: AbortSignal,
@@ -15,10 +21,15 @@ export interface VoiceService {
     sessionId: string,
     signal?: AbortSignal,
   ): Promise<VoiceSessionResult>;
+
+  getNextQuestionAudio(
+    sessionId: string,
+    signal?: AbortSignal,
+  ): Promise<VoiceSessionResult>;
 }
 
 export function createVoiceService(): VoiceService {
-  if (import.meta.env.VITE_USE_MOCK_VOICE_SERVICE !== "false") {
+  if (import.meta.env.VITE_USE_MOCK_VOICE_SERVICE === "true") {
     return new MockVoiceService();
   }
   const backendUrl = resolveApiOrigin(
@@ -68,6 +79,32 @@ export class RealVoiceService implements VoiceService {
     this.backendUrl = backendUrl;
   }
 
+  async transcribe(
+    audioBlob: Blob,
+    sessionId?: string,
+    signal?: AbortSignal,
+  ): Promise<string> {
+    const url = buildApiUrl(this.backendUrl, "/api/v1/voice/transcribe");
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "recording.wav");
+    if (sessionId?.trim()) {
+      formData.append("session_id", sessionId);
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+      signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`${url} -> ${response.status}`);
+    }
+
+    const payload = await response.json() as { text?: string };
+    return typeof payload.text === "string" ? payload.text.trim() : "";
+  }
+
   async startSession(
     request: VoiceSessionStartRequest,
     signal?: AbortSignal,
@@ -101,4 +138,19 @@ export class RealVoiceService implements VoiceService {
 
     return readVoiceAudioResponse(response, url);
   }
+
+  async getNextQuestionAudio(
+    sessionId: string,
+    signal?: AbortSignal,
+  ): Promise<VoiceSessionResult> {
+    const url = buildApiUrl(this.backendUrl, "/api/v1/voice/session/next-question");
+    const params = new URLSearchParams({ session_id: sessionId });
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: "POST",
+      signal,
+    });
+
+    return readVoiceAudioResponse(response, url);
+  }
+
 }

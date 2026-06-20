@@ -25,7 +25,7 @@ export const HOME_IMAGES = {
 export const HOME_PRODUCT = {
   id: 'box-tuong-tac-ke-chuyen',
   price: '229.000đ',
-  ctaLabel: 'Mua ngay - 229.000đ',
+  ctaLabel: 'Mua ngay',
   boxLabel: 'Hào khí Việt Nam',
   paintings: [
     {

@@ -45,6 +45,9 @@ export interface NormalizedStoryResult {
   videoId?: string;
   confidence?: number;
   raw: StoryMatchData;
+  _bootstrap?: {
+    fallbackUsed: boolean;
+  };
 }
 
 export interface NormalizedErrorResult {

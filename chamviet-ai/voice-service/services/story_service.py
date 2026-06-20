@@ -13,6 +13,7 @@ class StorySession:
     def __init__(self):
         self.question_index = 0
         self.completed = False
+        self.story_data = None
         self.lock = asyncio.Lock()
 
 
@@ -31,6 +32,8 @@ class StorySessionManager:
         async with self._lock:
             self._sessions[session_id] = StorySession()
             return self._sessions[session_id]
+
+
 
 
 def load_story_from_payload(

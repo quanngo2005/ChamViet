@@ -3,6 +3,7 @@ import random
 import re
 import threading
 import unicodedata
+from typing import Optional
 from config import (
     GOOGLE_API_KEY, GEMINI_LLM_MODEL, GEMINI_FALLBACK_MODEL,
     GROQ_API_KEY, GROQ_LLM_MODEL, LLM_PROVIDER,
@@ -54,6 +55,36 @@ def _get_embedding_model():
                 from sentence_transformers import SentenceTransformer
                 _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
     return _embedding_model
+
+
+def _truncate_text_for_embedding(model, text: str) -> str:
+    tokenizer = getattr(model, "tokenizer", None)
+    if tokenizer is None:
+        return text
+
+    try:
+        safe_max_length = max(32, min(int(getattr(model, "max_seq_length", 256) or 256), 256))
+        encoded = tokenizer(
+            text,
+            add_special_tokens=True,
+            truncation=True,
+            max_length=safe_max_length,
+            return_attention_mask=False,
+            return_token_type_ids=False,
+        )
+        token_ids = encoded.get("input_ids") or []
+        if not token_ids:
+            return text
+
+        truncated = tokenizer.decode(
+            token_ids,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=True,
+        ).strip()
+        return truncated or text
+    except Exception as exc:
+        print(f"[EMBEDDING] Text truncation failed, using original text: {exc}")
+        return text
 
 
 def preload_embedding_model() -> str:
@@ -301,18 +332,25 @@ def _coerce_bool(value) -> bool:
     return bool(value)
 
 
-def _embedding_cosine_similarity_sync(text_a: str, text_b: str) -> float:
+def _embedding_cosine_similarity_sync(text_a: str, text_b: str) -> Optional[float]:
     model = _get_embedding_model()
-    embeddings = model.encode(
-        [text_a, text_b],
-        convert_to_numpy=True,
-        normalize_embeddings=True,
-        show_progress_bar=False,
-    )
-    return float(embeddings[0] @ embeddings[1])
+    prepared_a = _truncate_text_for_embedding(model, text_a)
+    prepared_b = _truncate_text_for_embedding(model, text_b)
+
+    try:
+        embeddings = model.encode(
+            [prepared_a, prepared_b],
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+            show_progress_bar=False,
+        )
+        return float(embeddings[0] @ embeddings[1])
+    except Exception as exc:
+        print(f"[EMBEDDING] Similarity scoring failed, falling back to LLM judge: {exc}")
+        return None
 
 
-async def _embedding_cosine_similarity(text_a: str, text_b: str) -> float:
+async def _embedding_cosine_similarity(text_a: str, text_b: str) -> Optional[float]:
     import asyncio
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
@@ -433,7 +471,6 @@ async def _judge_story_answer(
 ) -> dict:
     prompt = (
         "Chấm câu trả lời của bé 6 đến 9 tuổi theo Ý LÕI, không bắt khớp văn mẫu.\n"
-        f"Persona thoại của hệ thống: {TTS_PERSONA_STYLE}\n"
         f"Truyện: {story_title}\n"
         f"Câu hỏi: {question}\n"
         f"Đáp án mẫu: {correct_answer}\n"
@@ -491,9 +528,14 @@ async def evaluate_story_answer(
         }
 
     embedding_score = await _embedding_cosine_similarity(user_answer, correct_answer)
-    embedding_percent = round(max(0.0, min(1.0, embedding_score)) * 100.0, 1)
+    embedding_available = embedding_score is not None
+    embedding_percent = (
+        round(max(0.0, min(1.0, embedding_score)) * 100.0, 1)
+        if embedding_available
+        else 0.0
+    )
 
-    if embedding_score >= EMBEDDING_ACCEPT_THRESHOLD:
+    if embedding_available and embedding_score >= EMBEDDING_ACCEPT_THRESHOLD:
         return {
             "score": embedding_percent,
             "is_correct": True,
@@ -520,7 +562,7 @@ async def evaluate_story_answer(
         "khong nghe ro",
         "chua biet",
     )
-    if embedding_score <= EMBEDDING_REJECT_THRESHOLD and any(
+    if embedding_available and embedding_score <= EMBEDDING_REJECT_THRESHOLD and any(
         phrase in user_answer_normalized for phrase in obvious_incorrect_phrases
     ):
         return {
@@ -550,8 +592,8 @@ async def evaluate_story_answer(
         return {
             "score": embedding_percent,
             "is_correct": False,
-            "embedding_score": embedding_score,
-            "judge_source": "llm_parse_failed",
+            "embedding_score": embedding_score if embedding_available else 0.0,
+            "judge_source": "embedding_failed_llm_parse_failed" if not embedding_available else "llm_parse_failed",
             "feedback": _fallback_feedback(
                 False,
                 correct_answer=correct_answer,
@@ -576,8 +618,8 @@ async def evaluate_story_answer(
     return {
         "score": score,
         "is_correct": is_correct,
-        "embedding_score": embedding_score,
-        "judge_source": "llm_judge",
+        "embedding_score": embedding_score if embedding_available else 0.0,
+        "judge_source": "embedding_failed_llm_judge" if not embedding_available else "llm_judge",
         "feedback": feedback,
         "reason": reason,
     }

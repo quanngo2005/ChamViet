@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 
+import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
@@ -24,6 +25,7 @@ import {
   extractYouTubeVideoId,
   type StoryConfig,
 } from "../data/video-story-qa";
+import type { VoiceSessionState } from "../types/voice";
 
 const COLORS = {
   bg: "#1f1313",
@@ -68,9 +70,11 @@ function isMobileSafariBrowser() {
 function CinemaHero({
   videoId,
   storyConfig,
+  voiceState = "ready",
 }: {
   videoId: string;
   storyConfig?: StoryConfig;
+  voiceState?: VoiceSessionState;
 }) {
   const heroRef = useRef<HTMLDivElement | null>(null);
   const [isVideoExpanded, setIsVideoExpanded] = useState(false);
@@ -223,6 +227,7 @@ function CinemaHero({
               registry={VIDEO_REGISTRY}
               storyConfig={storyConfig ?? undefined}
               colors={COLORS}
+              voiceState={voiceState}
             />
           </Box>
           <Tooltip title={fullscreenButtonLabel}>
@@ -260,28 +265,70 @@ function CinemaHero({
   );
 }
 
+interface BootstrapState {
+  fallbackUsed?: boolean;
+  storySlug?: string;
+  videoId?: string;
+}
+
 export default function StoryPage() {
   const { storySlug } = useParams<{ storySlug?: string }>();
+  const location = useLocation();
+  const bootstrap: BootstrapState = (location.state as BootstrapState | null) ?? {};
+
   const [storyConfig, setStoryConfig] = useState<StoryConfig | null>(null);
+  const [voiceState, setVoiceState] = useState<VoiceSessionState>("initializing");
   const defaultStoryEntry = getDefaultFeaturedStoryEntry();
 
+  const slug = storySlug ?? defaultStoryEntry.slug;
+
+  // ── Phase 1: fetch story content ───────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
-    fetchStoryConfigBySlug(storySlug ?? defaultStoryEntry.slug)
+
+    fetchStoryConfigBySlug(slug)
       .then((config) => {
-        if (!cancelled) setStoryConfig(config);
+        if (!cancelled) {
+          setStoryConfig(config);
+          if (!config) {
+            setVoiceState("unavailable");
+          }
+        }
       })
       .catch(() => {
-        if (!cancelled) setStoryConfig(null);
+        if (!cancelled) {
+          setStoryConfig(null);
+          setVoiceState("unavailable");
+        }
       });
-    return () => { cancelled = true; };
-  }, [defaultStoryEntry.slug, storySlug]);
 
-  const backendVideoId = storyConfig?.videoUrl ? extractYouTubeVideoId(storyConfig.videoUrl) : null;
-  const storyEntry = storySlug ? findStoryVideoEntryBySlug(storySlug) : defaultStoryEntry;
-  const fallbackVideoId = storySlug ? resolveStoryVideoId(storySlug) : defaultStoryEntry.videoId;
-  const videoId = backendVideoId ?? fallbackVideoId;
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  // ── Phase 2: voice state is managed by YouTubeStopOverlayPlayer ─────
+  useEffect(() => {
+    if (storyConfig) {
+      setVoiceState("ready");
+    }
+  }, [storyConfig]);
+
+  // ── Video ID resolution ───────────────────────────────────────────────
+  const backendVideoId = storyConfig?.videoUrl
+    ? extractYouTubeVideoId(storyConfig.videoUrl)
+    : null;
+  const storyEntry = storySlug
+    ? findStoryVideoEntryBySlug(storySlug)
+    : defaultStoryEntry;
+  const fallbackVideoId = storySlug
+    ? resolveStoryVideoId(storySlug)
+    : defaultStoryEntry.videoId;
+  const videoId = backendVideoId ?? bootstrap.videoId ?? fallbackVideoId;
   const storyTitle = storyConfig?.storyTitle ?? storyEntry?.title ?? "";
+
+  // ── Banner config ─────────────────────────────────────────────────────
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const showFallbackBanner = voiceState === "fallback" && !bannerDismissed;
+  const showUnavailableBanner = voiceState === "unavailable";
 
   return (
     <Box
@@ -291,6 +338,23 @@ export default function StoryPage() {
           "radial-gradient(circle at 80% 10%, rgba(212, 175, 55, 0.16), transparent 30%), linear-gradient(180deg, #2b1715 0%, #1f1313 42%, #120b0b 100%)",
       }}
     >
+      {showFallbackBanner && (
+        <Alert
+          severity="warning"
+          onClose={() => setBannerDismissed(true)}
+          sx={{ borderRadius: 0, justifyContent: "center" }}
+        >
+          Đang dùng nội dung dự phòng. Tính năng giọng nói tạm thời không khả dụng.
+        </Alert>
+      )}
+      {showUnavailableBanner && (
+        <Alert
+          severity="error"
+          sx={{ borderRadius: 0, justifyContent: "center" }}
+        >
+          Không thể tải nội dung câu chuyện. Vui lòng thử lại sau.
+        </Alert>
+      )}
       <Box sx={{ pt: { xs: 5, md: 8 }, pb: { xs: 1, md: 1 } }}>
         <Container maxWidth="lg">
           <Typography
@@ -306,7 +370,11 @@ export default function StoryPage() {
           </Typography>
         </Container>
       </Box>
-      <CinemaHero videoId={videoId} storyConfig={storyConfig ?? undefined} />
+      <CinemaHero
+        videoId={videoId}
+        storyConfig={storyConfig ?? undefined}
+        voiceState={voiceState}
+      />
     </Box>
   );
 }

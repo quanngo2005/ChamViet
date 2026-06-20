@@ -9,6 +9,7 @@ import com.vn.chamviet.chamviet_api.product.ProductVariantComponent;
 import com.vn.chamviet.chamviet_api.product.dto.ComponentLookupDTO;
 import com.vn.chamviet.chamviet_api.product.dto.StoryConfigDTO;
 import com.vn.chamviet.chamviet_api.product.dto.StoryQaItemDTO;
+import com.vn.chamviet.chamviet_api.product.dto.VisionStoryResolveDTO;
 import com.vn.chamviet.chamviet_api.product.repository.ComponentContentRepo;
 import com.vn.chamviet.chamviet_api.product.repository.ProductVariantComponentRepo;
 import jakarta.persistence.EntityNotFoundException;
@@ -86,6 +87,41 @@ public class ProductStoryService {
     public Optional<String> lookupStorySlugByLabel(String label) {
         String slug = STORY_LABEL_SLUG_MAP.get(normalizeVisionLabel(label));
         return Optional.ofNullable(slug);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<VisionStoryResolveDTO> resolveVisionLabel(String label) {
+        String componentSku = LABEL_COMPONENT_SKU_MAP.get(normalizeVisionLabel(label));
+        if (componentSku == null || componentSku.isBlank()) {
+            return Optional.empty();
+        }
+
+        String slug = STORY_LABEL_SLUG_MAP.get(normalizeVisionLabel(label));
+        if (slug == null) {
+            return Optional.empty();
+        }
+
+        return lookupByComponentSku(componentSku)
+            .map(lookup -> {
+                String videoId = null;
+                try {
+                    ProductVariantComponent vc = productVariantComponentRepo
+                        .findFirstByComponentSkuOrderBySortOrderAsc(componentSku)
+                        .orElse(null);
+                    if (vc != null && vc.getComponent() != null && vc.getComponent().getContent() != null) {
+                        videoId = extractVideoId(vc.getComponent().getContent().getVideoUrl());
+                    }
+                } catch (Exception e) {
+                    // videoId is not critical for resolve
+                }
+                return VisionStoryResolveDTO.builder()
+                    .storySlug(slug)
+                    .productRoute(lookup.getRoute())
+                    .videoId(videoId)
+                    .productId(lookup.getProductId())
+                    .componentSku(componentSku)
+                    .build();
+            });
     }
 
     @Transactional(readOnly = true)

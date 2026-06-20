@@ -15,6 +15,7 @@ import { useVoiceAI } from "../../hooks/useVoiceAi";
 import { createVoiceService } from "../../services/voiceService";
 import { resolveApiOrigin } from "../../utils/apiBase";
 import { fetchStoryConfigByVideoId, type StoryConfig } from "../../data/video-story-qa";
+import type { VoiceSessionState } from "../../types/voice";
 import mascot from "../../assets/masotknen.webp";
 
 const voiceService = createVoiceService();
@@ -86,6 +87,7 @@ interface YouTubeStopOverlayPlayerProps {
   storyConfig?: StoryConfig;
   onCtaClick?: (videoId: string, config: VideoStopConfig) => void;
   colors?: any;
+  voiceState?: VoiceSessionState;
 }
 
 function extractYouTubeVideoId(value?: string): string | null {
@@ -194,17 +196,17 @@ function phaseStatusText(
   if (isAwaitingUserText) {
     return {
       primary: "Đã nhận giọng nói",
-      secondary: "Bé hạc đang nghe lại câu trả lời của con",
+      secondary: "Chíp Bông đang nghe lại câu trả lời của con",
     };
   }
   switch (phase) {
-    case "loading": return { primary: "Đang chuẩn bị...", secondary: "Bé hạc đang tải câu chuyện" };
-    case "greeting": return { primary: "Bé hạc đang chào...", secondary: "Lắng nghe nhé!" };
-    case "asking": return { primary: "Bé hạc đang hỏi...", secondary: "Lắng nghe câu hỏi nhé!" };
-    case "evaluating": return { primary: "Đang xử lý...", secondary: "Bé hạc đang suy nghĩ" };
-    case "responding": return { primary: "Bé hạc đang trả lời...", secondary: "Lắng nghe nhé!" };
+    case "loading": return { primary: "Đang chuẩn bị...", secondary: "Chíp Bông đang tải câu chuyện" };
+    case "greeting": return { primary: "Chíp Bông đang chào...", secondary: "Lắng nghe nhé!" };
+    case "asking": return { primary: "Chíp Bông đang hỏi...", secondary: "Lắng nghe câu hỏi nhé!" };
+    case "evaluating": return { primary: "Đang xử lý...", secondary: "Chíp Bông đang suy nghĩ" };
+    case "responding": return { primary: "Chíp Bông đang trả lời...", secondary: "Lắng nghe nhé!" };
     case "done": return { primary: "Hoàn thành!", secondary: "Nhấn Tiếp tục để xem video" };
-    default: return { primary: "Nhấn giữ để trả lời", secondary: "Bé hạc lắng nghe bạn nói" };
+    default: return { primary: "Nhấn giữ để trả lời", secondary: "Chíp Bông lắng nghe bạn nói" };
   }
 }
 
@@ -215,11 +217,11 @@ export default function YouTubeStopOverlayPlayer({
   registry,
   storyConfig: storyConfigOverride,
   onCtaClick: _onCtaClick,
+  voiceState = "ready",
 }: YouTubeStopOverlayPlayerProps) {
   // ── State ───────────────────────────────────────────────────────────────
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [sessionInitiated, setSessionInitiated] = useState(false);
   const [resolvedStoryConfig, setResolvedStoryConfig] = useState<StoryConfig | null>(null);
 
   // ── Refs ────────────────────────────────────────────────────────────────
@@ -227,10 +229,13 @@ export default function YouTubeStopOverlayPlayer({
   const playerRef = useRef<any>(null);
   const nativeVideoRef = useRef<HTMLVideoElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const pendingOverlayRef = useRef(false);
+  const sessionInitiatedRef = useRef(false);
 
+  const storyConfig = storyConfigOverride ?? resolvedStoryConfig ?? undefined;
   const activeRegistry = registry || DEFAULT_VIDEO_REGISTRY;
-  const config = activeRegistry[videoId] || DEFAULT_VIDEO_REGISTRY[videoId];
-  const storyConfig = storyConfigOverride ?? config?.storyConfig ?? resolvedStoryConfig ?? undefined;
+  const config = activeRegistry[videoId] || DEFAULT_VIDEO_REGISTRY[videoId]
+    || (storyConfig?.qaList?.length ? { stopTime: 30, dialogue: [] } : undefined);
   const backendVideoUrl = storyConfig?.videoUrl?.trim();
   const backendYouTubeVideoId = extractYouTubeVideoId(backendVideoUrl);
   const playbackVideoId = backendYouTubeVideoId ?? videoId;
@@ -256,6 +261,7 @@ export default function YouTubeStopOverlayPlayer({
     currentQuestionIndex,
     score,
     initSession,
+    playStoredFirstQuestion,
     startRecording,
     stopRecording,
     stopSession,
@@ -323,18 +329,22 @@ export default function YouTubeStopOverlayPlayer({
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [isAwaitingUserText, isProcessing, messages]);
 
-  // ── Init session when overlay opens ─────────────────────────────────────
+  // ── Play first-question audio when overlay opens ────────────────────────
   useEffect(() => {
-    if (overlayOpen && storyConfig && !sessionInitiated) {
-      setSessionInitiated(true);
-      initSession();
+    if (overlayOpen && storyConfig && voiceState === "ready") {
+      if (sessionInitiatedRef.current) {
+        void playStoredFirstQuestion();
+      } else {
+        initSession().then(() => {
+          void playStoredFirstQuestion();
+        });
+      }
     }
-  }, [overlayOpen, storyConfig, sessionInitiated, initSession]);
+  }, [overlayOpen, storyConfig, initSession, playStoredFirstQuestion, voiceState]);
 
   // ── Reset on overlay close ──────────────────────────────────────────────
   const resetOverlay = useCallback(() => {
     setMessages([]);
-    setSessionInitiated(false);
   }, []);
 
   useEffect(() => {
@@ -343,14 +353,31 @@ export default function YouTubeStopOverlayPlayer({
     };
   }, [stopSession]);
 
+  // ── Fire pending overlay when config becomes available ───────────────────
+  useEffect(() => {
+    if (config && pendingOverlayRef.current && !overlayOpen) {
+      pendingOverlayRef.current = false;
+      setOverlayOpen(true);
+    }
+  }, [config, overlayOpen]);
+
   // ── YouTube event handlers ──────────────────────────────────────────────
   const onReady: YouTubeProps["onReady"] = (event) => {
     playerRef.current = event.target;
   };
 
   const onStateChange: YouTubeProps["onStateChange"] = (event) => {
+    if (event.data === 1 && !sessionInitiatedRef.current && storyConfig && voiceState === "ready") {
+      sessionInitiatedRef.current = true;
+      initSession();
+    }
+
     if (event.data === 0) {
-      setOverlayOpen(true);
+      if (config) {
+        setOverlayOpen(true);
+      } else {
+        pendingOverlayRef.current = true;
+      }
     }
   };
 
@@ -366,6 +393,11 @@ export default function YouTubeStopOverlayPlayer({
   const closeOverlayAndResume = () => {
     stopSession();
     setOverlayOpen(false);
+    if (playerRef.current?.playVideo) {
+      playerRef.current.playVideo();
+    } else if (nativeVideoRef.current) {
+      void nativeVideoRef.current.play();
+    }
     setTimeout(() => resetOverlay(), 500);
   };
 
@@ -383,7 +415,7 @@ export default function YouTubeStopOverlayPlayer({
   };
 
   // ── Mic enabled only in listening phase ─────────────────────────────────
-  const canRecord = Boolean(storyConfig) && sessionPhase === "listening" && !isProcessing && !isRecording;
+  const canRecord = Boolean(storyConfig) && voiceState === "ready" && sessionPhase === "listening" && !isProcessing && !isRecording;
 
   // ── Status text ─────────────────────────────────────────────────────────
   const status = phaseStatusText(sessionPhase, isRecording, isAwaitingUserText);
@@ -413,7 +445,19 @@ export default function YouTubeStopOverlayPlayer({
           controls
           playsInline
           preload="metadata"
-          onEnded={() => setOverlayOpen(true)}
+          onPlay={() => {
+            if (!sessionInitiatedRef.current && storyConfig && voiceState === "ready") {
+              sessionInitiatedRef.current = true;
+              initSession();
+            }
+          }}
+          onEnded={() => {
+            if (config) {
+              setOverlayOpen(true);
+            } else {
+              pendingOverlayRef.current = true;
+            }
+          }}
           sx={{
             width: "100%",
             height: "100%",
@@ -509,7 +553,7 @@ export default function YouTubeStopOverlayPlayer({
                     />
                     <Box
                       component="img"
-                      src={mascotSrc}
+                      src={mascot}
                       alt="Bé hạc mascot"
                       sx={{
                         width: "100%",
@@ -601,7 +645,7 @@ export default function YouTubeStopOverlayPlayer({
                           Hỏi đáp cùng Chíp Bông
                         </Typography>
                         <Typography variant="caption" sx={{ color: COLORS.mutedDark }}>
-                          {storyConfig ? "Nhấn giữ micro để trả lời" : "Chưa tải được dữ liệu câu hỏi"}
+                          {voiceState === "fallback" || voiceState === "unavailable" ? "Tính năng giọng nói tạm thời không khả dụng" : storyConfig ? "Nhấn giữ micro để trả lời" : "Chưa tải được dữ liệu câu hỏi"}
                         </Typography>
                       </Box>
                     </Box>
@@ -729,21 +773,7 @@ export default function YouTubeStopOverlayPlayer({
                     ))}
 
                     {/* Typing indicator */}
-                    {isAwaitingUserText && (
-                      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.5 }}>
-                          <TypingDots role="user" />
-                          <Typography
-                            variant="caption"
-                            sx={{ color: COLORS.mutedDark, pr: 1, fontWeight: 600, textAlign: "right" }}
-                          >
-                            Chíp Bông đã nhận giọng nói của cậu...
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
-
-                    {isProcessing && !isAwaitingUserText && (
+                    {isProcessing && (
                       <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
                         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                           <TypingDots />

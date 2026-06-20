@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 public class VoiceAIService {
 
     private static final String VOICE_META_HEADER = "X-Voice-Meta";
+    private static final String STORY_META_HEADER = "X-Story-Meta";
 
     private final WebClient voiceClient;
 
@@ -162,7 +163,7 @@ public class VoiceAIService {
         }
 
         ResponseEntity<byte[]> response = execute("answer voice session", () -> voiceClient.post()
-            .uri("/api/session/answer")
+            .uri("/api/story/answer")
             .contentType(MediaType.MULTIPART_FORM_DATA)
             .body(BodyInserters.fromMultipartData(builder.build()))
             .retrieve()
@@ -170,6 +171,19 @@ public class VoiceAIService {
             .block());
 
         return toVoiceAudioResponse(response, "answer voice session");
+    }
+
+    public VoiceAudioResponse nextQuestionAudio(String sessionId) {
+        ResponseEntity<byte[]> response = execute("load next question audio", () -> voiceClient.post()
+            .uri(uriBuilder -> uriBuilder
+                .path("/api/story/next-question")
+                .queryParamIfPresent("session_id", Optional.ofNullable(blankToNull(sessionId)))
+                .build())
+            .retrieve()
+            .toEntity(byte[].class)
+            .block());
+
+        return toVoiceAudioResponse(response, "load next question audio");
     }
 
     public Map<String, Object> history(String sessionId) {
@@ -208,6 +222,9 @@ public class VoiceAIService {
 
         String voiceMeta = response.getHeaders().getFirst(VOICE_META_HEADER);
         if (voiceMeta == null || voiceMeta.isBlank()) {
+            voiceMeta = response.getHeaders().getFirst(STORY_META_HEADER);
+        }
+        if (voiceMeta == null || voiceMeta.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Voice AI omitted metadata for " + action);
         }
 
@@ -240,4 +257,5 @@ public class VoiceAIService {
             );
         }
     }
+
 }

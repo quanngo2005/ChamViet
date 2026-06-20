@@ -1,7 +1,10 @@
 package com.vn.chamviet.chamviet_api.AI.service;
 
 import com.vn.chamviet.chamviet_api.AI.dto.AiResponseDTO;
+import com.vn.chamviet.chamviet_api.AI.dto.vision.VisionResolveRequest;
+import com.vn.chamviet.chamviet_api.AI.dto.vision.VisionResolveResponse;
 import com.vn.chamviet.chamviet_api.product.dto.ComponentLookupDTO;
+import com.vn.chamviet.chamviet_api.product.dto.VisionStoryResolveDTO;
 import com.vn.chamviet.chamviet_api.product.service.ProductStoryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -127,6 +130,33 @@ public class AIService {
         response.setComponentId(lookup.getComponentId());
         response.setComponentSku(lookup.getComponentSku());
         response.setRoute(lookup.getRoute());
+    }
+
+    public VisionResolveResponse resolveStory(VisionResolveRequest request) {
+        String label = normalizeVisionLabel(request.getLabel());
+
+        VisionResolveResponse.VisionError error = null;
+
+        VisionStoryResolveDTO resolve = productStoryService.resolveVisionLabel(label).orElse(null);
+
+        if (resolve == null || resolve.getStorySlug() == null) {
+            error = VisionResolveResponse.VisionError.builder()
+                .code("STORY_NOT_FOUND")
+                .message("No story mapping found for detected label: " + request.getLabel())
+                .build();
+            return VisionResolveResponse.builder()
+                .requestId(request.getRequestId())
+                .error(error)
+                .build();
+        }
+
+        return VisionResolveResponse.builder()
+            .requestId(request.getRequestId())
+            .storySlug(resolve.getStorySlug())
+            .productRoute(resolve.getProductRoute())
+            .videoId(resolve.getVideoId())
+            .fallbackUsed(false)
+            .build();
     }
 
     private String normalizeVisionLabel(String label) {

@@ -17,6 +17,7 @@ import {
   ProductStorySection,
 } from '../components/features/productDetail';
 import { ContentContainer, PageSection } from '../components/common/layout';
+import ContactRequestForm from '../components/common/ContactRequestForm';
 import { HOME_IMAGES, HOME_PRODUCT } from '../data/home';
 import type { Product } from '../types/product';
 
@@ -39,7 +40,7 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
   return (
     <PageSection
       sx={{
-        py: { xs: 6, md: 10 },
+        py: { xs: 7, md: 12 },
         background:
           'radial-gradient(circle at 12% 18%, rgba(198, 40, 40, 0.10), transparent 28%), linear-gradient(180deg, #fdfbf7 0%, #f5efe6 100%)',
       }}
@@ -49,7 +50,7 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.05fr) minmax(360px, 0.95fr)' },
-            gap: { xs: 4, md: 7 },
+            gap: { xs: 4.5, md: 8 },
             alignItems: 'center',
           }}
         >
@@ -57,23 +58,7 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
 
           <Stack spacing={3.25}>
             <Stack spacing={1.35}>
-              <Typography
-                sx={{
-                  width: 'fit-content',
-                  px: 1.5,
-                  py: 0.75,
-                  borderRadius: 999,
-                  color: 'primary.main',
-                  backgroundColor: 'rgba(168, 50, 50, 0.08)',
-                  border: '1px solid rgba(168, 50, 50, 0.14)',
-                  fontSize: 12,
-                  fontWeight: 900,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {PREORDER_PRODUCT.collectionLabel}
-              </Typography>
+
 
               <Typography
                 component="h1"
@@ -126,7 +111,16 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
                   fontWeight: 900,
                   boxShadow: '0 18px 32px rgba(168, 50, 50, 0.22)',
                   WebkitTapHighlightColor: 'transparent',
-                  '&:hover': { backgroundColor: 'primary.dark' },
+                  transition: 'background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 22px 38px rgba(168, 50, 50, 0.28)',
+                  },
+                  '&:focus-visible': {
+                    outline: '3px solid rgba(168, 50, 50, 0.30)',
+                    outlineOffset: 2,
+                  },
                 }}
               >
                 Mua ngay
@@ -146,9 +140,15 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
                   fontSize: 16,
                   fontWeight: 850,
                   WebkitTapHighlightColor: 'transparent',
+                  transition: 'background-color 180ms ease, border-color 180ms ease, transform 180ms ease',
                   '&:hover': {
                     borderColor: 'rgba(168, 50, 50, 0.42)',
                     backgroundColor: 'rgba(168, 50, 50, 0.05)',
+                    transform: 'translateY(-2px)',
+                  },
+                  '&:focus-visible': {
+                    outline: '3px solid rgba(168, 50, 50, 0.22)',
+                    outlineOffset: 2,
                   },
                 }}
               >
@@ -174,11 +174,11 @@ function PreorderContactDialog({
       open={open}
       onClose={onClose}
       fullWidth
-      maxWidth="xs"
+      maxWidth="sm"
       PaperProps={{
         sx: {
           borderRadius: '16px',
-          p: { xs: 0.5, sm: 1 },
+          p: { xs: 1, sm: 1.5 },
           background: 'linear-gradient(180deg, #fffdf9 0%, #f7efe5 100%)',
         },
       }}
@@ -186,13 +186,22 @@ function PreorderContactDialog({
       <DialogTitle sx={{ pb: 1, color: 'var(--text-h)', fontSize: 24, fontWeight: 950 }}>
         Liên hệ đặt trước
       </DialogTitle>
-      <DialogContent sx={{ pt: '8px !important' }}>
-        <Stack spacing={2}>
+      <DialogContent sx={{ px: { xs: 2.5, sm: 3 }, pt: '12px !important', pb: 1 }}>
+        <Stack spacing={2.5}>
           <Typography sx={{ color: 'var(--text-sub)', fontSize: 15, lineHeight: 1.72 }}>
-            Chọn kênh thuận tiện nhất để đội ngũ Chạm Việt hỗ trợ tư vấn và xác nhận thông tin đặt hàng.
+            Để lại thông tin để đội ngũ Chạm Việt gửi mail xác nhận và tư vấn đặt trước.
           </Typography>
 
+          <ContactRequestForm
+            requestType="preorder_request"
+            submitLabel="Gửi yêu cầu đặt trước"
+            successMessage="Chạm Việt đã nhận thông tin đặt trước và sẽ phản hồi qua email."
+          />
+
           <Stack spacing={1.25}>
+            <Typography sx={{ color: 'var(--text-sub)', fontSize: 13.5, fontWeight: 800 }}>
+              Hoặc liên hệ nhanh qua kênh khác
+            </Typography>
             <Button
               component="a"
               href={PREORDER_FACEBOOK_URL}
@@ -207,7 +216,16 @@ function PreorderContactDialog({
                 fontSize: 15,
                 fontWeight: 900,
                 backgroundColor: '#1877F2',
-                '&:hover': { backgroundColor: '#1664d9' },
+                transition: 'background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease',
+                '&:hover': {
+                  backgroundColor: '#1664d9',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 14px 28px rgba(24, 119, 242, 0.22)',
+                },
+                '&:focus-visible': {
+                  outline: '3px solid rgba(24, 119, 242, 0.28)',
+                  outlineOffset: 2,
+                },
               }}
             >
               Liên hệ qua Facebook
@@ -225,9 +243,15 @@ function PreorderContactDialog({
                 fontWeight: 850,
                 color: 'primary.main',
                 borderColor: 'rgba(168, 50, 50, 0.24)',
+                transition: 'background-color 180ms ease, border-color 180ms ease, transform 180ms ease',
                 '&:hover': {
                   borderColor: 'rgba(168, 50, 50, 0.42)',
                   backgroundColor: 'rgba(168, 50, 50, 0.05)',
+                  transform: 'translateY(-2px)',
+                },
+                '&:focus-visible': {
+                  outline: '3px solid rgba(168, 50, 50, 0.22)',
+                  outlineOffset: 2,
                 },
               }}
             >

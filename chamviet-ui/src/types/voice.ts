@@ -1,3 +1,10 @@
+/** Explicit voice session readiness state for StoryPage bootstrap convergence. */
+export type VoiceSessionState =
+  | "initializing"  // session start in progress
+  | "ready"         // real session active (scan preload or started)
+  | "fallback"      // content loaded but voice unavailable
+  | "unavailable";  // backend/voice unreachable
+
 import type { StoryQA } from "../data/video-story-qa";
 
 export interface VoiceSessionStartRequest {
@@ -21,6 +28,9 @@ export interface VoiceMeta {
   is_correct?: boolean;
   question?: string;
   question_text?: string;
+  feedback_text?: string;
+  next_question_text?: string;
+  next_question_index?: number;
 }
 
 export interface VoiceSessionResult {
