@@ -1,12 +1,18 @@
 import base64
 import json
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
 
-from services.stt_service     import transcribe_audio_file
+from services.stt_service     import (
+    AudioDecodingError,
+    AudioInputError,
+    AudioTooShortError,
+    NoSpeechDetectedError,
+    transcribe_audio_file,
+)
 from services.llm_service     import (
     classify_intent,
     evaluate_story_answer,
@@ -66,6 +72,23 @@ def _require_story_data(story: dict | None, session_id: str) -> dict:
     )
 
 
+async def _transcribe_or_bad_request(audio_bytes: bytes) -> str:
+    try:
+        text = await transcribe_audio_file(audio_bytes)
+    except AudioTooShortError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except NoSpeechDetectedError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except AudioDecodingError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except AudioInputError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+    if not text.strip():
+        raise HTTPException(400, "Không nhận diện được giọng nói trong bản ghi.")
+    return text
+
+
 # ════════════════════════════════════════════════════════
 # HEALTH
 # ════════════════════════════════════════════════════════
@@ -119,7 +142,7 @@ async def reset_api():
 async def transcribe_api(audio: UploadFile = File(...)):
     """Nhận file audio, chuẩn hóa biên độ động thích ứng và transcribe bất đồng bộ."""
     audio_bytes = await audio.read()
-    text = await transcribe_audio_file(audio_bytes)
+    text = await _transcribe_or_bad_request(audio_bytes)
     return {"text": text}
 
 
@@ -186,7 +209,7 @@ async def story_start_api(body: StoryStartInput = None):
 
     return _story_audio_response(path, {
         "status": "started",
-        "phase": "asking",
+        "phase": "listening",
         "story": story["story"],
         "session_id": session_id,
         "question_index": story_session.question_index,
@@ -219,7 +242,7 @@ async def story_status_api(session_id: str = "default"):
 
 
 @app.post("/api/story/answer", tags=["story"])
-async def story_answer_api(audio: UploadFile = File(...), session_id: str = "default"):
+async def story_answer_api(audio: UploadFile = File(...), session_id: str = Form(default="default")):
     """
     Nhận audio câu trả lời của bé, STT, chấm bằng LLM, trả audio phản hồi.
     Sau mỗi câu trả lời, service tự chuyển sang câu hỏi kế tiếp.
@@ -241,7 +264,7 @@ async def story_answer_api(audio: UploadFile = File(...), session_id: str = "def
                 story_session.completed = True
                 raise HTTPException(400, "Không tìm thấy câu hỏi hiện tại.")
 
-    user_text = await transcribe_audio_file(audio_bytes)
+    user_text = await _transcribe_or_bad_request(audio_bytes)
 
     if not already_completed:
         async with story_session.lock:

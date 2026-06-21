@@ -33,7 +33,7 @@ export class MockVoiceService implements VoiceService {
     const blob = createFakeWavBlob(600);
 
     const meta: VoiceMeta = {
-      phase: "asking",
+      phase: "listening",
       session_id: request.session_id,
       question_index: 0,
       total_questions: this.totalQuestions,

@@ -53,12 +53,53 @@ function decodeVoiceMeta(value: string | null): VoiceMeta {
   return JSON.parse(new TextDecoder().decode(bytes)) as VoiceMeta;
 }
 
+async function fetchVoice(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+    throw new Error("Mất kết nối khi gửi âm thanh. Kiểm tra mạng rồi thử lại nhé.");
+  }
+}
+
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  const text = await response.text().catch(() => "");
+  if (!text) {
+    return fallback;
+  }
+
+  try {
+    const payload = JSON.parse(text) as {
+      detail?: string;
+      message?: string;
+      error?: string;
+    };
+    return payload.error || payload.message || payload.detail || fallback;
+  } catch {
+    return text;
+  }
+}
+
+async function buildVoiceError(response: Response, url: string): Promise<Error> {
+  if (response.status === 413) {
+    return new Error("Bản ghi âm quá lớn hoặc quá dài. Hãy trả lời ngắn hơn rồi thử lại nhé.");
+  }
+  if (response.status === 415) {
+    return new Error("Định dạng âm thanh không đúng. Hãy tải lại trang và thử ghi âm lại nhé.");
+  }
+
+  const detail = await readErrorMessage(response, `${url} -> ${response.status}`);
+  return new Error(detail);
+}
+
 async function readVoiceAudioResponse(
   response: Response,
   url: string,
 ): Promise<VoiceSessionResult> {
   if (!response.ok) {
-    throw new Error(`${url} -> ${response.status}`);
+    throw await buildVoiceError(response, url);
   }
 
   const blob = await response.blob();
@@ -91,14 +132,14 @@ export class RealVoiceService implements VoiceService {
       formData.append("session_id", sessionId);
     }
 
-    const response = await fetch(url, {
+    const response = await fetchVoice(url, {
       method: "POST",
       body: formData,
       signal,
     });
 
     if (!response.ok) {
-      throw new Error(`${url} -> ${response.status}`);
+      throw await buildVoiceError(response, url);
     }
 
     const payload = await response.json() as { text?: string };
@@ -110,7 +151,7 @@ export class RealVoiceService implements VoiceService {
     signal?: AbortSignal,
   ): Promise<VoiceSessionResult> {
     const url = buildApiUrl(this.backendUrl, "/api/v1/voice/session/start");
-    const response = await fetch(url, {
+    const response = await fetchVoice(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(request),
@@ -130,7 +171,7 @@ export class RealVoiceService implements VoiceService {
     formData.append("audio", audioBlob, "recording.wav");
     formData.append("session_id", sessionId);
 
-    const response = await fetch(url, {
+    const response = await fetchVoice(url, {
       method: "POST",
       body: formData,
       signal,
@@ -145,7 +186,7 @@ export class RealVoiceService implements VoiceService {
   ): Promise<VoiceSessionResult> {
     const url = buildApiUrl(this.backendUrl, "/api/v1/voice/session/next-question");
     const params = new URLSearchParams({ session_id: sessionId });
-    const response = await fetch(`${url}?${params.toString()}`, {
+    const response = await fetchVoice(`${url}?${params.toString()}`, {
       method: "POST",
       signal,
     });

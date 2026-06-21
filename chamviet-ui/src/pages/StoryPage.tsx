@@ -291,14 +291,14 @@ export default function StoryPage() {
         if (!cancelled) {
           setStoryConfig(config);
           if (!config) {
-            setVoiceState("unavailable");
+            setVoiceState("fallback");
           }
         }
       })
       .catch(() => {
         if (!cancelled) {
           setStoryConfig(null);
-          setVoiceState("unavailable");
+          setVoiceState("fallback");
         }
       });
 

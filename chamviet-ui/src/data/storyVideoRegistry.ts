@@ -24,7 +24,7 @@ const STORY_VIDEO_ENTRIES: StoryVideoEntry[] = [
   {
     slug: "su-tich-ho-guom",
     title: "Sự tích Hồ Gươm",
-    videoId: DEFAULT_VIDEO_ID,
+    videoId: "lct-uiT1PRw",
     aliases: [
       "su tich ho guom",
       "sự tích hồ gươm",
@@ -38,7 +38,7 @@ const STORY_VIDEO_ENTRIES: StoryVideoEntry[] = [
   {
     slug: "su-tich-thanh-giong",
     title: "Sự tích Thánh Gióng",
-    videoId: DEFAULT_VIDEO_ID,
+    videoId: "k45aQ35q-rE",
     aliases: [
       "su tich thanh giong",
       "sự tích thánh gióng",

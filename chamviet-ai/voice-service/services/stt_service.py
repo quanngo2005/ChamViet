@@ -24,6 +24,22 @@ _async_client = None
 _client = None
 
 
+class AudioInputError(Exception):
+    """Base class for audio input problems that callers can return as 400s."""
+
+
+class AudioTooShortError(AudioInputError):
+    pass
+
+
+class AudioDecodingError(AudioInputError):
+    pass
+
+
+class NoSpeechDetectedError(AudioInputError):
+    pass
+
+
 def _ensure_supported_provider():
     if STT_PROVIDER != "groq":
         raise ValueError(f"STT_PROVIDER='{STT_PROVIDER}' chua duoc ho tro trong service hien tai")
@@ -45,42 +61,58 @@ def _get_client() -> Groq:
     return _client
 
 
+def _read_supported_wav(audio_bytes: bytes):
+    if not audio_bytes:
+        raise AudioDecodingError("Không nhận được dữ liệu âm thanh.")
+
+    try:
+        with wave.open(io.BytesIO(audio_bytes), "rb") as wf:
+            params = wf.getparams()
+            channels = wf.getnchannels()
+            sample_width = wf.getsampwidth()
+            raw = wf.readframes(wf.getnframes())
+    except (EOFError, wave.Error) as exc:
+        raise AudioDecodingError("Không giải mã được file âm thanh WAV.") from exc
+
+    if sample_width != 2:
+        raise AudioDecodingError("Codec WAV không được hỗ trợ. Cần PCM 16-bit.")
+    if channels not in (1, 2):
+        raise AudioDecodingError("Số kênh âm thanh không được hỗ trợ. Cần mono hoặc stereo.")
+    if not raw:
+        raise NoSpeechDetectedError("Không nghe thấy giọng nói trong bản ghi.")
+
+    return params, channels, raw
+
+
 def _boost_audio(audio_bytes: bytes) -> bytes:
     """
     Chuẩn hóa âm thanh chung trước khi gửi STT.
     Hỗ trợ WAV mono/stereo, trim im lặng nhẹ ở đầu/cuối và chuẩn hóa biên độ động.
     """
-    buf = io.BytesIO(audio_bytes)
-    try:
-        with wave.open(buf, "rb") as wf:
-            params = wf.getparams()
-            channels = wf.getnchannels()
-            sample_width = wf.getsampwidth()
-            raw = wf.readframes(wf.getnframes())
-    except wave.Error:
-        return audio_bytes
-
-    if sample_width != 2:
-        return audio_bytes
+    params, channels, raw = _read_supported_wav(audio_bytes)
 
     audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32)
     if channels > 1:
         audio = audio.reshape(-1, channels).mean(axis=1)
 
     if audio.size == 0:
-        return audio_bytes
+        raise NoSpeechDetectedError("Không nghe thấy giọng nói trong bản ghi.")
 
     # Trim im lặng rất nhẹ để bộ nhận diện tập trung vào phần bé nói.
     abs_audio = np.abs(audio)
     peak = abs_audio.max()
+    if peak < STT_MIN_SILENCE_THRESHOLD:
+        raise NoSpeechDetectedError("Không nghe thấy giọng nói trong bản ghi.")
     if peak > 0:
         silence_threshold = max(peak * STT_SILENCE_RATIO, STT_MIN_SILENCE_THRESHOLD)
         speech_indexes = np.where(abs_audio > silence_threshold)[0]
-        if speech_indexes.size:
-            padding = int(params.framerate * STT_PADDING_SECONDS)
-            start = max(int(speech_indexes[0]) - padding, 0)
-            end = min(int(speech_indexes[-1]) + padding, audio.size - 1)
-            audio = audio[start:end + 1]
+        if not speech_indexes.size:
+            raise NoSpeechDetectedError("Không nghe thấy giọng nói trong bản ghi.")
+
+        padding = int(params.framerate * STT_PADDING_SECONDS)
+        start = max(int(speech_indexes[0]) - padding, 0)
+        end = min(int(speech_indexes[-1]) + padding, audio.size - 1)
+        audio = audio[start:end + 1]
 
     peak = np.abs(audio).max()
     if peak > 0:
@@ -193,11 +225,9 @@ def _transcribe_once_sync(client: Groq, audio_bytes: bytes, language: str) -> tu
 
 
 def _get_audio_duration(audio_bytes: bytes) -> float:
-    try:
-        with wave.open(io.BytesIO(audio_bytes), "rb") as wf:
-            return wf.getnframes() / max(wf.getframerate(), 1)
-    except Exception:
-        return 0.0
+    params, _channels, raw = _read_supported_wav(audio_bytes)
+    sample_count = len(raw) / max(params.sampwidth * params.nchannels, 1)
+    return sample_count / max(params.framerate, 1)
 
 
 async def transcribe_audio_file(audio_bytes: bytes, language: str = STT_LANGUAGE) -> str:
@@ -205,7 +235,7 @@ async def transcribe_audio_file(audio_bytes: bytes, language: str = STT_LANGUAGE
     Nhận dạng giọng nói bất đồng bộ bằng Groq Whisper.
     """
     if _get_audio_duration(audio_bytes) < 0.3:
-        return ""
+        raise AudioTooShortError("Âm thanh quá ngắn, hãy nói lại nhé.")
 
     try:
         boosted = _boost_audio(audio_bytes)
@@ -215,17 +245,26 @@ async def transcribe_audio_file(audio_bytes: bytes, language: str = STT_LANGUAGE
             print(f"[STT Groq] Low confidence after normalization, retrying original audio. text='{first[0]}'", flush=True)
             second = await _transcribe_once_async(client, audio_bytes, language)
             chosen = _choose_better_transcript(first, second)
+            if not chosen:
+                raise NoSpeechDetectedError("Không nhận diện được giọng nói trong bản ghi.")
             return chosen
+        if not first[0]:
+            raise NoSpeechDetectedError("Không nhận diện được giọng nói trong bản ghi.")
         return first[0]
+    except AudioInputError:
+        raise
     except Exception as e:
         print(f"STT async error: {e}")
-        return ""
+        raise
 
 
 def transcribe_audio_file_sync(audio_bytes: bytes, language: str = STT_LANGUAGE) -> str:
     """
     Nhận dạng giọng nói đồng bộ bằng Groq Whisper.
     """
+    if _get_audio_duration(audio_bytes) < 0.3:
+        raise AudioTooShortError("Âm thanh quá ngắn, hãy nói lại nhé.")
+
     try:
         boosted = _boost_audio(audio_bytes)
         client = _get_client()
@@ -234,8 +273,14 @@ def transcribe_audio_file_sync(audio_bytes: bytes, language: str = STT_LANGUAGE)
             print(f"[STT Groq Sync] Low confidence after normalization, retrying original audio. text='{first[0]}'", flush=True)
             second = _transcribe_once_sync(client, audio_bytes, language)
             chosen = _choose_better_transcript(first, second)
+            if not chosen:
+                raise NoSpeechDetectedError("Không nhận diện được giọng nói trong bản ghi.")
             return chosen
+        if not first[0]:
+            raise NoSpeechDetectedError("Không nhận diện được giọng nói trong bản ghi.")
         return first[0]
+    except AudioInputError:
+        raise
     except Exception as e:
         print(f"STT sync error: {e}")
-        return ""
+        raise

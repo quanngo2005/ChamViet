@@ -8,6 +8,9 @@ const TRIM_THRESHOLD_FLOOR = 0.01;
 const TRIM_PADDING_MS = 200;
 const FADE_MS = 12;
 const MIN_RECORDING_SEC = 0.3;
+const MAX_RECORDING_SEC = 30;
+const MIN_AUDIBLE_PEAK = 0.015;
+const MIN_AUDIBLE_RMS = 0.003;
 const AUDIO_WORKLET_NAME = "pcm-capture-processor";
 const TTS_PLAYBACK_RATE = 1.0;
 const NEXT_QUESTION_DELAY_MS = 500;
@@ -250,6 +253,30 @@ function preprocessRecordedSamples(samples: Float32Array, sampleRate: number): F
   }
 
   return normalized;
+}
+
+function hasAudibleSpeech(samples: Float32Array): boolean {
+  if (samples.length === 0) {
+    return false;
+  }
+
+  let sum = 0;
+  for (let index = 0; index < samples.length; index += 1) {
+    sum += samples[index];
+  }
+
+  const mean = sum / samples.length;
+  let peak = 0;
+  let energy = 0;
+  for (let index = 0; index < samples.length; index += 1) {
+    const centered = samples[index] - mean;
+    const magnitude = Math.abs(centered);
+    peak = Math.max(peak, magnitude);
+    energy += centered * centered;
+  }
+
+  const rms = Math.sqrt(energy / samples.length);
+  return peak >= MIN_AUDIBLE_PEAK && rms >= MIN_AUDIBLE_RMS;
 }
 
 async function createPcmCaptureNode(
@@ -814,12 +841,21 @@ export function useVoiceAI({
       onError?.(new Error("Âm thanh quá ngắn, hãy nói lại nhé."));
       return;
     }
+    if (durationSec > MAX_RECORDING_SEC) {
+      onError?.(new Error("Bản ghi âm quá dài, hãy trả lời ngắn gọn rồi thử lại nhé."));
+      return;
+    }
 
     const merged = new Float32Array(totalLength);
     let offset = 0;
     for (const chunk of chunks) {
       merged.set(chunk, offset);
       offset += chunk.length;
+    }
+
+    if (!hasAudibleSpeech(merged)) {
+      onError?.(new Error("Không nghe thấy giọng nói. Hãy bật micro và nói lại nhé."));
+      return;
     }
 
     const processed = preprocessRecordedSamples(merged, sampleRate);

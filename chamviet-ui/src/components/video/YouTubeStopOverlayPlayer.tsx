@@ -210,6 +210,13 @@ function phaseStatusText(
   }
 }
 
+function voiceErrorText(error: unknown): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+  return "Ôi, có lỗi xảy ra rồi! Bé thử lại nhé.";
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function YouTubeStopOverlayPlayer({
   videoId,
@@ -276,7 +283,7 @@ export default function YouTubeStopOverlayPlayer({
     onSessionEnd: (_s, _t) => {
       // Session done — handled by sessionPhase === "done"
     },
-    onError: () => addMessage("ai", "Ôi, có lỗi xảy ra rồi! Bé thử lại nhé."),
+    onError: (error) => addMessage("ai", voiceErrorText(error)),
   });
 
   // ── Inject global keyframes ─────────────────────────────────────────────
