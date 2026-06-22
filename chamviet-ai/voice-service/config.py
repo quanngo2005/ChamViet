@@ -69,10 +69,12 @@ TTS_PROMPT_VERSION = _env("TTS_PROMPT_VERSION", "story-child-girl-v1")
 TTS_PERSONA_STYLE = os.getenv(
     "TTS_PERSONA_STYLE",
     (
-        "Giọng bé gái Việt Nam khoảng 6 đến 9 tuổi, vui tươi, tinh nghịch, "
-        "hồn nhiên và thân thiện. Âm sắc sáng, dễ thương, rõ dấu tiếng Việt. "
-        "Nói tự nhiên, không quá chậm, không kể chuyện cổ tích, không trầm buồn, "
-        "không nghiêm nghị, không la hét."
+        "Giọng bé gái miền Bắc Việt Nam khoảng 6 đến 9 tuổi, phát âm chuẩn giọng Bắc, "
+        "rõ dấu tiếng Việt, vui tươi, tinh nghịch, hồn nhiên và thân thiện. "
+        "Âm sắc sáng, dễ thương, nói tự nhiên, không quá chậm, không kể chuyện cổ tích, "
+        "không trầm buồn, không nghiêm nghị, không la hét. "
+        "Luôn dùng duy nhất một chất giọng này cho mọi ngữ cảnh: đọc câu hỏi, trả lời người dùng, "
+        "và phản hồi/feedback cho người dùng; tuyệt đối không đổi sang giọng khác."
     ),
 ).strip()
 TTS_LEADING_SILENCE_MS = _env_int("TTS_LEADING_SILENCE_MS", 120)

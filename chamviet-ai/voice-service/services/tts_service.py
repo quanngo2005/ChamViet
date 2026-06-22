@@ -24,17 +24,17 @@ from config import (
 )
 
 _client = None
-UNIFIED_VOICE_STYLE = "child_story_voice"
-LOCAL_TTS_PROMPT_VERSION = f"{TTS_PROMPT_VERSION}|single-child-voice-full-v4"
+UNIFIED_VOICE_STYLE = "single_northern_child_voice"
+LOCAL_TTS_PROMPT_VERSION = f"{TTS_PROMPT_VERSION}|single-northern-child-voice-full-v5"
 
 CACHE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".cache", "tts"))
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 UNIFIED_STORY_STYLE = (
     f"{TTS_PERSONA_STYLE} "
-    "Đây là chất giọng duy nhất cho mọi loại câu: chào, hỏi, khen, giải thích, động viên. "
-    "Luôn giữ âm sắc bé gái 6 đến 9 tuổi, hồn nhiên và sáng. "
-    "Chỉ thay đổi ngữ điệu nhẹ theo dấu câu, tuyệt đối không đổi sang giọng người lớn, giọng dạy học, người kể chuyện trầm, hoặc phát thanh viên."
+    "Đây là chất giọng duy nhất cho mọi loại câu: đọc câu hỏi, trả lời người dùng, khen, giải thích, động viên và feedback. "
+    "Luôn giữ âm sắc bé gái 6 đến 9 tuổi, hồn nhiên, sáng, phát âm chuẩn giọng Bắc Việt Nam. "
+    "Chỉ thay đổi ngữ điệu nhẹ theo dấu câu, tuyệt đối không đổi sang giọng người lớn, giọng dạy học, người kể chuyện trầm, giọng miền Trung, giọng miền Nam, hoặc phát thanh viên."
 )
 
 def _get_client():
@@ -89,7 +89,10 @@ def _save_wave(pcm_data: bytes, output_path: str, sample_rate: int = TTS_OUTPUT_
 def _build_prompt(text: str, style: str = "") -> str:
     base_instruction = (
         f"{UNIFIED_STORY_STYLE} "
-        "Đọc hoàn toàn bằng tiếng Việt Nam, rõ dấu và rõ từng từ. "
+        "Đọc hoàn toàn bằng tiếng Việt, rõ dấu và rõ từng từ. "
+        "Bắt buộc chỉ dùng duy nhất một giọng bé gái miền Bắc này cho toàn bộ văn bản trong mọi ngữ cảnh. "
+        "Dù văn bản là câu hỏi, câu trả lời, hay feedback, vẫn phải giữ nguyên cùng một chất giọng và cùng một màu giọng. "
+        "Không được đổi persona, không được đổi vùng giọng, không được già giọng, không được dùng giọng kể chuyện khác. "
         "Giữ tốc độ tự nhiên của trẻ nhỏ nhưng chậm hơn hiện tại một chút, khoảng 8 đến 12 phần trăm, không kéo giọng và không già giọng. "
         "Không nuốt chữ, không bỏ bất kỳ từ nào ở đầu câu hoặc cuối câu, không đọc bằng giọng Anh-Việt. "
         "Trước khi bắt đầu nói hãy nghỉ một nhịp rất ngắn; sau khi đọc xong toàn bộ văn bản hãy giữ một nhịp im lặng rất ngắn. "
