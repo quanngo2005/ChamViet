@@ -539,8 +539,8 @@ export default function YouTubeStopOverlayPlayer({
                 >
                   <Box
                     sx={{
-                      width: { xs: 160, md: 600 },
-                      height: { xs: 160, md: 600 },
+                      width: { xs: 160, md: "calc(min(72vh, calc(100dvh - 16px)) * 0.9)" },
+                      height: { xs: 160, md: "calc(min(72vh, calc(100dvh - 16px)) * 0.9)" },
                       position: "relative",
                       animationName: "mascotFloat",
                       animationDuration: "3s",
