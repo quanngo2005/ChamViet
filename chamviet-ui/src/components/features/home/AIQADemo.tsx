@@ -21,7 +21,7 @@ export default function AIQADemo() {
                 <Sparkles size={18} />
               </span>
               <div>
-                <strong>Chạm Việt AI</strong>
+                <strong>{"Chạm\u00A0Việt"} AI</strong>
                 <span>Hướng dẫn sau câu chuyện</span>
               </div>
             </div>

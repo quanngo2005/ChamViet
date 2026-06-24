@@ -53,7 +53,7 @@ export default function Hero() {
           <div className="hero-section__copy">
             <p className="hero-section__kicker">Chạm một câu chuyện - Nhớ một Việt Nam</p>
             <h1 className="hero-card__heading">
-              Chạm Việt
+              {"Chạm\u00A0Việt"}
             </h1>
             <p className="hero-card__sub">
               Xếp hình tranh gỗ kết hợp 3D và kể chuyện tương tác, giúp bé khám phá những câu chuyện Việt một cách trực quan và thú vị
@@ -86,7 +86,7 @@ export default function Hero() {
         }}
         aria-hidden={!isStickyInteractive}
       >
-        <span className="hero-sticky-cta__label">Chạm Việt - {HOME_PRODUCT.boxLabel}</span>
+        <span className="hero-sticky-cta__label">{"Chạm\u00A0Việt"} - {HOME_PRODUCT.boxLabel}</span>
         <button
           className="btn btn-primary hero-sticky-cta__btn"
           onClick={() => navigate(`/products/${HOME_PRODUCT.id}`)}

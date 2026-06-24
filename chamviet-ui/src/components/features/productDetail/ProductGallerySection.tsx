@@ -7,7 +7,7 @@ export interface ProductGallerySectionProps {
 }
 
 const galleryItems = [
-  { label: 'Box Chạm Việt', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/2pwithhop.png' },
+  { label: 'Box Chạm\u00A0Việt', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/2pwithhop.png' },
   { label: 'Sự tích Hồ Gươm', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/hoguomsingle.png' },
   { label: 'Sự tích Thánh Gióng', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/thanhgiongsingle.png' },
   { label: 'Hộp phản chiếu', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/peperghost.png' },

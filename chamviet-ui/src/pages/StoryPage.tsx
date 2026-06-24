@@ -143,10 +143,15 @@ function CinemaHero({
       return;
     }
 
-    if (!prefersViewportFullscreen && target.requestFullscreen) {
+    if (!prefersViewportFullscreen) {
       try {
-        await target.requestFullscreen();
-        return;
+        if (target.requestFullscreen) {
+          await target.requestFullscreen();
+          return;
+        } else if ((target as any).webkitRequestFullscreen) {
+          await (target as any).webkitRequestFullscreen();
+          return;
+        }
       } catch {
         // Some mobile browsers reject wrapper fullscreen; fixed viewport mode keeps the demo usable.
       }

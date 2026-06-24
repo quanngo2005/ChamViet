@@ -92,7 +92,7 @@ export const HOME_COPY = {
     items: [
       {
         number: '1',
-        title: 'Ghép tranh & truy cập website Chạm Việt',
+        title: 'Ghép tranh & truy cập website Chạm\u00A0Việt',
         description: 'Hoàn thành bức tranh và truy cập website để mở cánh cửa bước vào câu chuyện.',
         screenLabel: 'Ghép tranh gỗ',
         image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/demo01.png',

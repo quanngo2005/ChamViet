@@ -1,32 +1,21 @@
 import './HowToPlayPage.css';
 
-import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
   ArrowRight,
-  Boxes,
   Camera,
   CircleHelp,
   Lightbulb,
-  MessageCircleQuestion,
-  PlayCircle,
   ScanLine,
   ShieldCheck,
   Sparkles,
   Volume2,
   Brain,
-  type LucideIcon,
 } from 'lucide-react';
 
-import { HOME_COPY, HOME_IMAGES, HOME_PRODUCT } from '../data/home';
-
-const workflowIcons: Record<string, LucideIcon> = {
-  puzzle: Boxes,
-  scanner: ScanLine,
-  ghost: PlayCircle,
-  qa: MessageCircleQuestion,
-};
+import { HOME_IMAGES, HOME_PRODUCT } from '../data/home';
+import Workflow from '../components/features/home/Workflow';
 
 const parentTips = [
   {
@@ -94,7 +83,6 @@ function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
         >
-          <p className="section-eyebrow">Hành trình trải nghiệm</p>
           <h1>4 bước để truyền thuyết Việt sống dậy trong căn nhà của bạn </h1>
           <p>
             Từ ghép tranh, quét hình đến xem hologram và hỏi đáp cùng AI Chíp Bông - tất cả chỉ cần một chiếc điện thoại và hộp chiếu đi kèm.
@@ -119,61 +107,13 @@ function HeroSection() {
   );
 }
 
-function StepsSection() {
-  return (
-    <section className="how-play-steps">
-      <div className="container">
-        <div className="how-play-section-head">
-          <p className="section-eyebrow">Hành trình 4 bước</p>
-          <h2>{HOME_COPY.steps.title}</h2>
-          <p>{HOME_COPY.steps.description}</p>
-        </div>
 
-        <div className="how-play-step-grid">
-          {HOME_COPY.steps.items.map((step) => {
-            const Icon = workflowIcons[step.variant] ?? Sparkles;
-
-            return (
-              <article
-                key={step.number}
-                className={`how-play-step-card how-play-step-card--${step.variant}`}
-                style={{ '--accent-color': step.accentColor } as CSSProperties}
-              >
-                <div className="how-play-step-card__media">
-                  <picture>
-                    <img src={step.image} alt={step.alt} loading="lazy" decoding="async" />
-                  </picture>
-                  <div className="how-play-step-card__veil" aria-hidden="true" />
-                  <span className="how-play-step-card__badge">{step.screenLabel}</span>
-                </div>
-
-                <div className="how-play-step-card__body">
-                  <div className="how-play-step-card__meta">
-                    <span className="how-play-step-card__icon" aria-hidden="true">
-                      <Icon size={20} />
-                    </span>
-                    <span className="how-play-step-card__num">
-                      {String(step.number).padStart(2, '0')}
-                    </span>
-                  </div>
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function TipsForParentsSection() {
   return (
     <section className="how-play-guidance">
       <div className="container how-play-guidance__inner">
         <div className="how-play-guidance__copy">
-          <p className="section-eyebrow">Dành cho phụ huynh</p>
           <h2>Hãy biến mỗi câu chuyện thành một cuộc trò chuyện nhỏ trong gia đình.</h2>
           <p>
             Không có cách nào tốt hơn việc cùng con chơi và trò chuyện. Khi đã biết cách bắt đầu, việc cùng con
@@ -208,7 +148,6 @@ function CommonIssuesSection() {
     <section className="how-play-issues">
       <div className="container">
         <div className="how-play-section-head how-play-section-head--left">
-          <p className="section-eyebrow">Tối ưu trải nghiệm</p>
           <h2>Mẹo nhỏ để trải nghiệm mượt hơn</h2>
         </div>
 
@@ -261,7 +200,7 @@ export default function HowToPlayPage() {
   return (
     <main className="how-play-page">
       <HeroSection />
-      <StepsSection />
+      <Workflow />
       <TipsForParentsSection />
       <CommonIssuesSection />
       <FinalCtaSection />

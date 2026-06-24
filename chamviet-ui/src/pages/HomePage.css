@@ -14,7 +14,7 @@ body.home-page-active section {
 
 /* ── Page-level background ── */
 .home-page {
-  overflow: clip;
+  overflow-x: clip;
   padding-bottom: 32px;
   background:
     radial-gradient(circle at top left, rgba(198, 40, 40, 0.05), transparent 28%),

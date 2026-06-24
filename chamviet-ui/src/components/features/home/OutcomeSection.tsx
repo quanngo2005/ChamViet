@@ -32,7 +32,7 @@ export default function OutcomeSection() {
           <p className="section-eyebrow">Kết quả mang lại</p>
           <h2 className="outcome-section__title">Sau một lần mở hộp, trẻ có thể kể lại câu chuyện</h2>
           <p className="outcome-section__sub">
-            Landing không chỉ giới thiệu món đồ chơi. Nó cho phụ huynh thấy điều con nhận được sau khi chơi cùng Chạm Việt.
+            Landing không chỉ giới thiệu món đồ chơi. Nó cho phụ huynh thấy điều con nhận được sau khi chơi cùng Chạm\u00A0Việt.
           </p>
         </Reveal>
 

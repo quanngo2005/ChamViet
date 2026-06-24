@@ -78,7 +78,7 @@ export function ProductStorySection({ heading, paragraphs }: ProductStorySection
               <Box
                 component="img"
                 src={heroChildAr}
-                alt="Bé trải nghiệm câu chuyện văn hóa qua Chạm Việt"
+                alt="Bé trải nghiệm câu chuyện văn hóa qua Chạm\u00A0Việt"
                 sx={{
                   width: '100%',
                   aspectRatio: '16/9',

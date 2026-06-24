@@ -459,6 +459,9 @@ export default function YouTubeStopOverlayPlayer({
             }
           }}
           onEnded={() => {
+            if (nativeVideoRef.current && (nativeVideoRef.current as any).webkitDisplayingFullscreen) {
+              (nativeVideoRef.current as any).webkitExitFullscreen();
+            }
             if (config) {
               setOverlayOpen(true);
             } else {

@@ -266,7 +266,7 @@ function HeroSection() {
             <Box
               component="img"
               src={HOME_IMAGES.heroChildArWebp}
-              alt="Bé trải nghiệm câu chuyện tương tác Chạm Việt"
+              alt="Bé trải nghiệm câu chuyện tương tác Chạm\u00A0Việt"
               loading="eager"
               decoding="async"
               sx={{
@@ -425,7 +425,7 @@ function MissionSection() {
 /* ─────────────────────────────────────────────
    StorySection  —  two distinct subsections:
    1. DARK: 4 sequential steps
-   2. LIGHT: what makes Chạm Việt different
+   2. LIGHT: what makes Chạm\u00A0Việt different
 ───────────────────────────────────────────── */
 function StorySection() {
   return (
@@ -470,7 +470,6 @@ function StorySection() {
               }}
             >
               {ABOUT_STEPS.map(({ title, description, icon: Icon }, index) => {
-                const isAccent = index === 2;
                 return (
                   <Box
                     key={title}
@@ -480,17 +479,38 @@ function StorySection() {
                       minHeight: { xs: 230, md: 290 },
                       p: { xs: 2.25, md: 3 },
                       borderRadius: 2.5,
-                      backgroundColor: isAccent
-                        ? "rgba(212,175,55,0.10)"
-                        : "rgba(255,255,255,0.05)",
-                      border: isAccent
-                        ? "1px solid rgba(212,175,55,0.24)"
-                        : "1px solid rgba(255,255,255,0.08)",
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      boxShadow: "0 0 0 rgba(0,0,0,0)",
+                      transition:
+                        "transform 220ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease",
+                      "@media (hover: hover)": {
+                        "&:hover": {
+                          transform: "translateY(-6px)",
+                          backgroundColor: "rgba(212,175,55,0.16)",
+                          borderColor: "rgba(212,175,55,0.42)",
+                          boxShadow: "0 18px 34px rgba(0,0,0,0.22)",
+                        },
+                        "&:hover .story-step-icon": {
+                          backgroundColor: "rgba(212,175,55,0.22)",
+                          transform: "scale(1.04)",
+                        },
+                        "&:hover .story-step-title": {
+                          color: "#fff5d6",
+                        },
+                        "&:hover .story-step-description": {
+                          color: "rgba(255,255,255,0.8)",
+                        },
+                        "&:hover .story-step-number": {
+                          opacity: 0.08,
+                        },
+                      },
                     }}
                   >
                     {/* Large background step number */}
                     <Typography
                       aria-hidden
+                      className="story-step-number"
                       sx={{
                         position: "absolute",
                         bottom: -20,
@@ -519,6 +539,7 @@ function StorySection() {
                     >
                       {/* Icon */}
                       <Box
+                        className="story-step-icon"
                         sx={{
                           width: 44,
                           height: 44,
@@ -527,6 +548,7 @@ function StorySection() {
                           placeItems: "center",
                           color: "var(--accent)",
                           backgroundColor: "rgba(212,175,55,0.14)",
+                          transition: "transform 220ms ease, background-color 220ms ease",
                         }}
                       >
                         <Icon size={22} strokeWidth={2.2} />
@@ -535,20 +557,24 @@ function StorySection() {
                       {/* Text */}
                       <Stack spacing={0.75}>
                         <Typography
+                          className="story-step-title"
                           sx={{
                             color: "#ffffff",
                             fontSize: { xs: 17, md: 21 },
                             fontWeight: 950,
                             lineHeight: 1.2,
+                            transition: "color 220ms ease",
                           }}
                         >
                           {title}
                         </Typography>
                         <Typography
+                          className="story-step-description"
                           sx={{
                             color: "rgba(255,255,255,0.55)",
                             fontSize: { xs: 13.5, md: 14.5 },
                             lineHeight: 1.75,
+                            transition: "color 220ms ease",
                           }}
                         >
                           {description}
@@ -586,7 +612,7 @@ function StorySection() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                Điều khiến Chạm Việt khác biệt
+                Điều khiến {"Chạm\u00A0Việt"} khác biệt
               </Typography>
               <Typography
                 sx={{
@@ -602,7 +628,7 @@ function StorySection() {
             </Stack>
 
             <Stack spacing={1.25}>
-              {DIFFERENCE_POINTS.map((point, i) => (
+              {DIFFERENCE_POINTS.map((point) => (
                 <Box
                   key={point}
                   sx={{
@@ -611,26 +637,41 @@ function StorySection() {
                     gap: 2,
                     p: { xs: 2, md: 2.5 },
                     borderRadius: 2,
-                    backgroundColor: i === 0
-                      ? "rgba(198,40,40,0.05)"
-                      : "rgba(255,255,255,0.72)",
-                    border: i === 0
-                      ? "1px solid rgba(198,40,40,0.15)"
-                      : "1px solid rgba(78,52,46,0.09)",
+                    backgroundColor: "rgba(255,255,255,0.72)",
+                    border: "1px solid rgba(78,52,46,0.09)",
+                    boxShadow: "0 0 0 rgba(0,0,0,0)",
+                    transition:
+                      "transform 220ms ease, background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease",
+                    "@media (hover: hover)": {
+                      "&:hover": {
+                        transform: "translateX(6px)",
+                        backgroundColor: "rgba(255,252,247,0.96)",
+                        borderColor: "rgba(212,175,55,0.26)",
+                        boxShadow: "0 16px 30px rgba(78,52,46,0.09)",
+                      },
+                      "&:hover .difference-point-icon": {
+                        backgroundColor: "var(--primary)",
+                        color: "#ffffff",
+                      },
+                      "&:hover .difference-point-text": {
+                        color: "var(--primary)",
+                      },
+                    },
                   }}
                 >
                   {/* Circle check icon */}
                   <Box
+                    className="difference-point-icon"
                     sx={{
                       width: 28,
                       height: 28,
                       borderRadius: "50%",
-                      backgroundColor: i === 0
-                        ? "var(--primary)"
-                        : "rgba(78,52,46,0.08)",
+                      backgroundColor: "rgba(78,52,46,0.08)",
+                      color: "var(--secondary)",
                       display: "grid",
                       placeItems: "center",
                       flexShrink: 0,
+                      transition: "background-color 220ms ease, color 220ms ease",
                     }}
                   >
                     <Box
@@ -641,7 +682,7 @@ function StorySection() {
                       <polyline
                         points="2,6.5 5,9.5 10,3"
                         fill="none"
-                        stroke={i === 0 ? "#ffffff" : "var(--secondary)"}
+                        stroke="currentColor"
                         strokeWidth="1.8"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -649,10 +690,12 @@ function StorySection() {
                     </Box>
                   </Box>
                   <Typography
+                    className="difference-point-text"
                     sx={{
                       color: "var(--text-h)",
                       fontSize: { xs: 15.5, md: 17 },
-                      fontWeight: i === 0 ? 900 : 750,
+                      fontWeight: 750,
+                      transition: "color 220ms ease",
                     }}
                   >
                     {point}
@@ -707,7 +750,7 @@ function FinalCta() {
                       letterSpacing: "-0.01em",
                     }}
                   >
-                    Cam kết của Chạm Việt
+                    Cam kết của {"Chạm\u00A0Việt"}
                   </Typography>
                   <Typography
                     sx={{
@@ -786,6 +829,7 @@ function FinalCta() {
                   <Typography
                     component="h2"
                     sx={{
+                      color: "#ffffff",
                       fontSize: { xs: 28, md: 42 },
                       fontWeight: 950,
                       lineHeight: 1.1,
@@ -796,7 +840,7 @@ function FinalCta() {
                   </Typography>
                   <Typography
                     sx={{
-                      color: "rgba(255,255,255,0.55)",
+                      color: "#ffffff",
                       fontSize: { xs: 16, md: 19 },
                       fontWeight: 700,
                       lineHeight: 1.5,
@@ -815,8 +859,8 @@ function FinalCta() {
                         gap: 2,
                         p: { xs: 2, md: 2.25 },
                         borderRadius: 2,
-                        backgroundColor: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(255,255,255,0.09)",
+                        backgroundColor: "rgba(255,248,234,0.10)",
+                        border: "1px solid rgba(255,248,234,0.16)",
                         alignItems: "flex-start",
                       }}
                     >
@@ -828,7 +872,7 @@ function FinalCta() {
                           borderRadius: 1.5,
                           display: "grid",
                           placeItems: "center",
-                          backgroundColor: "rgba(212,175,55,0.14)",
+                          backgroundColor: "rgba(212,175,55,0.2)",
                           color: "var(--accent)",
                           flexShrink: 0,
                         }}
@@ -838,6 +882,7 @@ function FinalCta() {
                       <Stack spacing={0.5}>
                         <Typography
                           sx={{
+                            color: "#ffffff",
                             fontSize: { xs: 15.5, md: 17 },
                             fontWeight: 900,
                             lineHeight: 1.2,
@@ -847,7 +892,7 @@ function FinalCta() {
                         </Typography>
                         <Typography
                           sx={{
-                            color: "rgba(255,255,255,0.58)",
+                            color: "#ffffff",
                             fontSize: { xs: 13.5, md: 14.5 },
                             lineHeight: 1.72,
                           }}
@@ -905,7 +950,7 @@ function FinalCta() {
                     lineHeight: 1.8,
                   }}
                 >
-                  Khám phá bộ sưu tập Chạm Việt và bắt đầu hành trình cùng con ngay hôm nay.
+                  Khám phá bộ sưu tập Chạm\u00A0Việt và bắt đầu hành trình cùng con ngay hôm nay.
                 </Typography>
               </Stack>
               <Button

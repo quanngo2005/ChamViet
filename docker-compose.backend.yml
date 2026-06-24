@@ -1,0 +1,69 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - chamviet-be-redis-data:/data
+    networks:
+      - chamviet-be
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${BACKEND_IMAGE:-quanngo205/chamviet-api:${CHAMVIET_IMAGE_TAG:-1.0.0}}
+    build:
+      context: ./chamviet-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:?Set SPRING_DATASOURCE_URL in .env.backend}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:?Set SPRING_DATASOURCE_USERNAME in .env.backend}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?Set SPRING_DATASOURCE_PASSWORD in .env.backend}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_SQL_INIT_MODE: ${SPRING_SQL_INIT_MODE:-never}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.backend}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET in .env.backend}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-900000}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-604800000}
+      ENCRYPTION_SECRET_KEY: ${ENCRYPTION_SECRET_KEY:?Set ENCRYPTION_SECRET_KEY in .env.backend}
+      API_KEY: ${API_KEY:?Set API_KEY in .env.backend}
+      AI_VOICE_BASE_URL: ${AI_VOICE_BASE_URL:-http://host.docker.internal:8000}
+      AI_VISION_BASE_URL: ${AI_VISION_BASE_URL:-http://host.docker.internal:5000}
+      AI_VISION_TIMEOUT_SECONDS: ${AI_VISION_TIMEOUT_SECONDS:-15}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://www.chamviet.com.vn,https://chamviet.com.vn}
+      APP_CONTACT_RECIPIENT: ${APP_CONTACT_RECIPIENT:-motvietnam@chamviet.com.vn}
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-mail9077.maychuemail.com}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-motvietnam@chamviet.com.vn}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH:-true}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE:-true}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${BACKEND_PORT:-8081}:8081"
+    networks:
+      - chamviet-be
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8081/v3/api-docs >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+
+networks:
+  chamviet-be:
+    driver: bridge
+
+volumes:
+  chamviet-be-redis-data:

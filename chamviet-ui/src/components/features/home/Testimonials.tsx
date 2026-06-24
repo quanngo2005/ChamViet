@@ -17,7 +17,7 @@ const testimonials = [
     name: 'Thầy Trần Minh Khoa',
     role: 'Giáo viên Tiểu học · Hà Nội',
     avatar: 'MK',
-    quote: 'Tôi đã tích hợp Chạm Việt vào giờ học văn hóa. Học sinh hứng thú hơn hẳn. Trải nghiệm sân khấu ảo giúp các em ghi nhớ câu chuyện cổ tích sâu hơn bất kỳ sách giáo khoa nào.',
+    quote: 'Tôi đã tích hợp Chạm\u00A0Việt vào giờ học văn hóa. Học sinh hứng thú hơn hẳn. Trải nghiệm sân khấu ảo giúp các em ghi nhớ câu chuyện cổ tích sâu hơn bất kỳ sách giáo khoa nào.',
     stars: 5,
     product: 'Bộ sư tập: Hào khí Việt Nam'
   },
@@ -39,7 +39,7 @@ export default function Testimonials() {
         {/* Header */}
         <Reveal className="testimonials-section__header">
           <h2 className="testimonials-section__title">
-            <span style={{ color: 'var(--primary)' }}>Phụ huynh nói gì sau khi Chạm Việt đến với gia đình?</span>
+            <span style={{ color: 'var(--primary)' }}>Phụ huynh nói gì sau khi {"Chạm\u00A0Việt"} đến với gia đình?</span>
           </h2>
         </Reveal>
 

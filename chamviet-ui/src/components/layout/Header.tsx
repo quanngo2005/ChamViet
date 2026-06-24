@@ -29,10 +29,11 @@ const storyMenuItems = getFeaturedStoryVideoEntries().map((entry) => ({
 }));
 
 const primaryNavItems = [
+  { label: "Trang chủ", to: "/" },
+  { label: "Giới thiệu", to: "/about" },
   { label: "Sản phẩm", to: productPath },
   { label: "Cách chơi", to: "/how-to-play" },
   { label: "Quét tranh", to: "/scan" },
-  { label: "Giới thiệu", to: "/about" },
 ];
 
 const desktopNavButtonSx = {
@@ -136,7 +137,7 @@ export default function Header() {
             <Box
               component="img"
               src="https://storage.googleapis.com/chamviet-media-bucket-2026/cham_viet_logo_red_transparent.png" // Đường dẫn tới file ảnh của bạn
-              alt="Chạm Việt"
+              alt="Chạm\u00A0Việt"
               sx={{
                 height: { xs: 36, sm: 44 }, // Tự động co giãn chiều cao theo màn hình
                 width: "auto",
@@ -306,7 +307,7 @@ export default function Header() {
                 letterSpacing: 0,
               }}
             >
-              Chạm Việt
+              {"Chạm\u00A0Việt"}
             </Typography>
             <IconButton
               onClick={handleMobileMenuClose}
