@@ -388,7 +388,7 @@ export default function YouTubeStopOverlayPlayer({
     }
   };
 
-  const mascotSrc = config?.mascotAvatarUrl || config?.mascotAvatar || "";
+  const mascotSrc = config?.mascotAvatarUrl || config?.mascotAvatar || mascot;
 
   // ── Action handlers ─────────────────────────────────────────────────────
   const handleSkip = () => {
