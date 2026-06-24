@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import { Reveal } from "../../common/MotionReveal";
 import { HOME_PRODUCT } from "../../../data/home";
-import "./PurchaseSection.scss";
+import "./Purchasesection.scss";
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function CornerDecoration() {
