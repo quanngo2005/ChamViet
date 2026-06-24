@@ -465,8 +465,20 @@ function StorySection() {
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" },
+                gridTemplateColumns: { xs: "none", md: "repeat(4, 1fr)" },
+                gridAutoFlow: { xs: "column", md: "row" },
+                gridAutoColumns: { xs: "minmax(260px, 82vw)", md: "auto" },
                 gap: { xs: 1.5, md: 2 },
+                overflowX: { xs: "auto", md: "visible" },
+                overflowY: "hidden",
+                pb: { xs: 1, md: 0 },
+                pr: { xs: 1, md: 0 },
+                scrollSnapType: { xs: "x mandatory", md: "none" },
+                WebkitOverflowScrolling: "touch",
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": {
+                  display: "none",
+                },
               }}
             >
               {ABOUT_STEPS.map(({ title, description, icon: Icon }, index) => {
@@ -478,6 +490,8 @@ function StorySection() {
                       overflow: "hidden",
                       minHeight: { xs: 230, md: 290 },
                       p: { xs: 2.25, md: 3 },
+                      scrollSnapAlign: { xs: "start", md: "unset" },
+                      scrollSnapStop: { xs: "always", md: "normal" },
                       borderRadius: 2.5,
                       backgroundColor: "rgba(255,255,255,0.05)",
                       border: "1px solid rgba(255,255,255,0.08)",

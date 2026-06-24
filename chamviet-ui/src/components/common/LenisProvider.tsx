@@ -86,6 +86,7 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const lenisRef = useRef<Lenis | null>(null);
   const [lenis, setLenis] = useState<Lenis | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const { scrollY, scrollYProgress } = useScroll();
 
   const scrollTo = useCallback((target: ScrollTarget, options?: ScrollToOptions) => {
@@ -97,7 +98,32 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (prefersReducedMotion) {
+    if (typeof window === "undefined") return;
+
+    const touchMedia = window.matchMedia("(hover: none), (pointer: coarse)");
+
+    const updateTouchDevice = () => {
+      setIsTouchDevice(touchMedia.matches || navigator.maxTouchPoints > 0);
+    };
+
+    updateTouchDevice();
+    if (typeof touchMedia.addEventListener === "function") {
+      touchMedia.addEventListener("change", updateTouchDevice);
+    } else {
+      touchMedia.addListener(updateTouchDevice);
+    }
+
+    return () => {
+      if (typeof touchMedia.removeEventListener === "function") {
+        touchMedia.removeEventListener("change", updateTouchDevice);
+      } else {
+        touchMedia.removeListener(updateTouchDevice);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion || isTouchDevice) {
       lenisRef.current = null;
       lenisInstance = null;
       setLenis(null);
@@ -133,7 +159,7 @@ export default function LenisProvider({ children }: { children: ReactNode }) {
       lenisInstance = null;
       setLenis(null);
     };
-  }, [prefersReducedMotion]);
+  }, [isTouchDevice, prefersReducedMotion]);
 
   useEffect(() => {
     scrollToTop(true);
