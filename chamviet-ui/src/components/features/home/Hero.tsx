@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAppScroll } from "../../../hooks/useAppScroll";
 import { HOME_COPY, HOME_IMAGES, HOME_PRODUCT } from "../../../data/home";
-import { scrollToSection } from "../../common/LenisProvider";
+import { scrollToSection } from "../../common/AppScrollProvider";
 
 export default function Hero() {
   const [isStickyInteractive, setIsStickyInteractive] = useState(false);
@@ -38,7 +38,7 @@ export default function Hero() {
       <section className="hero-section">
         <div className="hero-section__media" aria-hidden="true">
           <picture>
-            <source srcSet={HOME_IMAGES.heroChildArWebp} type="image/webp" />
+            <source srcSet={HOME_IMAGES.heroImage} type="image/svg" />
             <img
               src={HOME_IMAGES.heroChildAr}
               alt=""
@@ -53,7 +53,7 @@ export default function Hero() {
           <div className="hero-section__copy">
             <p className="hero-section__kicker">Chạm một câu chuyện - Nhớ một Việt Nam</p>
             <h1 className="hero-card__heading">
-              {"Chạm\u00A0Việt"}
+              {"Chạm Việt"}
             </h1>
             <p className="hero-card__sub">
               Xếp hình tranh gỗ kết hợp 3D và kể chuyện tương tác, giúp bé khám phá những câu chuyện Việt một cách trực quan và thú vị
@@ -86,7 +86,7 @@ export default function Hero() {
         }}
         aria-hidden={!isStickyInteractive}
       >
-        <span className="hero-sticky-cta__label">{"Chạm\u00A0Việt"} - {HOME_PRODUCT.boxLabel}</span>
+        <span className="hero-sticky-cta__label">{"Chạm Việt"} - {HOME_PRODUCT.boxLabel}</span>
         <button
           className="btn btn-primary hero-sticky-cta__btn"
           onClick={() => navigate(`/products/${HOME_PRODUCT.id}`)}

@@ -195,8 +195,8 @@ function phaseStatusText(
   if (isRecording) return { primary: "Đang nghe...", secondary: "Thả tay để gửi" };
   if (isAwaitingUserText) {
     return {
-      primary: "Đã nhận giọng nói",
-      secondary: "Chíp Bông đang nghe lại câu trả lời của con",
+      primary: "Đã nghe câu trả lời",
+      secondary: "Chíp Bông đang suy nghĩ",
     };
   }
   switch (phase) {
@@ -275,7 +275,6 @@ export default function YouTubeStopOverlayPlayer({
   } = useVoiceAI({
     voiceService,
     storyConfig,
-    onUserText: (text) => addMessage("user", text),
     onAiMessage: (text) => addMessage("ai", text),
     onQuestionRead: (_qText) => {
       // Question text comes through onAiMessage already via speakAndNotify
@@ -615,7 +614,6 @@ export default function YouTubeStopOverlayPlayer({
                     boxSizing: "border-box",
                     overscrollBehavior: "contain",
                   }}
-                  data-lenis-prevent
                 >
                   {/* Panel header */}
                   <Box
@@ -715,7 +713,6 @@ export default function YouTubeStopOverlayPlayer({
                         borderRadius: 4,
                       },
                     }}
-                    data-lenis-prevent
                   >
                     {!storyConfig && (
                       <Box
@@ -743,12 +740,12 @@ export default function YouTubeStopOverlayPlayer({
                       </Box>
                     )}
 
-                    {messages.map((msg) => (
+                    {messages.filter((msg) => msg.role === "ai").map((msg) => (
                       <Box
                         key={msg.id}
                         sx={{
                           display: "flex",
-                          justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                          justifyContent: "flex-start",
                           animation: "msgFadeIn 0.25s ease",
                         }}
                       >
@@ -757,24 +754,15 @@ export default function YouTubeStopOverlayPlayer({
                             maxWidth: "80%",
                             px: 2,
                             py: 1.25,
-                            borderRadius:
-                              msg.role === "user"
-                                ? "18px 18px 4px 18px"
-                                : "18px 18px 18px 4px",
-                            bgcolor:
-                              msg.role === "user"
-                                ? COLORS.accent
-                                : "#f1f5f9",
-                            color: msg.role === "user" ? "#fff" : COLORS.titleDark,
-                            boxShadow:
-                              msg.role === "user"
-                                ? "0 4px 12px rgba(168,50,50,0.25)"
-                                : "0 2px 8px rgba(0,0,0,0.06)",
+                            borderRadius: "18px 18px 18px 4px",
+                            bgcolor: "#f1f5f9",
+                            color: COLORS.titleDark,
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                           }}
                         >
                           <Typography
                             variant="body2"
-                            sx={{ lineHeight: 1.6, fontWeight: msg.role === "ai" ? 500 : 400 }}
+                            sx={{ lineHeight: 1.6, fontWeight: 500 }}
                           >
                             {msg.content}
                           </Typography>

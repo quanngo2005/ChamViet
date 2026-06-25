@@ -44,7 +44,7 @@ export default function Unboxing() {
             <div className="unboxing-section__image-frame">
               <img
                 src={unboxingImage}
-                alt="Trọn bộ sản phẩm Chạm\u00A0Việt: tranh ghép gỗ, sách hướng dẫn, mã kích hoạt"
+                alt="Trọn bộ sản phẩm Chạm Việt: tranh ghép gỗ, sách hướng dẫn, mã kích hoạt"
                 className="unboxing-section__img"
               />
             </div>

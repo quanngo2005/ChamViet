@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { ContentContainer } from '../components/common/layout';
 import { ProductCard, Pagination } from '../components/common/ui';
+import { preloadProductHeroImage } from '../components/features/productDetail';
 import { ProductsHeroSection, ProductsFiltersSection } from '../components/features/products';
 import { useProductListData } from '../hooks/useProductListData';
 import { PRODUCTS_HERO_COPY } from '../data/products';
@@ -41,7 +42,11 @@ export default function ProductListPage() {
           >
             {products.map((product) => (
               <Box key={product.id}>
-                <ProductCard product={product} onOpen={(id) => navigate(`/products/${id}`)} />
+                <ProductCard
+                  product={product}
+                  onOpen={(id) => navigate(`/products/${id}`)}
+                  onPrefetch={() => preloadProductHeroImage()}
+                />
               </Box>
             ))}
           </Box>

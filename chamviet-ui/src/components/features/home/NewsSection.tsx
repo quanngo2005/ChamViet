@@ -11,7 +11,7 @@ const news = [
   {
     id: 2,
     title: 'Hộp phản chiếu 3D hoạt động như thế nào?',
-    excerpt: 'Tìm hiểu về kỹ thuật phản chiếu ánh sáng hàng trăm năm tuổi được ứng dụng trong hộp phản chiếu Chạm\u00A0Việt.',
+    excerpt: 'Tìm hiểu về kỹ thuật phản chiếu ánh sáng hàng trăm năm tuổi được ứng dụng trong hộp phản chiếu Chạm Việt.',
     image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=400',
     date: '05 Tháng 4, 2024'
   },

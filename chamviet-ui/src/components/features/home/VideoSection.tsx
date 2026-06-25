@@ -29,7 +29,7 @@ export default function VideoSection() {
             className="video-section__player"
             onClick={openStory}
             role="button"
-            aria-label="Mở trang câu chuyện Chạm\u00A0Việt"
+            aria-label="Mở trang câu chuyện Chạm Việt"
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && openStory()}
           >

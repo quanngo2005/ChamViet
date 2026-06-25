@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Box, ButtonBase, Card, IconButton, Stack, Typography } from '@mui/material';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 export interface ProductGallerySectionProps {
@@ -6,24 +6,65 @@ export interface ProductGallerySectionProps {
   imageUrls?: string[];
 }
 
-const galleryItems = [
-  { label: 'Box Chạm\u00A0Việt', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/2pwithhop.png' },
+const PRODUCT_IMAGE_ORIGIN = 'https://storage.googleapis.com';
+
+export const productGalleryItems = [
+  { label: 'Box Chạm Việt', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/2pwithhop.png' },
   { label: 'Sự tích Hồ Gươm', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/hoguomsingle.png' },
   { label: 'Sự tích Thánh Gióng', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/thanhgiongsingle.png' },
   { label: 'Hộp phản chiếu', image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/peperghost.png' },
 ];
 
+const preloadedImages = new Set<string>();
+
+function appendResourceHint(rel: 'preconnect' | 'preload', href: string, as?: string) {
+  if (typeof document === 'undefined') return;
+
+  const selector = `link[rel="${rel}"][href="${href}"]`;
+  if (document.head.querySelector(selector)) return;
+
+  const link = document.createElement('link');
+  link.rel = rel;
+  link.href = href;
+  if (as) link.as = as;
+  document.head.appendChild(link);
+}
+
+export function preloadProductHeroImage(imageUrl = productGalleryItems[0].image) {
+  if (preloadedImages.has(imageUrl)) return;
+
+  preloadedImages.add(imageUrl);
+  appendResourceHint('preconnect', PRODUCT_IMAGE_ORIGIN);
+  appendResourceHint('preload', imageUrl, 'image');
+
+  if (typeof Image === 'undefined') return;
+
+  const image = new Image();
+  image.decoding = 'async';
+  image.fetchPriority = 'high';
+  image.src = imageUrl;
+}
+
 export function ProductGallerySection({ title, imageUrls }: ProductGallerySectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const resolvedGalleryItems = imageUrls && imageUrls.length > 0
-    ? imageUrls.map((image, index) => ({
-      label: index === 0 ? title : `Hình ảnh ${index + 1}`,
-      image,
-    }))
-    : galleryItems;
+  const resolvedGalleryItems = useMemo(
+    () => (
+      imageUrls && imageUrls.length > 0
+        ? imageUrls.map((image, index) => ({
+          label: index === 0 ? title : `Hình ảnh ${index + 1}`,
+          image,
+        }))
+        : productGalleryItems
+    ),
+    [imageUrls, title],
+  );
   const safeActiveIndex = Math.min(activeIndex, Math.max(resolvedGalleryItems.length - 1, 0));
   const active = resolvedGalleryItems[safeActiveIndex];
   const hasMultipleImages = resolvedGalleryItems.length > 1;
+
+  useEffect(() => {
+    preloadProductHeroImage(active.image);
+  }, [active.image]);
 
   const showPreviousImage = () => {
     setActiveIndex((current) => (
@@ -60,6 +101,9 @@ export function ProductGallerySection({ title, imageUrls }: ProductGallerySectio
             component="img"
             src={active.image}
             alt={`${title} - ${active.label}`}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
             sx={{
               width: '100%',
               height: '100%',
@@ -186,6 +230,9 @@ export function ProductGallerySection({ title, imageUrls }: ProductGallerySectio
               component="img"
               src={item.image}
               alt=""
+              loading={index === safeActiveIndex ? 'eager' : 'lazy'}
+              decoding="async"
+              fetchPriority={index === safeActiveIndex ? 'high' : 'low'}
               sx={{
                 width: '100%',
                 height: '100%',

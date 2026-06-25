@@ -70,7 +70,7 @@ function HeroSection() {
     <section className="how-play-hero">
       <div className="how-play-hero__media" aria-hidden="true">
         <picture>
-          <source srcSet={HOME_IMAGES.heroChildArWebp} type="image/webp" />
+          <source srcSet={HOME_IMAGES.unboxingFlatlayWebp} type="image/webp" />
           <img src={HOME_IMAGES.heroChildAr} alt="" decoding="async" fetchPriority="high" />
         </picture>
       </div>

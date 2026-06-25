@@ -189,13 +189,13 @@ function PreorderContactDialog({
       <DialogContent sx={{ px: { xs: 2.5, sm: 3 }, pt: '12px !important', pb: 1 }}>
         <Stack spacing={2.5}>
           <Typography sx={{ color: 'var(--text-sub)', fontSize: 15, lineHeight: 1.72 }}>
-            Để lại thông tin để đội ngũ Chạm\u00A0Việt gửi mail xác nhận và tư vấn đặt trước.
+            Để lại thông tin để đội ngũ Chạm Việt gửi mail xác nhận và tư vấn đặt trước.
           </Typography>
 
           <ContactRequestForm
             requestType="preorder_request"
             submitLabel="Gửi yêu cầu đặt trước"
-            successMessage="Chạm\u00A0Việt đã nhận thông tin đặt trước và sẽ phản hồi qua email."
+            successMessage="Chạm Việt đã nhận thông tin đặt trước và sẽ phản hồi qua email."
           />
 
           <Stack spacing={1.25}>
@@ -298,7 +298,7 @@ function PreorderInfoSection() {
               Thông tin đặt trước
             </Typography>
             <Typography sx={{ color: 'var(--text-h)', fontSize: { xs: 26, md: 34 }, fontWeight: 950, lineHeight: 1.08 }}>
-              Để lại nhu cầu, Chạm\u00A0Việt sẽ tư vấn phiên bản phù hợp.
+              Để lại nhu cầu, Chạm Việt sẽ tư vấn phiên bản phù hợp.
             </Typography>
           </Stack>
           <Stack spacing={1.25}>

@@ -137,7 +137,7 @@ export default function Header() {
             <Box
               component="img"
               src="https://storage.googleapis.com/chamviet-media-bucket-2026/cham_viet_logo_red_transparent.png" // Đường dẫn tới file ảnh của bạn
-              alt="Chạm\u00A0Việt"
+              alt="Chạm Việt"
               sx={{
                 height: { xs: 36, sm: 44 }, // Tự động co giãn chiều cao theo màn hình
                 width: "auto",
@@ -307,7 +307,7 @@ export default function Header() {
                 letterSpacing: 0,
               }}
             >
-              {"Chạm\u00A0Việt"}
+              {"Chạm Việt"}
             </Typography>
             <IconButton
               onClick={handleMobileMenuClose}

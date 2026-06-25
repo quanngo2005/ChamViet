@@ -1,15 +1,15 @@
-import heroImage from '@assets/hero.png';
+import heroImage from '@assets/hero.svg';
 import unboxingFlatlay from '@assets/unboxing-flatlay.png';
 import unboxingFlatlayWebp from '@assets/unboxing-flatlay.webp';
-import heroChildAr from '@assets/hero-child-ar.png';
-import heroChildArWebp from '@assets/hero-child-ar.webp';
+import heroChildAr from '@assets/hero.svg';
+import heroWebp from '@assets/hero-child-ar.webp';
 import videoThumbnail from '@assets/video-thumbnail.png';
 import videoThumbnailWebp from '@assets/video-thumbnail.webp';
 
 export const HOME_IMAGES = {
   heroImage,
   heroChildAr,
-  heroChildArWebp,
+
   videoThumbnail,
   videoThumbnailWebp,
   unboxingFlatlay,
@@ -18,7 +18,7 @@ export const HOME_IMAGES = {
     step1: heroImage,
     step2: videoThumbnailWebp,
     step3: unboxingFlatlayWebp,
-    step4: heroChildArWebp,
+    step4: heroWebp,
   }
 };
 
@@ -92,7 +92,7 @@ export const HOME_COPY = {
     items: [
       {
         number: '1',
-        title: 'Ghép tranh & truy cập website Chạm\u00A0Việt',
+        title: 'Ghép tranh & truy cập website Chạm Việt',
         description: 'Hoàn thành bức tranh và truy cập website để mở cánh cửa bước vào câu chuyện.',
         screenLabel: 'Ghép tranh gỗ',
         image: 'https://storage.googleapis.com/chamviet-media-bucket-2026/demo01.png',

@@ -7,7 +7,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { BookOpen, HeartHandshake, Puzzle, ScanLine, Sparkles } from "lucide-react";
 
-import { HOME_IMAGES, HOME_PRODUCT } from "../data/home";
+import { HOME_PRODUCT } from "../data/home";
 
 const BOX_IMAGES = "https://storage.googleapis.com/chamviet-media-bucket-2026/fullbox.webp";
 
@@ -265,8 +265,8 @@ function HeroSection() {
             />
             <Box
               component="img"
-              src={HOME_IMAGES.heroChildArWebp}
-              alt="Bé trải nghiệm câu chuyện tương tác Chạm\u00A0Việt"
+              src={BOX_IMAGES}
+              alt="Bé trải nghiệm câu chuyện tương tác Chạm Việt"
               loading="eager"
               decoding="async"
               sx={{
@@ -425,7 +425,7 @@ function MissionSection() {
 /* ─────────────────────────────────────────────
    StorySection  —  two distinct subsections:
    1. DARK: 4 sequential steps
-   2. LIGHT: what makes Chạm\u00A0Việt different
+   2. LIGHT: what makes Chạm Việt different
 ───────────────────────────────────────────── */
 function StorySection() {
   return (
@@ -626,7 +626,7 @@ function StorySection() {
                   letterSpacing: "-0.01em",
                 }}
               >
-                Điều khiến {"Chạm\u00A0Việt"} khác biệt
+                Điều khiến {"Chạm Việt"} khác biệt
               </Typography>
               <Typography
                 sx={{
@@ -764,7 +764,7 @@ function FinalCta() {
                       letterSpacing: "-0.01em",
                     }}
                   >
-                    Cam kết của {"Chạm\u00A0Việt"}
+                    Cam kết của {"Chạm Việt"}
                   </Typography>
                   <Typography
                     sx={{
@@ -964,7 +964,7 @@ function FinalCta() {
                     lineHeight: 1.8,
                   }}
                 >
-                  Khám phá bộ sưu tập Chạm\u00A0Việt và bắt đầu hành trình cùng con ngay hôm nay.
+                  Khám phá bộ sưu tập Chạm Việt và bắt đầu hành trình cùng con ngay hôm nay.
                 </Typography>
               </Stack>
               <Button

@@ -16,7 +16,7 @@ function TiktokIcon(props: any) {
 }
 
 const productLinks = [
-  { label: 'Chạm\u00A0Việt Box', to: '/products' },
+  { label: 'Chạm Việt Box', to: '/products' },
   { label: 'Mở câu chuyện', to: '/story' },
   { label: 'Quét tranh', to: '/scan' },
   { label: 'Cách chơi', to: '/how-to-play' },
@@ -55,7 +55,7 @@ export default function Footer() {
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Typography sx={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', letterSpacing: 0 }}>
-            {"Chạm\u00A0Việt"}
+            {"Chạm Việt"}
           </Typography>
           <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7, maxWidth: 360 }}>
             Chạm một câu chuyện, Nhớ một Việt Nam
@@ -92,12 +92,12 @@ export default function Footer() {
             Nhận thông tin
           </Typography>
           <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7 }}>
-            Để lại lời nhắn để Chạm\u00A0Việt gửi thêm thông tin cho bạn.
+            Để lại lời nhắn để Chạm Việt gửi thêm thông tin cho bạn.
           </Typography>
           <ContactRequestForm
             requestType="info_request"
             submitLabel="Gửi thông tin"
-            successMessage="Cảm ơn bạn, Chạm\u00A0Việt đã nhận thông tin và sẽ phản hồi sớm."
+            successMessage="Cảm ơn bạn, Chạm Việt đã nhận thông tin và sẽ phản hồi sớm."
           />
         </Box>
       </Box>

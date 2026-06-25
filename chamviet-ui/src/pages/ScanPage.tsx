@@ -224,7 +224,7 @@ export default function ScanPage() {
 
   return (
     <section className="scan-page">
-      <h1 className="scan-page__title">Quét tranh Chạm\u00A0Việt</h1>
+      <h1 className="scan-page__title">Quét tranh Chạm Việt</h1>
       <p className="scan-page__subtitle">
         Chọn ảnh bức tranh đã ghép xong hoặc mở máy ảnh để hệ thống nhận diện đúng câu chuyện tương ứng.
       </p>

@@ -161,7 +161,7 @@ export default function ContactRequestForm({
           value={values.message}
           onChange={(event) => handleChange("message", event.target.value)}
           error={Boolean(errors.message)}
-          helperText={errors.message || "Để lại nhu cầu hoặc câu hỏi để Chạm\u00A0Việt phản hồi."}
+          helperText={errors.message || "Để lại nhu cầu hoặc câu hỏi để Chạm Việt phản hồi."}
           disabled={isSubmitting}
           multiline
           minRows={3}
@@ -207,7 +207,7 @@ export default function ContactRequestForm({
 
         {!submitError && !submitSuccess && (
           <Typography sx={{ color: "var(--text-sub)", fontSize: 13.5, lineHeight: 1.7 }}>
-            Gửi xong là đội ngũ Chạm\u00A0Việt sẽ nhận được thông tin để phản hồi cho bạn.
+            Gửi xong là đội ngũ Chạm Việt sẽ nhận được thông tin để phản hồi cho bạn.
           </Typography>
         )}
       </Stack>

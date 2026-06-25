@@ -2,7 +2,7 @@ import type { VideoRegistry } from "../components/video/YouTubeStopOverlayPlayer
 
 export const VIDEO_REGISTRY: VideoRegistry = {
   // ========================================================================
-  // Video 1: Giới thiệu dự án "Chạm\u00A0Việt"
+  // Video 1: Giới thiệu dự án "Chạm Việt"
   // ========================================================================
   "Mb0RWyh3sqQ": {
     stopTime: 30,
@@ -30,7 +30,7 @@ export const VIDEO_REGISTRY: VideoRegistry = {
       },
       brand_story: {
         id: "brand_story",
-        text: "Cảm ơn bạn! Tụi mình tin rằng mỗi miếng gỗ đều có tâm hồn. Chạm\u00A0Việt muốn 'chạm' vào ký ức của bạn bằng những câu chuyện sử Việt hào hùng.\n\nBạn muốn tìm hiểu về bộ sưu tập nào nhất?",
+        text: "Cảm ơn bạn! Tụi mình tin rằng mỗi miếng gỗ đều có tâm hồn. Chạm Việt muốn 'chạm' vào ký ức của bạn bằng những câu chuyện sử Việt hào hùng.\n\nBạn muốn tìm hiểu về bộ sưu tập nào nhất?",
         options: [
           {
             id: "opt_3",
@@ -48,7 +48,7 @@ export const VIDEO_REGISTRY: VideoRegistry = {
       },
       what_is_chamviet: {
         id: "what_is_chamviet",
-        text: "Chạm\u00A0Việt là dự án kể chuyện lịch sử trên những tấm thẻ gỗ. Tụi mình mong muốn biến những bài học khô khan thành những món quà cầm nắm được và đầy cảm xúc.",
+        text: "Chạm Việt là dự án kể chuyện lịch sử trên những tấm thẻ gỗ. Tụi mình mong muốn biến những bài học khô khan thành những món quà cầm nắm được và đầy cảm xúc.",
         options: [
           {
             id: "opt_5",
@@ -132,7 +132,7 @@ export const VIDEO_REGISTRY: VideoRegistry = {
       },
       material_info: {
         id: "material_info",
-        text: "Sự tỉ mỉ tạo nên giá trị bền vững mà! Chạm\u00A0Việt cam kết sử dụng gỗ rừng trồng bền vững để bảo vệ môi trường nữa đó. 🌿",
+        text: "Sự tỉ mỉ tạo nên giá trị bền vững mà! Chạm Việt cam kết sử dụng gỗ rừng trồng bền vững để bảo vệ môi trường nữa đó. 🌿",
         options: [
           {
             id: "p_3",

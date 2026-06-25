@@ -1,0 +1,22 @@
+html {
+  scroll-behavior: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.app-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #a83232, #d9a441, #a83232);
+  background-size: 200% 100%;
+  transform-origin: left center;
+  z-index: 9999;
+  pointer-events: none;
+}

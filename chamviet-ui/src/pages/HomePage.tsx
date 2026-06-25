@@ -57,7 +57,7 @@ function ExperienceBento() {
               <source srcSet={fullBox} type="image/webp" />
               <img
                 src={fullBox}
-                alt="Bộ tranh gỗ và hộp Chạm\u00A0Việt"
+                alt="Bộ tranh gỗ và hộp Chạm Việt"
                 loading="lazy"
                 decoding="async"
               />

@@ -16,7 +16,7 @@ export type Product = {
 export const PRODUCT_CATALOG: Product[] = [
   {
     id: 'box-tuong-tac-ke-chuyen',
-    collectionLabel: 'Bộ kể chuyện Chạm\u00A0Việt',
+    collectionLabel: 'Bộ kể chuyện Chạm Việt',
     title: 'Bộ kể chuyện tương tác',
     shortDescription:
       'Một bộ kể chuyện văn hóa Việt gồm 2 tranh ghép gỗ: Sự tích Hồ Gươm và Sự tích Thánh Gióng. Bé ghép tranh, quét tranh nhận diện hình ảnh, xem hiệu ứng phản chiếu 3D và hỏi đáp cùng AI Chíp Bông.',
