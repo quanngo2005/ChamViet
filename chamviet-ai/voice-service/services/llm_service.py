@@ -348,27 +348,30 @@ def _fast_feedback(
     user_answer: str = "",
     reason: str = "",
 ) -> str:
+    """
+    Deterministic feedback (no random) so TTS pre-warming cache hits are reliable.
+    """
     correct_answer = correct_answer.strip()
     reason = _normalize_companion_pronouns((reason or "").strip())
 
     if is_correct:
-        quick_praise_templates = [
+        praise_templates = [
             "Đúng rồi cậu!",
+            "Chính xác luôn cậu ơi!",
             "Giỏi quá, cậu trả lời đúng rồi!",
-            "Chuẩn luôn cậu!",
+            "Chuẩn luôn, cậu nhớ rất tốt!",
+            "Hay lắm cậu ơi, đúng rồi đó!",
+            "Tốt lắm, cậu nắm đúng ý rồi!",
         ]
-        if reason:
-            return f"{random.choice(quick_praise_templates)} {reason}"
-        return random.choice(quick_praise_templates)
+        seed_text = f"{question}|{user_answer}|{correct_answer}|{reason}"
+        template_index = sum(ord(ch) for ch in seed_text) % len(praise_templates)
+        base = praise_templates[template_index]
+        return f"{base} {reason}" if reason else base
 
-    quick_retry_templates = [
-        "Chưa đúng lắm cậu ơi.",
-        "Không sao đâu.",
-        "Cậu cố gắng rồi.",
-    ]
+    base = "Chưa đúng lắm cậu ơi."
     if reason:
-        return f"{random.choice(quick_retry_templates)} {reason} Đáp án là: {correct_answer}"
-    return f"{random.choice(quick_retry_templates)} Đáp án là: {correct_answer}"
+        return f"{base} {reason} Đáp án là: {correct_answer}"
+    return f"{base} Đáp án là: {correct_answer}"
 
 
 def _has_enough_feedback_detail(feedback: str, is_correct: bool, correct_answer: str) -> bool:
@@ -477,6 +480,7 @@ async def evaluate_story_answer(
     embedding cosine local -> auto-pass khi rất giống
     -> auto-reject khi rất khác và có tín hiệu không biết/lạc đề
     -> LLM judge chỉ cho vùng mơ hồ còn lại.
+    (Giữ nguyên tốc độ TTS nhanh nhờ sử dụng deterministic feedback).
     """
     user_answer = user_answer.strip()
     if not user_answer:
@@ -552,25 +556,36 @@ async def evaluate_story_answer(
             "is_correct": False,
             "embedding_score": embedding_score,
             "judge_source": "llm_parse_failed",
-            "feedback": _fallback_feedback(
+            "feedback": _fast_feedback(
                 False,
                 correct_answer=correct_answer,
                 question=question,
                 user_answer=user_answer,
+                reason="Câu trả lời này chưa đúng ý truyện.",
             ),
             "reason": "llm_json_parse_failed",
         }
 
     score = data["score"]
     is_correct = data["is_correct"]
-    reason = data["reason"]
+    llm_reason = data["reason"]
+
+    # FORCE deterministic reason so pre-warmed TTS cache hits successfully
+    deterministic_reason = "Cậu nhớ đúng ý chính rồi." if is_correct else "Câu trả lời này chưa đúng ý truyện."
 
     feedback = _fast_feedback(
         is_correct,
         correct_answer=correct_answer,
         question=question,
         user_answer=user_answer,
-        reason=reason,
+        reason=deterministic_reason,
+    )
+    feedback = _ensure_clear_feedback(
+        feedback,
+        is_correct=is_correct,
+        correct_answer=correct_answer,
+        question=question,
+        user_answer=user_answer,
     )
 
     return {
@@ -579,5 +594,5 @@ async def evaluate_story_answer(
         "embedding_score": embedding_score,
         "judge_source": "llm_judge",
         "feedback": feedback,
-        "reason": reason,
+        "reason": llm_reason or deterministic_reason,
     }

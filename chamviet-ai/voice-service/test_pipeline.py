@@ -196,7 +196,7 @@ async def main():
             print("\nKet thuc test theo yeu cau.")
             break
     else:
-        await speak("To va cau da tra loi xong tat ca cau hoi roi. Cau gioi lam!")
+        await speak("tớ và cậu đã hoàn thành tất cả các câu hỏi rồi. Cậu đã làm rất tốt!")
 
     print("\nTest hoan tat.")
 

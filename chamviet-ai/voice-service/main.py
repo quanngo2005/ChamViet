@@ -14,7 +14,7 @@ from services.llm_service     import (
     get_answer,
     preload_embedding_model_async,
 )
-from services.tts_service     import UNIFIED_VOICE_STYLE, synthesize_speech
+from services.tts_service     import UNIFIED_VOICE_STYLE, synthesize_speech, warm_story_tts_async
 from services.session_service import SessionManager, add_turn, clear_history, format_for_display
 from services.story_service   import (
     StorySessionManager,
@@ -41,8 +41,16 @@ STORY_DATA = None
 
 @app.on_event("startup")
 async def startup_preload_models():
+    import asyncio
     model_name = await preload_embedding_model_async()
     print(f"[EMBEDDING] Loaded: {model_name}", flush=True)
+    # Pre-warm TTS cache for story in background (non-blocking)
+    try:
+        story = _load_story_data()
+        asyncio.create_task(warm_story_tts_async(story))
+        print("[TTS-WARM] Background pre-generation started.", flush=True)
+    except Exception as e:
+        print(f"[TTS-WARM] Could not start warm: {e}", flush=True)
 
 
 def _encode_json_header(data: dict) -> str:
@@ -154,12 +162,16 @@ async def story_start_api(session_id: str = "default"):
     except Exception as e:
         raise HTTPException(400, str(e))
 
+    import asyncio as _asyncio
     story_session = await story_session_manager.reset_session(session_id)
     async with story_session.lock:
         question = get_question(story, story_session.question_index)
         if not question:
             raise HTTPException(400, "story.json chưa có câu hỏi.")
         question_text = build_question_text(story, question, story_session.question_index)
+
+    # Launch background TTS warm for remaining combos (no-op if already cached)
+    _asyncio.create_task(warm_story_tts_async(story))
 
     path = await synthesize_speech(question_text, style=UNIFIED_VOICE_STYLE)
     if not path:
