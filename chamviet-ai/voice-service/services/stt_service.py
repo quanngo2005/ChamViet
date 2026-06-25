@@ -1,4 +1,5 @@
 import io
+import re
 import wave
 import asyncio
 import numpy as np
@@ -18,10 +19,31 @@ from config import (
     STT_SILENCE_RATIO,
     STT_TARGET_PEAK,
     STT_TEMPERATURE,
+    STT_VAD_ENERGY_THRESHOLD,
+    STT_VAD_SPEECH_MIN_DURATION,
+    STT_VAD_SPEECH_RATIO,
 )
 
 _async_client = None
 _client = None
+
+# ── Common Whisper hallucination patterns (Vietnamese + multilingual) ──
+# These are phrases Whisper commonly generates on silence or background noise.
+_HALLUCINATION_PATTERNS: list[re.Pattern] = [
+    re.compile(r"^(cảm ơn|cam on).*?(xem|theo dõi|đã xem|subscribe)", re.IGNORECASE),
+    re.compile(r"^(hẹn gặp lại|hen gap lai)", re.IGNORECASE),
+    re.compile(r"^(nhớ (like|subscribe|đăng ký))", re.IGNORECASE),
+    re.compile(r"^(đăng ký kênh|dang ky kenh)", re.IGNORECASE),
+    re.compile(r"^(thank you|thanks for watching)", re.IGNORECASE),
+    re.compile(r"^(please subscribe)", re.IGNORECASE),
+    re.compile(r"^(music|♪|🎵|\.{3,}|\*{3,})\s*$", re.IGNORECASE),
+    re.compile(r"^(Tạm biệt|Bye bye|Goodbye)\s*[.!]*$", re.IGNORECASE),
+    re.compile(r"^\.+$"),  # Just dots
+    re.compile(r"^\s*$"),  # Whitespace only
+]
+
+# Patterns for repetitive hallucination: same short word/phrase repeated many times
+_REPETITION_PATTERN = re.compile(r"^(.{1,15}?)\1{3,}$", re.IGNORECASE | re.DOTALL)
 
 
 def _ensure_supported_provider():
@@ -44,6 +66,117 @@ def _get_client() -> Groq:
         _client = Groq(api_key=GROQ_API_KEY)
     return _client
 
+
+# ════════════════════════════════════════════════════════
+# VAD – Voice Activity Detection (pre-API silence check)
+# ════════════════════════════════════════════════════════
+
+def _read_wav_samples(audio_bytes: bytes) -> tuple[np.ndarray, int] | None:
+    """Read WAV bytes into float32 mono samples and sample rate."""
+    try:
+        with wave.open(io.BytesIO(audio_bytes), "rb") as wf:
+            channels = wf.getnchannels()
+            sample_width = wf.getsampwidth()
+            framerate = wf.getframerate()
+            raw = wf.readframes(wf.getnframes())
+    except wave.Error:
+        return None
+
+    if sample_width != 2:
+        return None
+
+    audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32)
+    if channels > 1:
+        audio = audio.reshape(-1, channels).mean(axis=1)
+
+    return audio, framerate
+
+
+def _is_silence(audio_bytes: bytes) -> bool:
+    """
+    Energy-based VAD check. Returns True if audio contains no meaningful speech.
+
+    Checks:
+    1. Overall RMS energy below threshold → silence
+    2. Ratio of "speech frames" (above energy threshold) too low → silence
+    3. Total speech duration too short → silence
+    """
+    result = _read_wav_samples(audio_bytes)
+    if result is None:
+        return False  # Can't parse → let API handle it
+
+    audio, framerate = result
+    if audio.size == 0:
+        return True
+
+    # Overall RMS check
+    rms = np.sqrt(np.mean(audio ** 2))
+    if rms < STT_VAD_ENERGY_THRESHOLD:
+        print(f"[VAD] Silence detected: RMS={rms:.1f} < threshold={STT_VAD_ENERGY_THRESHOLD}", flush=True)
+        return True
+
+    # Frame-level speech ratio check
+    # Use 20ms frames
+    frame_size = int(framerate * 0.02)
+    if frame_size == 0:
+        return False
+
+    num_frames = len(audio) // frame_size
+    if num_frames == 0:
+        return True
+
+    speech_frames = 0
+    for i in range(num_frames):
+        frame = audio[i * frame_size : (i + 1) * frame_size]
+        frame_rms = np.sqrt(np.mean(frame ** 2))
+        if frame_rms > STT_VAD_ENERGY_THRESHOLD:
+            speech_frames += 1
+
+    speech_ratio = speech_frames / num_frames
+    speech_duration = speech_frames * 0.02  # each frame is 20ms
+
+    if speech_ratio < STT_VAD_SPEECH_RATIO:
+        print(f"[VAD] Silence detected: speech_ratio={speech_ratio:.3f} < {STT_VAD_SPEECH_RATIO}", flush=True)
+        return True
+
+    if speech_duration < STT_VAD_SPEECH_MIN_DURATION:
+        print(f"[VAD] Silence detected: speech_duration={speech_duration:.3f}s < {STT_VAD_SPEECH_MIN_DURATION}s", flush=True)
+        return True
+
+    return False
+
+
+# ════════════════════════════════════════════════════════
+# Hallucination detection (post-API check)
+# ════════════════════════════════════════════════════════
+
+def _is_hallucination(text: str) -> bool:
+    """Check if transcribed text matches known Whisper hallucination patterns."""
+    if not text:
+        return False
+
+    cleaned = text.strip()
+    if not cleaned:
+        return True
+
+    # Check against known hallucination phrases
+    for pattern in _HALLUCINATION_PATTERNS:
+        if pattern.search(cleaned):
+            print(f"[STT] Hallucination filtered: '{cleaned}'", flush=True)
+            return True
+
+    # Check for repetitive patterns (e.g., "Tôi Tôi Tôi Tôi")
+    no_space = cleaned.replace(" ", "")
+    if _REPETITION_PATTERN.match(no_space):
+        print(f"[STT] Repetitive hallucination filtered: '{cleaned}'", flush=True)
+        return True
+
+    return False
+
+
+# ════════════════════════════════════════════════════════
+# Audio preprocessing
+# ════════════════════════════════════════════════════════
 
 def _boost_audio(audio_bytes: bytes) -> bytes:
     """
@@ -100,6 +233,10 @@ def _boost_audio(audio_bytes: bytes) -> bytes:
     return out.getvalue()
 
 
+# ════════════════════════════════════════════════════════
+# Result extraction & confidence checks
+# ════════════════════════════════════════════════════════
+
 def _extract_text(result) -> str:
     if result is None:
         return ""
@@ -152,6 +289,25 @@ def _is_low_confidence(text: str, stats: dict) -> bool:
     return False
 
 
+def _should_reject_transcript(text: str, stats: dict) -> bool:
+    """
+    Final gate: reject if no_speech_prob is very high (silence)
+    OR if text matches hallucination patterns.
+    """
+    if not text:
+        return True
+
+    no_speech_prob = stats.get("no_speech_prob")
+    if no_speech_prob is not None and no_speech_prob > STT_HIGH_NO_SPEECH_THRESHOLD:
+        print(f"[STT] Rejected (no_speech_prob={no_speech_prob:.3f}): '{text}'", flush=True)
+        return True
+
+    if _is_hallucination(text):
+        return True
+
+    return False
+
+
 def _choose_better_transcript(first: tuple[str, dict], second: tuple[str, dict]) -> str:
     first_text, first_stats = first
     second_text, second_stats = second
@@ -166,6 +322,10 @@ def _choose_better_transcript(first: tuple[str, dict], second: tuple[str, dict])
         return second_text
     return first_text or second_text
 
+
+# ════════════════════════════════════════════════════════
+# Transcription calls
+# ════════════════════════════════════════════════════════
 
 async def _transcribe_once_async(client: AsyncGroq, audio_bytes: bytes, language: str) -> tuple[str, dict]:
     result = await asyncio.wait_for(
@@ -200,22 +360,52 @@ def _get_audio_duration(audio_bytes: bytes) -> float:
         return 0.0
 
 
+# ════════════════════════════════════════════════════════
+# Public API
+# ════════════════════════════════════════════════════════
+
 async def transcribe_audio_file(audio_bytes: bytes, language: str = STT_LANGUAGE) -> str:
     """
     Nhận dạng giọng nói bất đồng bộ bằng Groq Whisper.
+    Bao gồm VAD pre-check và hallucination post-filter.
     """
     if _get_audio_duration(audio_bytes) < 0.3:
         return ""
 
+    # ── VAD pre-check: reject silence before API call ──
+    if _is_silence(audio_bytes):
+        return ""
+
     try:
         boosted = _boost_audio(audio_bytes)
+
+        # Check boosted audio for silence too (after trim)
+        if _is_silence(boosted):
+            return ""
+
         client = _get_async_client()
         first = await _transcribe_once_async(client, boosted, language)
+
+        # ── Post-API rejection: high no_speech_prob or hallucination ──
+        if _should_reject_transcript(first[0], first[1]):
+            if STT_RETRY_ORIGINAL_AUDIO and boosted != audio_bytes:
+                print(f"[STT Groq] Rejected after normalization, retrying original audio.", flush=True)
+                second = await _transcribe_once_async(client, audio_bytes, language)
+                if _should_reject_transcript(second[0], second[1]):
+                    print(f"[STT Groq] Rejected original audio too. Returning empty.", flush=True)
+                    return ""
+                return second[0]
+            return ""
+
         if STT_RETRY_ORIGINAL_AUDIO and boosted != audio_bytes and _is_low_confidence(*first):
             print(f"[STT Groq] Low confidence after normalization, retrying original audio. text='{first[0]}'", flush=True)
             second = await _transcribe_once_async(client, audio_bytes, language)
+            if _should_reject_transcript(second[0], second[1]):
+                # Second attempt rejected, use first if it wasn't rejected
+                return first[0]
             chosen = _choose_better_transcript(first, second)
             return chosen
+
         return first[0]
     except Exception as e:
         print(f"STT async error: {e}")
@@ -225,16 +415,44 @@ async def transcribe_audio_file(audio_bytes: bytes, language: str = STT_LANGUAGE
 def transcribe_audio_file_sync(audio_bytes: bytes, language: str = STT_LANGUAGE) -> str:
     """
     Nhận dạng giọng nói đồng bộ bằng Groq Whisper.
+    Bao gồm VAD pre-check và hallucination post-filter.
     """
+    if _get_audio_duration(audio_bytes) < 0.3:
+        return ""
+
+    # ── VAD pre-check: reject silence before API call ──
+    if _is_silence(audio_bytes):
+        return ""
+
     try:
         boosted = _boost_audio(audio_bytes)
+
+        # Check boosted audio for silence too (after trim)
+        if _is_silence(boosted):
+            return ""
+
         client = _get_client()
         first = _transcribe_once_sync(client, boosted, language)
+
+        # ── Post-API rejection: high no_speech_prob or hallucination ──
+        if _should_reject_transcript(first[0], first[1]):
+            if STT_RETRY_ORIGINAL_AUDIO and boosted != audio_bytes:
+                print(f"[STT Groq Sync] Rejected after normalization, retrying original audio.", flush=True)
+                second = _transcribe_once_sync(client, audio_bytes, language)
+                if _should_reject_transcript(second[0], second[1]):
+                    print(f"[STT Groq Sync] Rejected original audio too. Returning empty.", flush=True)
+                    return ""
+                return second[0]
+            return ""
+
         if STT_RETRY_ORIGINAL_AUDIO and boosted != audio_bytes and _is_low_confidence(*first):
             print(f"[STT Groq Sync] Low confidence after normalization, retrying original audio. text='{first[0]}'", flush=True)
             second = _transcribe_once_sync(client, audio_bytes, language)
+            if _should_reject_transcript(second[0], second[1]):
+                return first[0]
             chosen = _choose_better_transcript(first, second)
             return chosen
+
         return first[0]
     except Exception as e:
         print(f"STT sync error: {e}")

@@ -133,8 +133,8 @@ async def ask_and_score_question(story: dict, question: dict, question_index: in
     user_text = await transcribe_audio_file(audio_bytes, language=STT_LANGUAGE)
     if not user_text:
         feedback = (
-            "To chua nghe ro cau tra loi cua cau. "
-            f"Cau tra loi dung la: {question['answer']}"
+            "Tớ chưa nghe rõ câu trả lời của cậu."
+            f"Câu trả lời đúng là: {question['answer']}"
         )
         await speak(feedback)
         return True
