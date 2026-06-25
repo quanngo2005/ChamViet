@@ -1,15 +1,15 @@
-import heroImage from '@assets/hero.png';
+import heroImage from '@assets/hero.svg';
 import unboxingFlatlay from '@assets/unboxing-flatlay.png';
 import unboxingFlatlayWebp from '@assets/unboxing-flatlay.webp';
-import heroChildAr from '@assets/hero-child-ar.png';
-import heroChildArWebp from '@assets/hero-child-ar.webp';
+import heroChildAr from '@assets/hero.svg';
+import heroWebp from '@assets/hero-child-ar.webp';
 import videoThumbnail from '@assets/video-thumbnail.png';
 import videoThumbnailWebp from '@assets/video-thumbnail.webp';
 
 export const HOME_IMAGES = {
   heroImage,
   heroChildAr,
-  heroChildArWebp,
+
   videoThumbnail,
   videoThumbnailWebp,
   unboxingFlatlay,
@@ -18,14 +18,14 @@ export const HOME_IMAGES = {
     step1: heroImage,
     step2: videoThumbnailWebp,
     step3: unboxingFlatlayWebp,
-    step4: heroChildArWebp,
+    step4: heroWebp,
   }
 };
 
 export const HOME_PRODUCT = {
   id: 'box-tuong-tac-ke-chuyen',
   price: '229.000đ',
-  ctaLabel: 'Mua ngay - 229.000đ',
+  ctaLabel: 'Mua ngay',
   boxLabel: 'Hào khí Việt Nam',
   paintings: [
     {

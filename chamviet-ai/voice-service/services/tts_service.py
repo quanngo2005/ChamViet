@@ -105,7 +105,6 @@ def _build_prompt(text: str, style: str = "") -> str:
         "Chỉ đọc nội dung trong mục VĂN BẢN. Không đọc phần hướng dẫn. "
         "Đọc đầy đủ từ đầu tiên đến từ cuối cùng trong VĂN BẢN.\n"
         f"VAN BAN:\n{text.strip()}\n"
-        "HẾT VĂN BẢN."
     )
 
 

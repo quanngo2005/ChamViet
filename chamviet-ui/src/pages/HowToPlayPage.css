@@ -468,11 +468,26 @@
   }
 
   .how-play-step-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(280px, 82vw);
+    gap: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 6px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .how-play-step-grid::-webkit-scrollbar {
+    display: none;
   }
 
   .how-play-step-card {
     border-radius: 22px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .how-play-info-row {

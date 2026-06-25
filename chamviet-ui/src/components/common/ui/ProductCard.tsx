@@ -4,12 +4,15 @@ import type { Product } from '../../../types/product';
 export interface ProductCardProps {
   product: Product;
   onOpen: (id: string) => void;
+  onPrefetch?: (id: string) => void;
 }
 
-export function ProductCard({ product, onOpen }: ProductCardProps) {
+export function ProductCard({ product, onOpen, onPrefetch }: ProductCardProps) {
   return (
     <Card
       onClick={() => onOpen(product.id)}
+      onPointerEnter={() => onPrefetch?.(product.id)}
+      onFocus={() => onPrefetch?.(product.id)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') onOpen(product.id);
       }}
@@ -38,6 +41,8 @@ export function ProductCard({ product, onOpen }: ProductCardProps) {
           component="img"
           src={product.image || 'https://www.figma.com/api/mcp/asset/5220edd4-2957-4ae3-81d3-e4e40de08253'}
           alt={product.title}
+          loading="lazy"
+          decoding="async"
           sx={{ width: '100%', height: 278, objectFit: 'cover', display: 'block' }}
         />
 

@@ -1,20 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { StoryConfig } from "../data/video-story-qa";
-import { buildApiUrl } from "../utils/apiBase";
+import type { VoiceService } from "../services/voiceService";
+import type { VoiceMeta, VoiceSessionResult } from "../types/voice";
 
 const MAX_RECORDING_GAIN = 2.4;
 const TRIM_THRESHOLD_FLOOR = 0.01;
 const TRIM_PADDING_MS = 200;
 const FADE_MS = 12;
 const MIN_RECORDING_SEC = 0.3;
+const MAX_RECORDING_SEC = 30;
+const MIN_AUDIBLE_PEAK = 0.015;
+const MIN_AUDIBLE_RMS = 0.003;
 const AUDIO_WORKLET_NAME = "pcm-capture-processor";
-const TTS_PLAYBACK_RATE = 1.18;
-const VOICE_META_HEADER = "X-Voice-Meta";
+const TTS_PLAYBACK_RATE = 1.0;
+const NEXT_QUESTION_DELAY_MS = 500;
 
 export type SessionPhase =
   | "idle"
   | "loading"
-  | "greeting"
   | "asking"
   | "listening"
   | "evaluating"
@@ -22,9 +25,8 @@ export type SessionPhase =
   | "done";
 
 interface UseVoiceAIOptions {
-  backendUrl: string;
+  voiceService: VoiceService;
   storyConfig?: StoryConfig;
-  sessionId?: string;
   onUserText?: (text: string) => void;
   onAiMessage?: (text: string) => void;
   onQuestionRead?: (questionText: string) => void;
@@ -37,25 +39,7 @@ interface PreparedSpeechPlayback {
   stop: () => void;
 }
 
-interface VoiceMeta {
-  text?: string;
-  phase?: SessionPhase | string;
-  session_id?: string;
-  transcript?: string;
-  intent?: string;
-  question_index?: number;
-  total_questions?: number;
-  completed?: boolean;
-  score?: number;
-  is_correct?: boolean;
-  question?: string;
-  question_text?: string;
-}
 
-interface VoiceAudioResult {
-  blob: Blob;
-  meta: VoiceMeta;
-}
 
 function createSessionId(seed?: string): string {
   const normalizedSeed = (seed ?? "").trim().replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
@@ -65,77 +49,6 @@ function createSessionId(seed?: string): string {
       : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
   return normalizedSeed ? `${normalizedSeed}-${uniquePart}` : `voice-${uniquePart}`;
-}
-
-function decodeVoiceMeta(value: string | null): VoiceMeta {
-  if (!value) {
-    throw new Error("Voice AI response omitted metadata");
-  }
-
-  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
-  const binary = atob(padded);
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return JSON.parse(new TextDecoder().decode(bytes)) as VoiceMeta;
-}
-
-async function readVoiceAudioResponse(response: Response, url: string): Promise<VoiceAudioResult> {
-  if (!response.ok) {
-    throw new Error(`${url} -> ${response.status}`);
-  }
-
-  const blob = await response.blob();
-  if (blob.size === 0) {
-    throw new Error("Voice AI returned empty audio");
-  }
-
-  return {
-    blob,
-    meta: decodeVoiceMeta(response.headers.get(VOICE_META_HEADER)),
-  };
-}
-
-async function startVoiceSession(
-  backendUrl: string,
-  config: StoryConfig,
-  sessionId: string,
-  signal?: AbortSignal,
-): Promise<VoiceAudioResult> {
-  const url = buildApiUrl(backendUrl, "/api/v1/voice/session/start");
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      session_id: sessionId,
-      story_title: config.storyTitle,
-      story_content: config.storyContent,
-      child_age: config.childAge,
-      qa_list: config.qaList,
-    }),
-    signal,
-  });
-
-  return readVoiceAudioResponse(response, url);
-}
-
-async function answerVoiceSession(
-  backendUrl: string,
-  audioBlob: Blob,
-  sessionId: string,
-  signal?: AbortSignal,
-): Promise<VoiceAudioResult> {
-  const url = buildApiUrl(backendUrl, "/api/v1/voice/session/answer");
-  const formData = new FormData();
-  formData.append("audio", audioBlob, "recording.wav");
-  formData.append("session_id", sessionId);
-
-  const response = await fetch(url, {
-    method: "POST",
-    body: formData,
-    signal,
-  });
-
-  return readVoiceAudioResponse(response, url);
 }
 
 async function prepareSpeechPlayback(
@@ -248,6 +161,23 @@ function writeString(view: DataView, offset: number, value: string) {
   }
 }
 
+async function waitWithSignal(ms: number, signal?: AbortSignal): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+
+    const onAbort = () => {
+      window.clearTimeout(timeoutId);
+      signal?.removeEventListener("abort", onAbort);
+      reject(new DOMException("Request aborted", "AbortError"));
+    };
+
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
 function preprocessRecordedSamples(samples: Float32Array, sampleRate: number): Float32Array {
   if (samples.length === 0) {
     return samples;
@@ -325,6 +255,30 @@ function preprocessRecordedSamples(samples: Float32Array, sampleRate: number): F
   return normalized;
 }
 
+function hasAudibleSpeech(samples: Float32Array): boolean {
+  if (samples.length === 0) {
+    return false;
+  }
+
+  let sum = 0;
+  for (let index = 0; index < samples.length; index += 1) {
+    sum += samples[index];
+  }
+
+  const mean = sum / samples.length;
+  let peak = 0;
+  let energy = 0;
+  for (let index = 0; index < samples.length; index += 1) {
+    const centered = samples[index] - mean;
+    const magnitude = Math.abs(centered);
+    peak = Math.max(peak, magnitude);
+    energy += centered * centered;
+  }
+
+  const rms = Math.sqrt(energy / samples.length);
+  return peak >= MIN_AUDIBLE_PEAK && rms >= MIN_AUDIBLE_RMS;
+}
+
 async function createPcmCaptureNode(
   audioContext: AudioContext,
   onChunk: (chunk: Float32Array) => void,
@@ -362,10 +316,39 @@ async function createPcmCaptureNode(
   return node;
 }
 
+const SESSION_STORAGE_PREFIX = "voice_session_";
+
+function getStoryIdentifier(config?: StoryConfig): string {
+  return config?.componentSku || config?.videoId || config?.storyTitle?.replace(/\s+/g, "-").toLowerCase() || "story";
+}
+
+function loadSessionId(storyId: string): string | null {
+  try {
+    return sessionStorage.getItem(`${SESSION_STORAGE_PREFIX}${storyId}`);
+  } catch {
+    return null;
+  }
+}
+
+function saveSessionId(storyId: string, sessionId: string): void {
+  try {
+    sessionStorage.setItem(`${SESSION_STORAGE_PREFIX}${storyId}`, sessionId);
+  } catch {
+    // storage full or unavailable
+  }
+}
+
+function removeSessionId(storyId: string): void {
+  try {
+    sessionStorage.removeItem(`${SESSION_STORAGE_PREFIX}${storyId}`);
+  } catch {
+    // storage unavailable
+  }
+}
+
 export function useVoiceAI({
-  backendUrl,
+  voiceService,
   storyConfig,
-  sessionId,
   onUserText,
   onAiMessage,
   onQuestionRead,
@@ -397,11 +380,17 @@ export function useVoiceAI({
   const speechAbortRef = useRef<AbortController | null>(null);
   const activeSpeechRef = useRef<PreparedSpeechPlayback | null>(null);
   const sessionGenerationRef = useRef(0);
+  const storedSessionResultRef = useRef<VoiceSessionResult | null>(null);
+  const lastUserTranscriptRef = useRef("");
+  const lastAiMessageRef = useRef("");
+  const storyIdRef = useRef(getStoryIdentifier(storyConfig));
   const configRef = useRef(storyConfig);
   configRef.current = storyConfig;
-  const sessionIdRef = useRef(
-    sessionId || createSessionId(storyConfig?.componentSku || storyConfig?.videoId || "story"),
-  );
+  const sessionIdRef = useRef("");
+
+  useEffect(() => {
+    storyIdRef.current = getStoryIdentifier(storyConfig);
+  }, [storyConfig]);
 
   useEffect(() => {
     currentQuestionIndexRef.current = currentQuestionIndex;
@@ -414,6 +403,19 @@ export function useVoiceAI({
   useEffect(() => {
     sessionPhaseRef.current = sessionPhase;
   }, [sessionPhase]);
+
+  const emitAiText = useCallback((text?: string) => {
+    const visibleAiText = (text ?? "").trim();
+    if (!visibleAiText) {
+      return;
+    }
+
+    setAiText(visibleAiText);
+    if (visibleAiText !== lastAiMessageRef.current) {
+      lastAiMessageRef.current = visibleAiText;
+      onAiMessage?.(visibleAiText);
+    }
+  }, [onAiMessage]);
 
   const cleanupAudioResources = useCallback(() => {
     processorRef.current?.disconnect();
@@ -454,6 +456,8 @@ export function useVoiceAI({
     setIsAwaitingUserText(false);
     setSessionPhase("idle");
     sessionPhaseRef.current = "idle";
+    lastAiMessageRef.current = "";
+    lastUserTranscriptRef.current = "";
   }, [cleanupAudioResources, stopCurrentSpeech]);
 
   useEffect(() => {
@@ -471,7 +475,6 @@ export function useVoiceAI({
     if (
       phase === "idle" ||
       phase === "loading" ||
-      phase === "greeting" ||
       phase === "asking" ||
       phase === "listening" ||
       phase === "evaluating" ||
@@ -485,15 +488,14 @@ export function useVoiceAI({
 
   const applyVoiceMeta = useCallback(
     (meta: VoiceMeta, phaseOverride?: SessionPhase) => {
-      const text = (meta.text ?? "").trim();
-      if (text) {
-        setAiText(text);
-        onAiMessage?.(text);
-      }
+      const visibleAiText = ((meta.text ?? "").trim() || (meta.question_text ?? "").trim());
+      emitAiText(visibleAiText);
 
       if (typeof meta.transcript === "string") {
+        const transcript = meta.transcript.trim();
         setUserText(meta.transcript);
-        if (meta.transcript.trim()) {
+        if (transcript && transcript !== lastUserTranscriptRef.current) {
+          lastUserTranscriptRef.current = transcript;
           onUserText?.(meta.transcript);
         }
       }
@@ -516,7 +518,7 @@ export function useVoiceAI({
       setSessionPhase(nextPhase);
       sessionPhaseRef.current = nextPhase;
     },
-    [onAiMessage, onQuestionRead, onUserText, resolveMetaPhase],
+    [emitAiText, onQuestionRead, onUserText, resolveMetaPhase],
   );
 
   const playVoiceBlob = useCallback(
@@ -554,7 +556,7 @@ export function useVoiceAI({
 
   const playAndApplyVoiceResult = useCallback(
     async (
-      result: VoiceAudioResult,
+      result: VoiceSessionResult,
       controller: AbortController,
       generation: number,
       speakingPhase: SessionPhase,
@@ -570,6 +572,7 @@ export function useVoiceAI({
       sessionPhaseRef.current = finalPhase;
 
       if (finalPhase === "done" || result.meta.completed) {
+        removeSessionId(storyIdRef.current);
         onSessionEnd?.(result.meta.score ?? scoreRef.current, result.meta.total_questions ?? configRef.current?.qaList.length ?? 0);
       }
 
@@ -598,13 +601,27 @@ export function useVoiceAI({
       setScore(0);
       scoreRef.current = 0;
       setIsAwaitingUserText(false);
+      lastUserTranscriptRef.current = "";
+      lastAiMessageRef.current = "";
       setUserText("");
       setAiText("");
 
-      const result = await startVoiceSession(
-        backendUrl,
-        config,
-        sessionIdRef.current,
+      const storyId = storyIdRef.current;
+      const savedId = loadSessionId(storyId);
+      let activeSessionId = savedId || createSessionId(storyId);
+      if (!savedId) {
+        saveSessionId(storyId, activeSessionId);
+      }
+      sessionIdRef.current = activeSessionId;
+
+      const result = await voiceService.startSession(
+        {
+          session_id: activeSessionId,
+          story_title: config.storyTitle,
+          story_content: config.storyContent,
+          child_age: config.childAge,
+          qa_list: config.qaList,
+        },
         sessionController.signal,
       );
 
@@ -612,7 +629,8 @@ export function useVoiceAI({
         return;
       }
 
-      await playAndApplyVoiceResult(result, sessionController, generation, "greeting");
+      storedSessionResultRef.current = result;
+      applyVoiceMeta(result.meta, "asking");
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         return;
@@ -626,7 +644,21 @@ export function useVoiceAI({
         sessionAbortRef.current = null;
       }
     }
-  }, [backendUrl, onError, playAndApplyVoiceResult]);
+  }, [voiceService, onError, applyVoiceMeta]);
+
+  const playStoredFirstQuestion = useCallback(async (): Promise<boolean> => {
+    const result = storedSessionResultRef.current;
+    if (!result) {
+      return false;
+    }
+
+    storedSessionResultRef.current = null;
+    const controller = new AbortController();
+    const generation = sessionGenerationRef.current;
+
+    const completed = await playAndApplyVoiceResult(result, controller, generation, "asking");
+    return completed;
+  }, [playAndApplyVoiceResult]);
 
   const processVoiceFlow = useCallback(
     async (audioBlob: Blob) => {
@@ -644,14 +676,72 @@ export function useVoiceAI({
         setSessionPhase("evaluating");
         sessionPhaseRef.current = "evaluating";
 
-        const result = await answerVoiceSession(
-          backendUrl,
+        try {
+          const transcript = await voiceService.transcribe(
+            audioBlob,
+            sessionIdRef.current,
+            controller.signal,
+          );
+          if (transcript) {
+            setUserText(transcript);
+            if (transcript !== lastUserTranscriptRef.current) {
+              lastUserTranscriptRef.current = transcript;
+              onUserText?.(transcript);
+            }
+          }
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            return;
+          }
+        } finally {
+          setIsAwaitingUserText(false);
+        }
+
+        const result = await voiceService.answerSession(
           audioBlob,
           sessionIdRef.current,
           controller.signal,
         );
-        setIsAwaitingUserText(false);
-        await playAndApplyVoiceResult(result, controller, sessionGenerationRef.current, "responding");
+
+        const feedbackCompleted = await playAndApplyVoiceResult(
+          result,
+          controller,
+          sessionGenerationRef.current,
+          "responding",
+        );
+        if (!feedbackCompleted || controller.signal.aborted) {
+          return;
+        }
+
+        if (result.meta.completed) {
+          return;
+        }
+
+        if (typeof result.meta.next_question_index === "number") {
+          setCurrentQuestionIndex(result.meta.next_question_index);
+          currentQuestionIndexRef.current = result.meta.next_question_index;
+        }
+
+        await waitWithSignal(NEXT_QUESTION_DELAY_MS, controller.signal);
+
+        const nextQuestionText = result.meta.next_question_text?.trim();
+        if (nextQuestionText) {
+          emitAiText(nextQuestionText);
+        }
+
+        setSessionPhase("asking");
+        sessionPhaseRef.current = "asking";
+
+        const nextQuestionResult = await voiceService.getNextQuestionAudio(
+          sessionIdRef.current,
+          controller.signal,
+        );
+        await playAndApplyVoiceResult(
+          nextQuestionResult,
+          controller,
+          sessionGenerationRef.current,
+          "asking",
+        );
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
           return;
@@ -667,7 +757,7 @@ export function useVoiceAI({
         }
       }
     },
-    [backendUrl, onError, playAndApplyVoiceResult],
+    [emitAiText, voiceService, onError, playAndApplyVoiceResult],
   );
 
   const startRecording = useCallback(async () => {
@@ -751,12 +841,21 @@ export function useVoiceAI({
       onError?.(new Error("Âm thanh quá ngắn, hãy nói lại nhé."));
       return;
     }
+    if (durationSec > MAX_RECORDING_SEC) {
+      onError?.(new Error("Bản ghi âm quá dài, hãy trả lời ngắn gọn rồi thử lại nhé."));
+      return;
+    }
 
     const merged = new Float32Array(totalLength);
     let offset = 0;
     for (const chunk of chunks) {
       merged.set(chunk, offset);
       offset += chunk.length;
+    }
+
+    if (!hasAudibleSpeech(merged)) {
+      onError?.(new Error("Không nghe thấy giọng nói. Hãy bật micro và nói lại nhé."));
+      return;
     }
 
     const processed = preprocessRecordedSamples(merged, sampleRate);
@@ -775,6 +874,7 @@ export function useVoiceAI({
     currentQuestionIndex,
     score,
     initSession,
+    playStoredFirstQuestion,
     startRecording,
     stopRecording,
     stopSession,

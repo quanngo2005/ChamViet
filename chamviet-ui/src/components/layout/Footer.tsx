@@ -55,7 +55,7 @@ export default function Footer() {
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <Typography sx={{ fontSize: 28, fontWeight: 900, color: 'var(--primary)', letterSpacing: 0 }}>
-            Chạm Việt
+            {"Chạm Việt"}
           </Typography>
           <Typography sx={{ color: 'var(--text)', fontSize: 15, lineHeight: 1.7, maxWidth: 360 }}>
             Chạm một câu chuyện, Nhớ một Việt Nam

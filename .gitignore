@@ -55,3 +55,4 @@ ChamViet_AI.postman_collection.json
 .gitnexus/lbug
 /.gitnexus
 .gitnexus/lbug
+*.pyc

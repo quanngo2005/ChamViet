@@ -12,6 +12,7 @@
 
 - [Home landing flow](home-landing-flow.md): homepage section order, styling location, copy/images, and CTA routes.
 - [Story QA overlay](story-qa-overlay.md): story video QA modal layout, Lenis scroll interaction, and overflow gotchas.
+- [Product image loading](product-image-loading.md): product card to detail-page image preload path and gallery loading priorities.
 
 ## Product / AI Flows
 

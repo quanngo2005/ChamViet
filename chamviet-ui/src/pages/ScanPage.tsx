@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Camera, ImageUp, ScanLine } from "lucide-react";
 
 import { MIN_CONFIDENCE, resolveLegacyLabelRoute } from "../data/scanConstants";
-import { scanImage } from "../services/scanService";
+import { scanAndResolveStory } from "../services/scanService";
 import { compressImage } from "../utils/compressImage";
 
 import "./ScanPage.css";
@@ -160,7 +160,7 @@ export default function ScanPage() {
     setMessage(null);
 
     try {
-      const resolution = await scanImage(selectedFile, controller.signal);
+      const resolution = await scanAndResolveStory(selectedFile, controller.signal);
 
       if (
         (resolution.kind === "product" || resolution.kind === "story")
@@ -177,7 +177,9 @@ export default function ScanPage() {
       }
 
       if (resolution.kind === "story") {
-        navigate(resolution.route);
+        navigate(resolution.route, {
+          state: resolution._bootstrap,
+        });
         return;
       }
 
@@ -189,7 +191,7 @@ export default function ScanPage() {
 
         const route = resolution.route ?? resolveLegacyLabelRoute(resolution.label);
         if (!route) {
-          setMessage({ text: "Không nhận diện được, vui lòng chụp lại", kind: "error" });
+          setMessage({ text: "Sai rồi, hãy chụp hoặc chọn ảnh khác", kind: "error" });
           return;
         }
 
@@ -267,7 +269,7 @@ export default function ScanPage() {
                 <span className="scan-page__camera-guide-corner scan-page__camera-guide-corner--br" />
                 <span className="scan-page__camera-guide-line" />
               </div>
-            <div className="scan-page__camera-guide-copy">
+              <div className="scan-page__camera-guide-copy">
                 Đưa bức tranh vào giữa khung để căn dễ hơn
               </div>
             </div>
@@ -360,7 +362,7 @@ export default function ScanPage() {
 
       {/* ─── Loading overlay ─── */}
       {loading && (
-          <div className="scan-page__overlay" aria-live="assertive">
+        <div className="scan-page__overlay" aria-live="assertive">
           <div className="scan-page__spinner" />
           <span className="scan-page__overlay-text">Đang tìm đúng câu chuyện...</span>
         </div>

@@ -39,7 +39,7 @@ export default function Testimonials() {
         {/* Header */}
         <Reveal className="testimonials-section__header">
           <h2 className="testimonials-section__title">
-            <span style={{ color: 'var(--primary)' }}>Phụ huynh nói gì sau khi Chạm Việt đến với gia đình?</span>
+            <span style={{ color: 'var(--primary)' }}>Phụ huynh nói gì sau khi {"Chạm Việt"} đến với gia đình?</span>
           </h2>
         </Reveal>
 

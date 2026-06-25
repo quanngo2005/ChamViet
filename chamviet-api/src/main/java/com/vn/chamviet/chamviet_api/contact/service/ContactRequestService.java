@@ -42,6 +42,7 @@ public class ContactRequestService {
         return String.join(
             "\n",
             header,
+            "Loại yêu cầu: " + request.getType(),
             "",
             "Họ tên: " + request.getName().trim(),
             "Email: " + request.getEmail().trim(),

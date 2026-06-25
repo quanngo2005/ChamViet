@@ -11,7 +11,6 @@ import ScrollProgressBar from "../common/ScrollProgressBar";
 export default function MainLayout() {
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* Global scroll progress — visible on every route */}
       <ScrollProgressBar />
       <Header />
       <Box component="main" id="content" role="main" sx={{ flex: 1 }}>

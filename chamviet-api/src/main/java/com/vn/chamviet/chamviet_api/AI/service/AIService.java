@@ -1,7 +1,10 @@
 package com.vn.chamviet.chamviet_api.AI.service;
 
 import com.vn.chamviet.chamviet_api.AI.dto.AiResponseDTO;
+import com.vn.chamviet.chamviet_api.AI.dto.vision.VisionResolveRequest;
+import com.vn.chamviet.chamviet_api.AI.dto.vision.VisionResolveResponse;
 import com.vn.chamviet.chamviet_api.product.dto.ComponentLookupDTO;
+import com.vn.chamviet.chamviet_api.product.dto.VisionStoryResolveDTO;
 import com.vn.chamviet.chamviet_api.product.service.ProductStoryService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -67,6 +70,7 @@ public class AIService {
         }
 
         enrichWithProductRoute(response);
+        enrichWithStoryRoute(response);
         return response;
     }
 
@@ -102,12 +106,57 @@ public class AIService {
             .ifPresent(lookup -> applyLookup(response, lookup));
     }
 
+    private void enrichWithStoryRoute(AiResponseDTO response) {
+        if (response == null || response.getData() == null || response.getData().isEmpty()) {
+            return;
+        }
+
+        AiResponseDTO.PredictionData bestPrediction = response.getData().stream()
+            .filter(prediction -> prediction.getLabel() != null && prediction.getConfidence() != null)
+            .max(Comparator.comparing(AiResponseDTO.PredictionData::getConfidence))
+            .orElse(null);
+
+        if (bestPrediction == null) {
+            return;
+        }
+
+        productStoryService.lookupStorySlugByLabel(bestPrediction.getLabel())
+            .ifPresent(slug -> response.setRoute("/story/" + slug));
+    }
+
     private void applyLookup(AiResponseDTO response, ComponentLookupDTO lookup) {
         response.setProductId(lookup.getProductId());
         response.setVariantId(lookup.getVariantId());
         response.setComponentId(lookup.getComponentId());
         response.setComponentSku(lookup.getComponentSku());
         response.setRoute(lookup.getRoute());
+    }
+
+    public VisionResolveResponse resolveStory(VisionResolveRequest request) {
+        String label = normalizeVisionLabel(request.getLabel());
+
+        VisionResolveResponse.VisionError error = null;
+
+        VisionStoryResolveDTO resolve = productStoryService.resolveVisionLabel(label).orElse(null);
+
+        if (resolve == null || resolve.getStorySlug() == null) {
+            error = VisionResolveResponse.VisionError.builder()
+                .code("STORY_NOT_FOUND")
+                .message("No story mapping found for detected label: " + request.getLabel())
+                .build();
+            return VisionResolveResponse.builder()
+                .requestId(request.getRequestId())
+                .error(error)
+                .build();
+        }
+
+        return VisionResolveResponse.builder()
+            .requestId(request.getRequestId())
+            .storySlug(resolve.getStorySlug())
+            .productRoute(resolve.getProductRoute())
+            .videoId(resolve.getVideoId())
+            .fallbackUsed(false)
+            .build();
     }
 
     private String normalizeVisionLabel(String label) {

@@ -14,7 +14,8 @@ body.home-page-active section {
 
 /* ── Page-level background ── */
 .home-page {
-  overflow: clip;
+  overflow-x: clip;
+  overflow-y: visible;
   padding-bottom: 32px;
   background:
     radial-gradient(circle at top left, rgba(198, 40, 40, 0.05), transparent 28%),
@@ -2669,7 +2670,8 @@ body.home-page-active section {
 
 /* Taste pass: AIDA homepage, dense bento, cinematic media */
 .home-page {
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
   background:
     radial-gradient(circle at 16% 10%, rgba(198, 40, 40, 0.12), transparent 28%),
     radial-gradient(circle at 92% 18%, rgba(212, 175, 55, 0.14), transparent 24%),
@@ -2679,7 +2681,8 @@ body.home-page-active section {
 .home-page__main {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .hero-section {

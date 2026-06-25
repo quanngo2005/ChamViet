@@ -4,11 +4,12 @@ import com.vn.chamviet.chamviet_api.contact.dto.ContactRequest;
 import com.vn.chamviet.chamviet_api.contact.dto.ContactSubmissionResponse;
 import com.vn.chamviet.chamviet_api.mail.EmailService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.contains;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,11 +33,18 @@ class ContactRequestServiceTest {
 
         assertEquals("info_request", response.getType());
         assertEquals("motvietnam@chamviet.com.vn", response.getRecipient());
+
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
         verify(emailService).send(
             eq("motvietnam@chamviet.com.vn"),
             eq("ChamViet - Nhận thông tin"),
-            contains("Cho mình xin thêm thông tin về sản phẩm.")
+            bodyCaptor.capture()
         );
+        String body = bodyCaptor.getValue();
+        assertTrue(body.contains("Loại yêu cầu: info_request"));
+        assertTrue(body.contains("Họ tên: Nguyen Van A"));
+        assertTrue(body.contains("Email: parent@example.com"));
+        assertTrue(body.contains("Cho mình xin thêm thông tin về sản phẩm."));
     }
 
     @Test
@@ -54,11 +62,17 @@ class ContactRequestServiceTest {
 
         service.submit(request);
 
+        ArgumentCaptor<String> bodyCaptor = ArgumentCaptor.forClass(String.class);
         verify(emailService).send(
             eq("motvietnam@chamviet.com.vn"),
             eq("ChamViet - Đặt trước"),
-            contains("Mình muốn đặt trước một bộ.")
+            bodyCaptor.capture()
         );
+        String body = bodyCaptor.getValue();
+        assertTrue(body.contains("Loại yêu cầu: preorder_request"));
+        assertTrue(body.contains("Họ tên: Tran Thi B"));
+        assertTrue(body.contains("Email: buyer@example.com"));
+        assertTrue(body.contains("Mình muốn đặt trước một bộ."));
     }
 
     @Test

@@ -30,7 +30,7 @@ export default function CulturalValue() {
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '40px' }}>
             <p style={{ fontSize: 'clamp(18px, 2vw, 22px)', color: 'var(--text)', lineHeight: 1.7, fontWeight: 400, maxWidth: '500px', textAlign: 'left', borderLeft: '1px solid rgba(139, 94, 60, 0.3)', paddingLeft: '32px' }}>
-              Sứ mệnh của <span style={{ color: 'var(--primary)', fontWeight: 700 }}>Chạm Việt</span> là kết nối trẻ em với cội nguồn văn hóa dân tộc thông qua ngôn ngữ của công nghệ hiện đại. Chúng tôi tin rằng mỗi mảnh ghép gỗ là một nhịp cầu đưa các em trở về với những câu chuyện cổ tích nghìn năm.
+              Sứ mệnh của <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{"Chạm Việt"}</span> là kết nối trẻ em với cội nguồn văn hóa dân tộc thông qua ngôn ngữ của công nghệ hiện đại. Chúng tôi tin rằng mỗi mảnh ghép gỗ là một nhịp cầu đưa các em trở về với những câu chuyện cổ tích nghìn năm.
             </p>
           </div>
         </Reveal>

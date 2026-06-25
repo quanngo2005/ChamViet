@@ -118,17 +118,23 @@ export default function ContactRequestForm({
           borderRadius: "12px",
           backgroundColor: "rgba(255, 255, 255, 0.96)",
         },
+        "& .MuiOutlinedInput-input": {
+          py: 1.55,
+        },
       }
     : {
         "& .MuiOutlinedInput-root": {
           borderRadius: "10px",
           backgroundColor: "white",
         },
+        "& .MuiOutlinedInput-input": {
+          py: 1.45,
+        },
       };
 
   return (
     <Box component="form" onSubmit={handleSubmit}>
-      <Stack spacing={1.5}>
+      <Stack spacing={1.8}>
         <TextField
           label="Họ và tên"
           value={values.name}
@@ -174,11 +180,22 @@ export default function ContactRequestForm({
             textTransform: "none",
             fontWeight: 900,
             alignSelf: "flex-start",
-            px: 2.5,
+            px: 3,
             backgroundColor: lightAccent ? "#ffffff" : "primary.main",
             color: lightAccent ? "primary.main" : "#ffffff",
+            transition: "background-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease",
             "&:hover": {
               backgroundColor: lightAccent ? "#fff7df" : "primary.dark",
+              transform: "translateY(-2px)",
+              boxShadow: lightAccent
+                ? "0 12px 24px rgba(255, 255, 255, 0.18)"
+                : "0 16px 28px rgba(168, 50, 50, 0.22)",
+            },
+            "&:focus-visible": {
+              outline: lightAccent
+                ? "3px solid rgba(255, 255, 255, 0.55)"
+                : "3px solid rgba(168, 50, 50, 0.28)",
+              outlineOffset: 2,
             },
           }}
         >

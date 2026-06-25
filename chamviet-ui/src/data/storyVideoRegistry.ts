@@ -24,7 +24,7 @@ const STORY_VIDEO_ENTRIES: StoryVideoEntry[] = [
   {
     slug: "su-tich-ho-guom",
     title: "Sự tích Hồ Gươm",
-    videoId: DEFAULT_VIDEO_ID,
+    videoId: "lct-uiT1PRw",
     aliases: [
       "su tich ho guom",
       "sự tích hồ gươm",
@@ -38,7 +38,7 @@ const STORY_VIDEO_ENTRIES: StoryVideoEntry[] = [
   {
     slug: "su-tich-thanh-giong",
     title: "Sự tích Thánh Gióng",
-    videoId: DEFAULT_VIDEO_ID,
+    videoId: "k45aQ35q-rE",
     aliases: [
       "su tich thanh giong",
       "sự tích thánh gióng",
@@ -65,6 +65,8 @@ const STORY_VIDEO_ENTRIES: StoryVideoEntry[] = [
   },
 ];
 
+const FEATURED_STORY_SLUGS = ["su-tich-ho-guom"] as const;
+
 function normalizeKey(value: string): string {
   return value
     .toLocaleLowerCase("vi-VN")
@@ -89,6 +91,16 @@ function matchesEntry(entry: StoryVideoEntry, key: string): boolean {
 
 export function getDefaultStoryVideoEntry(): StoryVideoEntry {
   return STORY_VIDEO_ENTRIES[0];
+}
+
+export function getFeaturedStoryVideoEntries(): StoryVideoEntry[] {
+  return FEATURED_STORY_SLUGS
+    .map((slug) => STORY_VIDEO_ENTRIES.find((entry) => entry.slug === slug))
+    .filter((entry): entry is StoryVideoEntry => entry !== undefined);
+}
+
+export function getDefaultFeaturedStoryEntry(): StoryVideoEntry {
+  return getFeaturedStoryVideoEntries()[0] ?? getDefaultStoryVideoEntry();
 }
 
 export function findStoryVideoEntryBySlug(slug?: string | null): StoryVideoEntry | null {

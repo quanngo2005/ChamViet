@@ -39,4 +39,16 @@ public class PublicProductController {
                 .body(ApiResponse.error("Story config not found", exception.getMessage(), HttpStatus.NOT_FOUND.value()));
         }
     }
+
+    @CrossOrigin(origins = {"https://www.chamviet.com.vn","https://chamviet.com.vn"})
+    @GetMapping("/puzzle-stories/slug/{slug}")
+    public ResponseEntity<ApiResponse<StoryConfigDTO>> getStoryBySlug(@PathVariable String slug) {
+        try {
+            StoryConfigDTO storyConfig = productStoryService.getStoryBySlug(slug);
+            return ResponseEntity.ok(ApiResponse.success(storyConfig, "Story config loaded", HttpStatus.OK.value()));
+        } catch (EntityNotFoundException exception) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error("Story config not found", exception.getMessage(), HttpStatus.NOT_FOUND.value()));
+        }
+    }
 }

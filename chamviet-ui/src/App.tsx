@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import { GuestRoute } from "./guards/GuestRoute";
 import { ProtectedRoute } from "./guards/ProtectedRoute";
 import { ThemeProvider } from "./theme/theme-provider";
-import LenisProvider from "./components/common/LenisProvider";
+import AppScrollProvider from "./components/common/AppScrollProvider";
 import MainLayout from "./components/layout/MainLayout";
 import HomePage from "./pages/HomePage";
 import AboutUsPage from "./pages/AboutUsPage";
@@ -66,7 +66,7 @@ function NotFoundPage() {
 
 export default function App() {
   return (
-    <LenisProvider>
+    <AppScrollProvider>
       <ThemeProvider>
         <Routes>
           <Route element={<MainLayout />}>
@@ -103,6 +103,6 @@ export default function App() {
           </Route>
         </Routes>
       </ThemeProvider>
-    </LenisProvider>
+    </AppScrollProvider>
   );
 }

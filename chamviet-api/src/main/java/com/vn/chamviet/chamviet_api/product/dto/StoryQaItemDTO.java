@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class StoryQaItemDTO {
+    private Integer id;
     private String question;
     private String answer;
 }
