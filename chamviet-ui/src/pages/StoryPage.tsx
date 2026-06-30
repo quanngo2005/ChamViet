@@ -1,17 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import { Link as RouterLink, useParams } from "react-router-dom";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
-import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Stack from "@mui/material/Stack";
-import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 
 import storyVideo from "../data/story-data.json";
@@ -56,27 +52,6 @@ const VIDEO_REGISTRY: VideoRegistry = {
     dialogue: [],
   },
 };
-
-type WebkitFullscreenDocument = Document & {
-  webkitExitFullscreen?: () => Promise<void> | void;
-  webkitFullscreenElement?: Element | null;
-};
-
-function isMobileSafariBrowser() {
-  if (typeof navigator === "undefined") return false;
-
-  const ua = navigator.userAgent;
-  const vendor = navigator.vendor ?? "";
-  const isAppleMobileDevice =
-    /iPhone|iPad|iPod/i.test(ua) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  const isSafari =
-    /Safari/i.test(ua) &&
-    /Apple/i.test(vendor) &&
-    !/CriOS|FxiOS|EdgiOS|OPiOS|OPT\//i.test(ua);
-
-  return isAppleMobileDevice && isSafari;
-}
 
 function DemoIntro({ storyTitle }: { storyTitle: string }) {
   return (
@@ -144,86 +119,9 @@ function CinemaHero({
   videoId: string;
   onCtaClick?: (videoId: string, config: VideoStopConfig) => void;
 }) {
-  const heroRef = useRef<HTMLDivElement | null>(null);
-  const [isVideoExpanded, setIsVideoExpanded] = useState(false);
-  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
-  const prefersViewportFullscreen = useMemo(() => isMobileSafariBrowser(), []);
   const isLandscapePhone = useMediaQuery("(orientation: landscape) and (max-height: 500px)", {
     noSsr: true,
   });
-
-  useEffect(() => {
-    const fullscreenDocument = document as WebkitFullscreenDocument;
-
-    const handleFullscreenChange = () => {
-      const activeFullscreenElement =
-        document.fullscreenElement ?? fullscreenDocument.webkitFullscreenElement ?? null;
-      const isHeroFullscreen = activeFullscreenElement === heroRef.current;
-      setIsNativeFullscreen(isHeroFullscreen);
-      setIsVideoExpanded(isHeroFullscreen);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange as EventListener);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange as EventListener);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isVideoExpanded || isNativeFullscreen) return undefined;
-
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalBodyTouchAction = document.body.style.touchAction;
-    const originalRootOverflow = document.documentElement.style.overflow;
-    const originalRootOverscroll = document.documentElement.style.overscrollBehavior;
-
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-    document.documentElement.style.overflow = "hidden";
-    document.documentElement.style.overscrollBehavior = "none";
-    window.scrollTo({ top: 0, behavior: "auto" });
-
-    return () => {
-      document.body.style.overflow = originalBodyOverflow;
-      document.body.style.touchAction = originalBodyTouchAction;
-      document.documentElement.style.overflow = originalRootOverflow;
-      document.documentElement.style.overscrollBehavior = originalRootOverscroll;
-    };
-  }, [isNativeFullscreen, isVideoExpanded]);
-
-  const handleToggleFullscreen = async () => {
-    const target = heroRef.current;
-    if (!target) return;
-    const fullscreenDocument = document as WebkitFullscreenDocument;
-    const activeFullscreenElement =
-      document.fullscreenElement ?? fullscreenDocument.webkitFullscreenElement ?? null;
-
-    if (isVideoExpanded) {
-      if (activeFullscreenElement === target && document.exitFullscreen) {
-        await document.exitFullscreen();
-      } else if (activeFullscreenElement === target && fullscreenDocument.webkitExitFullscreen) {
-        await fullscreenDocument.webkitExitFullscreen();
-      } else {
-        setIsVideoExpanded(false);
-      }
-      return;
-    }
-
-    if (!prefersViewportFullscreen && target.requestFullscreen) {
-      try {
-        await target.requestFullscreen();
-        return;
-      } catch {
-        // Some mobile browsers reject wrapper fullscreen; fixed viewport mode keeps the demo usable.
-      }
-    }
-
-    setIsVideoExpanded(true);
-  };
-
-  const fullscreenButtonLabel = isVideoExpanded ? "Thu nhỏ video" : "Xem video toàn màn hình";
 
   return (
     <Box sx={{ py: isLandscapePhone ? 0 : { xs: 1, md: 2 } }}>
@@ -233,7 +131,6 @@ function CinemaHero({
         sx={isLandscapePhone ? { height: "100vh" } : undefined}
       >
         <Box
-          ref={heroRef}
           sx={{
             position: "relative",
             borderRadius: isLandscapePhone ? 0 : { xs: 2.5, md: 4 },
@@ -243,42 +140,6 @@ function CinemaHero({
             height: isLandscapePhone ? "100vh" : "auto",
             width: "100%",
             backgroundColor: "#000000",
-            ...(isVideoExpanded && !isNativeFullscreen
-              ? {
-                position: "fixed",
-                inset: 0,
-                zIndex: 1300,
-                width: "100vw",
-                height: "100vh",
-                minHeight: "100svh",
-                border: "none",
-                borderRadius: 0,
-                boxShadow: "none",
-                "@supports (height: 100dvh)": {
-                  height: "100dvh",
-                  minHeight: "100dvh",
-                },
-              }
-              : {}),
-            ...(isVideoExpanded
-              ? {
-                ".story-video-frame": {
-                  height: "100%",
-                  width: "100%",
-                },
-              }
-              : {}),
-            "&:fullscreen": {
-              border: "none",
-              borderRadius: 0,
-              boxShadow: "none",
-              height: "100vh",
-              width: "100vw",
-            },
-            "&:fullscreen .story-video-frame": {
-              height: "100%",
-              width: "100%",
-            },
           }}
         >
           <Box
@@ -297,35 +158,6 @@ function CinemaHero({
               onCtaClick={onCtaClick}
             />
           </Box>
-          <Tooltip title={fullscreenButtonLabel}>
-            <IconButton
-              aria-label={fullscreenButtonLabel}
-              onClick={handleToggleFullscreen}
-              sx={{
-                position: "absolute",
-                right: {
-                  xs: "calc(env(safe-area-inset-right, 0px) + 10px)",
-                  sm: 14,
-                },
-                top: {
-                  xs: "calc(env(safe-area-inset-top, 0px) + 10px)",
-                  sm: 14,
-                },
-                zIndex: 2,
-                width: 44,
-                height: 44,
-                color: "#ffffff",
-                backgroundColor: "rgba(15, 23, 42, 0.62)",
-                border: "1px solid rgba(255, 255, 255, 0.18)",
-                backdropFilter: "blur(10px)",
-                "&:hover": {
-                  backgroundColor: "rgba(15, 23, 42, 0.82)",
-                },
-              }}
-            >
-              {isVideoExpanded ? <FullscreenExitIcon /> : <FullscreenIcon />}
-            </IconButton>
-          </Tooltip>
         </Box>
       </Container>
     </Box>
