@@ -368,16 +368,7 @@ export default function YouTubeStopOverlayPlayer({
   };
 
   const handleReplay = () => {
-    stopSession();
-    if (nativeVideoRef.current) {
-      nativeVideoRef.current.currentTime = config?.startTime || 0;
-      void nativeVideoRef.current.play();
-    } else if (playerRef.current) {
-      playerRef.current.seekTo(config?.startTime || 0);
-      playerRef.current.playVideo();
-    }
-    setOverlayOpen(false);
-    setTimeout(() => resetOverlay(), 500);
+    window.location.reload();
   };
 
   // ── Mic enabled only in listening phase ─────────────────────────────────

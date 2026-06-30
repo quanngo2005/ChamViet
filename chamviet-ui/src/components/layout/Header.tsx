@@ -23,7 +23,7 @@ const primaryNavItems = [
   { label: "Cách chơi", to: "/how-to-play" },
   { label: "Câu chuyện", to: "/story" },
   { label: "Quét tranh", to: "/scan" },
-  { label: "Giới thiệu", to: "/about" },
+  { label: "Về chúng mình", to: "/about" },
 ];
 
 export default function Header() {

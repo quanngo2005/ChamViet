@@ -21,12 +21,12 @@ export const PRODUCT_DETAIL_COPY = {
     description:
       'Thay vì chỉ nhìn vào số lượng mảnh ghép, phụ huynh thường cần biết bộ này phù hợp với ai, làm từ gì và có thể dùng trong bối cảnh nào. Phần này gom những thông tin đó lại để quyết định mua dễ hơn.',
     specs: [
-      { label: '🪵 Gỗ plywood nhập khẩu ', value: 'Bề mặt , hoàn thiện kỹ lưỡng, an toàn và phù hợp cho trẻ nhỏ.' },
-      { label: '👶 Phù hợp cho trẻ 4-8 tuổi', value: 'Độ khó vừa đủ để vừa chơi vừa học.' },
-      { label: '🇻🇳 Thiết kế và phát triển tại Việt Nam', value: 'Lấy cảm hứng từ chính những câu chuyện Việt.' },
-      { label: '✨ Bo góc an toàn, dễ cầm nắm', value: 'Phù hợp để trẻ sử dụng hằng ngày.' },
-      { label: '📦 Không cần thiết bị chuyên dụng', value: 'Chỉ cần điện thoại và hộp chiếu đi kèm là có thể trải nghiệm..' },
-      { label: '🌐 Tương tác cùng AI sau mỗi câu chuyện', value: 'Khuyến khích con tư duy, trả lời các câu hỏi về câu chuyện và nhân vật' }
+      { label: 'Gỗ plywood nhập khẩu', value: 'Bề mặt được hoàn thiện kỹ lưỡng, an toàn và phù hợp cho trẻ nhỏ.' },
+      { label: 'Phù hợp cho trẻ 4-8 tuổi', value: 'Độ khó vừa đủ để con vừa chơi vừa học.' },
+      { label: 'Thiết kế và phát triển tại Việt Nam', value: 'Lấy cảm hứng từ chính những câu chuyện Việt.' },
+      { label: 'Bo góc an toàn, dễ cầm nắm', value: 'Phù hợp để trẻ sử dụng hằng ngày.' },
+      { label: 'Không cần thiết bị chuyên dụng', value: 'Chỉ cần điện thoại và hộp chiếu đi kèm là có thể trải nghiệm.' },
+      { label: 'Tương tác cùng AI sau mỗi câu chuyện', value: 'Khuyến khích con tư duy và trả lời các câu hỏi về câu chuyện, nhân vật.' }
     ],
   },
   education: {

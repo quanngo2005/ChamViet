@@ -1,7 +1,6 @@
 import './HomePage.css';
 import { lazy, Suspense, type CSSProperties } from 'react';
-import { motion } from 'motion/react';
-import { ArrowRight, Boxes, Hand, MessageCircleQuestion, PlayCircle, Sparkles } from 'lucide-react';
+import { Boxes, Hand, MessageCircleQuestion, PlayCircle, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 const fullBox = "https://storage.googleapis.com/chamviet-media-bucket-2026/fullbox.webp";
 
@@ -12,25 +11,6 @@ const VideoSection = lazy(() => import('../components/features/home/VideoSection
 const Workflow = lazy(() => import('../components/features/home/Workflow'));
 const Testimonials = lazy(() => import('../components/features/home/Testimonials'));
 const PurchaseSection = lazy(() => import('../components/features/home/PurchaseSection'));
-
-function MobileStickyCtA() {
-  return (
-    <motion.div
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      transition={{ delay: 1.2, duration: 0.45 }}
-      className="mobile-only mobile-sticky-cta"
-    >
-      <Link
-        to={`/products/${HOME_PRODUCT.id}`}
-        className="btn btn-primary mobile-sticky-cta__button"
-      >
-        <span className="mobile-sticky-cta__label">{HOME_PRODUCT.ctaLabel}</span>
-        <ArrowRight size={18} />
-      </Link>
-    </motion.div>
-  );
-}
 
 const benefitIcons = {
   hands: Hand,
@@ -109,7 +89,6 @@ export default function HomePage() {
         </Suspense>
       </main>
 
-      <MobileStickyCtA />
     </div>
   );
 }

@@ -77,7 +77,7 @@ export function ProductEducationSection() {
             />
 
             <Typography
-              sx={{ color: '#fdfbf7', fontWeight: 700, fontSize: 30, position: 'relative' }}
+              sx={{ color: '#D4AF37', fontWeight: 700, fontSize: 30, position: 'relative' }}
             >
               Con nhận được gì?
 
@@ -93,7 +93,7 @@ export function ProductEducationSection() {
           {/* Right: sustainability specs */}
           <Stack spacing={4} sx={{ py: { md: '36px' }, justifyContent: 'center' }}>
 
-            <Typography sx={{ fontWeight: 700, color: 'grey.900', fontSize: 30 }}>
+            <Typography sx={{ fontWeight: 700, color: 'grey.900', fontSize: 30, lineHeight: 1.2 }}>
               Vì sao phụ huynh có thể yên tâm lựa chọn?
             </Typography>
 
@@ -102,8 +102,8 @@ export function ProductEducationSection() {
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '24px',
+                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' },
+                gap: { xs: 2, md: '24px' },
               }}
             >
               {sustainability.specs.map((spec) => (
@@ -113,11 +113,12 @@ export function ProductEducationSection() {
                     borderRadius: '12px',
                     border: '1px solid rgba(168, 50, 50, 0.08)',
                     boxShadow: '0px 2px 4px -2px rgba(0,0,0,0.10)',
-                    p: 3,
+                    p: { xs: 2.5, md: 3 },
                     backgroundColor: '#ffffff',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
+                    minWidth: 0,
                   }}
                 >
                   <Stack spacing={0.5}>
@@ -127,12 +128,21 @@ export function ProductEducationSection() {
                         fontSize: 12,
                         fontWeight: 700,
                         textTransform: 'uppercase',
-                        letterSpacing: '1.2px',
+                        letterSpacing: 0,
+                        lineHeight: 1.45,
                       }}
                     >
                       {spec.label}
                     </Typography>
-                    <Typography sx={{ color: 'grey.900', fontSize: 18, fontWeight: 700 }}>
+                    <Typography
+                      sx={{
+                        color: 'grey.900',
+                        fontSize: { xs: 16, md: 18 },
+                        fontWeight: 700,
+                        lineHeight: 1.65,
+                        textAlign: 'justify',
+                      }}
+                    >
                       {spec.value}
                     </Typography>
                   </Stack>

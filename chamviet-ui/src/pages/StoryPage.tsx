@@ -80,7 +80,7 @@ function isMobileSafariBrowser() {
 
 function DemoIntro({ storyTitle }: { storyTitle: string }) {
   return (
-    <Box sx={{ pt: { xs: 5, md: 8 }, pb: { xs: 2.5, md: 3 } }}>
+    <Box sx={{ pt: { xs: 3, md: 5 }, pb: { xs: 1.5, md: 2 } }}>
       <Container maxWidth="lg">
         <Stack spacing={2.25} sx={{ maxWidth: 840 }}>
           <Box
@@ -226,7 +226,7 @@ function CinemaHero({
   const fullscreenButtonLabel = isVideoExpanded ? "Thu nhỏ video" : "Xem video toàn màn hình";
 
   return (
-    <Box sx={{ py: isLandscapePhone ? 0 : { xs: 2, md: 3 } }}>
+    <Box sx={{ py: isLandscapePhone ? 0 : { xs: 1, md: 2 } }}>
       <Container
         maxWidth={isLandscapePhone ? false : "lg"}
         disableGutters={isLandscapePhone}
@@ -334,7 +334,7 @@ function CinemaHero({
 
 function DemoActions() {
   return (
-    <Box sx={{ pt: { xs: 2.5, md: 3 }, pb: { xs: 7, md: 10 } }}>
+    <Box sx={{ pt: { xs: 1.5, md: 2 }, pb: { xs: 4, md: 6 } }}>
       <Container maxWidth="lg">
         <Stack
           direction={{ xs: "column", sm: "row" }}
