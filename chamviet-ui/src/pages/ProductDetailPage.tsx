@@ -28,7 +28,7 @@ const PREORDER_PRODUCT: Product = {
   priceLabel: HOME_PRODUCT.price,
   reviewsLabel: 'Dành cho gia đình yêu văn hóa Việt',
   shortDescription:
-    "BST “Hào khí việt nam” bao gồm: 2 tranh ghép câu chuyện thánh gióng & hồ gươm, hộp chiếu 3D hologram, 2 video tương tác, AI Chíp Bông tương tác & hỏi đáp cùng bé, 2 phần quà bí mật, Gắn kết gia đình",
+    "BST “Hào khí việt nam” bao gồm: 2 tranh ghép câu chuyện thánh gióng & hồ gươm, hộp chiếu 3D hologram, 2 video tương tác, AI Chíp Bông tương tác & hỏi đáp cùng bé, 2 phần quà bí mật",
   badgeLabel: 'Đặt trước',
   image: HOME_IMAGES.unboxingFlatlayWebp,
 };
@@ -73,7 +73,7 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
                 {PREORDER_PRODUCT.title}
               </Typography>
 
-              <Box sx={{ color: 'var(--text-sub)', fontSize: { xs: 16, md: 18 }, lineHeight: 1.78 }}>
+              <Box sx={{ color: 'var(--text-sub)', fontSize: { xs: 16, md: 18 }, lineHeight: 1.78, textAlign: 'justify' }}>
                 <Typography sx={{ fontSize: 'inherit', fontWeight: 700, mb: 1, color: 'var(--text-h)' }}>
                   BST “Hào khí Việt Nam” bao gồm:
                 </Typography>
@@ -83,7 +83,6 @@ function ProductHero({ onOpenContactDialog }: { onOpenContactDialog: () => void 
                   <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>2 Video tương tác</Typography>
                   <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>AI Chíp Bông tương tác & hỏi đáp cùng bé</Typography>
                   <Typography component="li" sx={{ fontSize: 'inherit', mb: 0.5 }}>2 phần quà bí mật</Typography>
-                  <Typography component="li" sx={{ fontSize: 'inherit' }}>Gắn kết gia đình</Typography>
                 </Box>
               </Box>
             </Stack>
@@ -325,7 +324,7 @@ export default function ProductDetailPage() {
   const [isPreorderDialogOpen, setIsPreorderDialogOpen] = useState(false);
 
   return (
-    <Box sx={{ backgroundColor: 'var(--bg)' }}>
+    <Box sx={{ backgroundColor: 'var(--bg)', '& p': { textAlign: 'justify' } }}>
       <ProductHero onOpenContactDialog={() => setIsPreorderDialogOpen(true)} />
       <ProductStorySection />
       <ProductEducationSection />

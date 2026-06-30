@@ -299,6 +299,8 @@ body.home-page-active section {
   background: var(--bg-main);
   color: var(--primary);
   box-shadow: none;
+  justify-content: center;
+  text-align: center;
 }
 .hero-card__cta-primary:hover {
   background: white;
@@ -2215,35 +2217,6 @@ body.home-page-active section {
   .home-page__glow--middle { animation: none; }
 }
 
-/* Mobile-only utility */
-.mobile-only {
-  display: none;
-}
-@media (max-width: 768px) {
-  .mobile-only { display: block; }
-}
-
-.mobile-sticky-cta {
-  position: fixed;
-  left: max(14px, env(safe-area-inset-left));
-  right: max(14px, env(safe-area-inset-right));
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  z-index: 40;
-}
-
-.mobile-sticky-cta__button {
-  width: 100%;
-  min-height: 56px;
-  padding: 15px 16px;
-  box-sizing: border-box;
-}
-
-@media (max-width: 768px) {
-  .home-page {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom, 34px));
-  }
-}
-
 @media (max-width: 430px) {
   .hero-section {
     padding: 18px 0 38px;
@@ -2410,15 +2383,6 @@ body.home-page-active section {
     font-size: 14.5px;
   }
 
-  .mobile-sticky-cta {
-    left: 12px;
-    right: 12px;
-  }
-
-  .mobile-sticky-cta__button {
-    min-height: 56px;
-    font-size: 14px;
-  }
 }
 
 @media (max-width: 360px) {
@@ -2436,8 +2400,7 @@ body.home-page-active section {
   }
 
   .hero-card__proof,
-  .hero-card__ctas .btn,
-  .mobile-sticky-cta__button {
+  .hero-card__ctas .btn {
     font-size: 13px;
   }
 
@@ -2520,6 +2483,8 @@ body.home-page-active section {
   position: relative;
   z-index: 1;
   border: none;
+  justify-content: center;
+  text-align: center;
   transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 .purchase-section__card:hover,
@@ -3334,18 +3299,6 @@ body.home-page-active section {
   padding-bottom: 128px;
 }
 
-.mobile-sticky-cta {
-  z-index: 80;
-}
-
-.mobile-sticky-cta__button {
-  box-shadow: 0 18px 42px rgba(139, 26, 26, 0.28);
-}
-
-.mobile-sticky-cta__label {
-  font-weight: 900;
-}
-
 @keyframes workflowMediaLoop {
   0%, 100% {
     transform: scale(1.02) translate3d(0, 0, 0);
@@ -3544,16 +3497,6 @@ body.home-page-active section {
     min-height: 400px;
   }
 
-  .mobile-sticky-cta {
-    left: 12px;
-    right: 12px;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  }
-
-  .mobile-sticky-cta__button {
-    min-height: 60px;
-    border-radius: 8px;
-  }
 }
 
 @media (max-width: 360px) {

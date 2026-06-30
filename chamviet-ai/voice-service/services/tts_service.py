@@ -67,6 +67,14 @@ def _silence_bytes(sample_rate: int, duration_ms: int, channels: int = 1, sampwi
 
 
 def _save_wave(pcm_data: bytes, output_path: str, sample_rate: int = TTS_OUTPUT_SAMPLE_RATE):
+    import io
+    if pcm_data.startswith(b"RIFF"):
+        try:
+            with wave.open(io.BytesIO(pcm_data), "rb") as wf:
+                pcm_data = wf.readframes(wf.getnframes())
+        except Exception as e:
+            print(f"[TTS] Warning: Failed to extract PCM from WAV data: {e}", flush=True)
+
     fd, tmp_path = tempfile.mkstemp(suffix=".wav", dir=CACHE_DIR)
     os.close(fd)
     try:
@@ -213,6 +221,61 @@ async def synthesize_speech(text: str, style: str = "") -> str:
     except Exception as e:
         print(f"TTS async failed: {e}")
         return ""
+
+
+async def warm_story_tts_async(story: dict, max_concurrent: int = 3) -> None:
+    """
+    Pre-generate TTS for all predictable story reply texts in background.
+    Runs concurrently (up to max_concurrent) to fill cache before user answers.
+
+    Pre-generates:
+      - All question texts
+      - All correct-feedback + next-question combos
+      - All incorrect-feedback + next-question combos (includes correct_answer)
+    """
+    from services.story_service import build_question_text, build_feedback_with_next_question
+
+    CORRECT_REASON = "Cậu nhớ đúng ý chính rồi."
+    WRONG_REASON = "Câu trả lời này chưa đúng ý truyện."
+
+    questions = story.get("questions", [])
+    texts: list[str] = []
+
+    for idx, q in enumerate(questions):
+        # Question prompt TTS
+        texts.append(build_question_text(story, q, idx))
+
+        next_q = questions[idx + 1] if idx + 1 < len(questions) else None
+        next_q_text = build_question_text(story, next_q, idx + 1) if next_q else ""
+        completed = next_q is None
+
+        correct_feedback = f"Đúng rồi cậu! {CORRECT_REASON}"
+        wrong_feedback = f"Chưa đúng lắm cậu ơi. {WRONG_REASON} Đáp án là: {q['answer'].strip()}"
+
+        texts.append(build_feedback_with_next_question(correct_feedback, next_question_text=next_q_text, completed=completed))
+        texts.append(build_feedback_with_next_question(wrong_feedback, next_question_text=next_q_text, completed=completed))
+
+    sem = asyncio.Semaphore(max_concurrent)
+
+    async def _warm_one(text: str):
+        async with sem:
+            cache_path = _get_cache_path(text, UNIFIED_VOICE_STYLE)
+            if os.path.exists(cache_path):
+                return
+            try:
+                client = _get_client()
+                prompt = _build_prompt(text)
+                audio_data = await asyncio.wait_for(
+                    _generate_tts_async(client, prompt),
+                    timeout=TTS_TOTAL_TIMEOUT_SECONDS,
+                )
+                _save_wave(audio_data, cache_path)
+                print(f"[TTS-WARM] cached: {text[:60]}", flush=True)
+            except Exception as e:
+                print(f"[TTS-WARM] skip '{text[:40]}': {e}", flush=True)
+
+    await asyncio.gather(*[_warm_one(t) for t in texts])
+    print(f"[TTS-WARM] Done warming {len(texts)} texts.", flush=True)
 
 
 def synthesize_speech_sync(text: str, style: str = "") -> str:

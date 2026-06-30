@@ -3,7 +3,6 @@ import random
 import re
 import threading
 import unicodedata
-from typing import Optional
 from config import (
     GOOGLE_API_KEY, GEMINI_LLM_MODEL, GEMINI_FALLBACK_MODEL,
     GROQ_API_KEY, GROQ_LLM_MODEL, LLM_PROVIDER,
@@ -55,36 +54,6 @@ def _get_embedding_model():
                 from sentence_transformers import SentenceTransformer
                 _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
     return _embedding_model
-
-
-def _truncate_text_for_embedding(model, text: str) -> str:
-    tokenizer = getattr(model, "tokenizer", None)
-    if tokenizer is None:
-        return text
-
-    try:
-        safe_max_length = max(32, min(int(getattr(model, "max_seq_length", 256) or 256), 256))
-        encoded = tokenizer(
-            text,
-            add_special_tokens=True,
-            truncation=True,
-            max_length=safe_max_length,
-            return_attention_mask=False,
-            return_token_type_ids=False,
-        )
-        token_ids = encoded.get("input_ids") or []
-        if not token_ids:
-            return text
-
-        truncated = tokenizer.decode(
-            token_ids,
-            skip_special_tokens=True,
-            clean_up_tokenization_spaces=True,
-        ).strip()
-        return truncated or text
-    except Exception as exc:
-        print(f"[EMBEDDING] Text truncation failed, using original text: {exc}")
-        return text
 
 
 def preload_embedding_model() -> str:
@@ -332,25 +301,18 @@ def _coerce_bool(value) -> bool:
     return bool(value)
 
 
-def _embedding_cosine_similarity_sync(text_a: str, text_b: str) -> Optional[float]:
+def _embedding_cosine_similarity_sync(text_a: str, text_b: str) -> float:
     model = _get_embedding_model()
-    prepared_a = _truncate_text_for_embedding(model, text_a)
-    prepared_b = _truncate_text_for_embedding(model, text_b)
-
-    try:
-        embeddings = model.encode(
-            [prepared_a, prepared_b],
-            convert_to_numpy=True,
-            normalize_embeddings=True,
-            show_progress_bar=False,
-        )
-        return float(embeddings[0] @ embeddings[1])
-    except Exception as exc:
-        print(f"[EMBEDDING] Similarity scoring failed, falling back to LLM judge: {exc}")
-        return None
+    embeddings = model.encode(
+        [text_a, text_b],
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+        show_progress_bar=False,
+    )
+    return float(embeddings[0] @ embeddings[1])
 
 
-async def _embedding_cosine_similarity(text_a: str, text_b: str) -> Optional[float]:
+async def _embedding_cosine_similarity(text_a: str, text_b: str) -> float:
     import asyncio
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
@@ -386,27 +348,30 @@ def _fast_feedback(
     user_answer: str = "",
     reason: str = "",
 ) -> str:
+    """
+    Deterministic feedback (no random) so TTS pre-warming cache hits are reliable.
+    """
     correct_answer = correct_answer.strip()
     reason = _normalize_companion_pronouns((reason or "").strip())
 
     if is_correct:
-        quick_praise_templates = [
+        praise_templates = [
             "Đúng rồi cậu!",
+            "Chính xác luôn cậu ơi!",
             "Giỏi quá, cậu trả lời đúng rồi!",
-            "Chuẩn luôn cậu!",
+            "Chuẩn luôn, cậu nhớ rất tốt!",
+            "Hay lắm cậu ơi, đúng rồi đó!",
+            "Tốt lắm, cậu nắm đúng ý rồi!",
         ]
-        if reason:
-            return f"{random.choice(quick_praise_templates)} {reason}"
-        return random.choice(quick_praise_templates)
+        seed_text = f"{question}|{user_answer}|{correct_answer}|{reason}"
+        template_index = sum(ord(ch) for ch in seed_text) % len(praise_templates)
+        base = praise_templates[template_index]
+        return f"{base} {reason}" if reason else base
 
-    quick_retry_templates = [
-        "Chưa đúng lắm cậu ơi.",
-        "Không sao đâu.",
-        "Cậu cố gắng rồi.",
-    ]
+    base = "Chưa đúng lắm cậu ơi."
     if reason:
-        return f"{random.choice(quick_retry_templates)} {reason} Đáp án là: {correct_answer}"
-    return f"{random.choice(quick_retry_templates)} Đáp án là: {correct_answer}"
+        return f"{base} {reason} Đáp án là: {correct_answer}"
+    return f"{base} Đáp án là: {correct_answer}"
 
 
 def _has_enough_feedback_detail(feedback: str, is_correct: bool, correct_answer: str) -> bool:
@@ -471,6 +436,7 @@ async def _judge_story_answer(
 ) -> dict:
     prompt = (
         "Chấm câu trả lời của bé 6 đến 9 tuổi theo Ý LÕI, không bắt khớp văn mẫu.\n"
+        f"Persona thoại của hệ thống: {TTS_PERSONA_STYLE}\n"
         f"Truyện: {story_title}\n"
         f"Câu hỏi: {question}\n"
         f"Đáp án mẫu: {correct_answer}\n"
@@ -514,6 +480,7 @@ async def evaluate_story_answer(
     embedding cosine local -> auto-pass khi rất giống
     -> auto-reject khi rất khác và có tín hiệu không biết/lạc đề
     -> LLM judge chỉ cho vùng mơ hồ còn lại.
+    (Giữ nguyên tốc độ TTS nhanh nhờ sử dụng deterministic feedback).
     """
     user_answer = user_answer.strip()
     if not user_answer:
@@ -528,14 +495,9 @@ async def evaluate_story_answer(
         }
 
     embedding_score = await _embedding_cosine_similarity(user_answer, correct_answer)
-    embedding_available = embedding_score is not None
-    embedding_percent = (
-        round(max(0.0, min(1.0, embedding_score)) * 100.0, 1)
-        if embedding_available
-        else 0.0
-    )
+    embedding_percent = round(max(0.0, min(1.0, embedding_score)) * 100.0, 1)
 
-    if embedding_available and embedding_score >= EMBEDDING_ACCEPT_THRESHOLD:
+    if embedding_score >= EMBEDDING_ACCEPT_THRESHOLD:
         return {
             "score": embedding_percent,
             "is_correct": True,
@@ -562,7 +524,7 @@ async def evaluate_story_answer(
         "khong nghe ro",
         "chua biet",
     )
-    if embedding_available and embedding_score <= EMBEDDING_REJECT_THRESHOLD and any(
+    if embedding_score <= EMBEDDING_REJECT_THRESHOLD and any(
         phrase in user_answer_normalized for phrase in obvious_incorrect_phrases
     ):
         return {
@@ -592,34 +554,45 @@ async def evaluate_story_answer(
         return {
             "score": embedding_percent,
             "is_correct": False,
-            "embedding_score": embedding_score if embedding_available else 0.0,
-            "judge_source": "embedding_failed_llm_parse_failed" if not embedding_available else "llm_parse_failed",
-            "feedback": _fallback_feedback(
+            "embedding_score": embedding_score,
+            "judge_source": "llm_parse_failed",
+            "feedback": _fast_feedback(
                 False,
                 correct_answer=correct_answer,
                 question=question,
                 user_answer=user_answer,
+                reason="Câu trả lời này chưa đúng ý truyện.",
             ),
             "reason": "llm_json_parse_failed",
         }
 
     score = data["score"]
     is_correct = data["is_correct"]
-    reason = data["reason"]
+    llm_reason = data["reason"]
+
+    # FORCE deterministic reason so pre-warmed TTS cache hits successfully
+    deterministic_reason = "Cậu nhớ đúng ý chính rồi." if is_correct else "Câu trả lời này chưa đúng ý truyện."
 
     feedback = _fast_feedback(
         is_correct,
         correct_answer=correct_answer,
         question=question,
         user_answer=user_answer,
-        reason=reason,
+        reason=deterministic_reason,
+    )
+    feedback = _ensure_clear_feedback(
+        feedback,
+        is_correct=is_correct,
+        correct_answer=correct_answer,
+        question=question,
+        user_answer=user_answer,
     )
 
     return {
         "score": score,
         "is_correct": is_correct,
-        "embedding_score": embedding_score if embedding_available else 0.0,
-        "judge_source": "embedding_failed_llm_judge" if not embedding_available else "llm_judge",
+        "embedding_score": embedding_score,
+        "judge_source": "llm_judge",
         "feedback": feedback,
-        "reason": reason,
+        "reason": llm_reason or deterministic_reason,
     }

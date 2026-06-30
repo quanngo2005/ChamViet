@@ -3,7 +3,6 @@ import { ContentContainer } from '../../common/layout/ContentContainer';
 import { PageSection } from '../../common/layout/PageSection';
 import { PRODUCT_DETAIL_COPY } from '../../../data/productDetail';
 import { BookOpen } from 'lucide-react';
-import heroChildAr from '../../../assets/hero-child-ar.png';
 
 export interface ProductStorySectionProps {
   heading?: string;
@@ -21,9 +20,11 @@ export function ProductStorySection({ heading, paragraphs }: ProductStorySection
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            gap: { xs: 6, md: '55px' },
+            gridTemplateColumns: '1fr',
+            gap: { xs: 4, md: 5 },
             alignItems: 'center',
+            maxWidth: 860,
+            mx: 'auto',
           }}
         >
           {/* Left: text */}
@@ -53,7 +54,7 @@ export function ProductStorySection({ heading, paragraphs }: ProductStorySection
               {storyParagraphs.map((p) => (
                 <Typography
                   key={p}
-                  sx={{ color: '#475569', fontSize: 16, lineHeight: 2, whiteSpace: 'pre-line' }}
+                  sx={{ color: '#475569', fontSize: 16, lineHeight: 2, textAlign: 'justify', whiteSpace: 'pre-line' }}
                 >
                   {p}
                 </Typography>
@@ -61,34 +62,6 @@ export function ProductStorySection({ heading, paragraphs }: ProductStorySection
             </Stack>
           </Stack>
 
-          {/* Right: rotated image card — gold border per Figma */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', pt: { xs: 4, md: 0 } }}>
-            <Box
-              sx={{
-                width: '100%',
-                maxWidth: 550,
-                transform: 'rotate(3deg)',
-                backgroundColor: 'rgba(212, 175, 55, 0.05)',
-                border: '1px solid rgba(212, 175, 55, 0.20)',
-                borderRadius: '8px',
-                p: 2,
-                boxShadow: '0px 25px 50px -12px rgba(0,0,0,0.25)',
-              }}
-            >
-              <Box
-                component="img"
-                src={heroChildAr}
-                alt="Bé trải nghiệm câu chuyện văn hóa qua Chạm Việt"
-                sx={{
-                  width: '100%',
-                  aspectRatio: '16/9',
-                  display: 'block',
-                  objectFit: 'cover',
-                  borderRadius: '4px',
-                }}
-              />
-            </Box>
-          </Box>
         </Box>
       </ContentContainer>
     </PageSection>

@@ -1006,7 +1006,7 @@ function FinalCta() {
 ───────────────────────────────────────────── */
 export default function AboutUsPage() {
   return (
-    <Box sx={{ width: "100%", backgroundColor: "var(--bg)" }}>
+    <Box sx={{ width: "100%", backgroundColor: "var(--bg)", "& p": { textAlign: "justify" } }}>
       <HeroSection />
       <MissionSection />
       <StorySection />
