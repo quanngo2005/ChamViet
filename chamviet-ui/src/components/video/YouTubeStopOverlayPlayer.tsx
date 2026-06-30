@@ -440,6 +440,7 @@ export default function YouTubeStopOverlayPlayer({
           ref={nativeVideoRef}
           src={nativeVideoSrc}
           controls
+          controlsList="nofullscreen"
           playsInline
           preload="metadata"
           onPlay={() => {
@@ -476,7 +477,7 @@ export default function YouTubeStopOverlayPlayer({
           opts={{
             width: "100%",
             height: "100%",
-            playerVars: { rel: 0, modestbranding: 1, controls: 1, disablekb: 1, fs: 1 },
+            playerVars: { rel: 0, modestbranding: 1, controls: 1, disablekb: 1, fs: 0 },
           }}
           style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}
         />
