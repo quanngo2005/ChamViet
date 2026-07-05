@@ -169,73 +169,126 @@ function CinemaHero({
         disableGutters={isLandscapePhone}
         sx={isLandscapePhone ? { height: "100vh" } : undefined}
       >
+        {/*
+         * Safari iOS fix: the fullscreen button must live OUTSIDE the heroRef
+         * element. When the YouTube iframe is playing, it creates a stacking
+         * context that covers all children of heroRef on iOS Safari, making
+         * the button invisible / untappable. The outer wrapper provides a
+         * shared positioning context so the button floats above the iframe.
+         */}
         <Box
-          ref={heroRef}
           sx={{
             position: "relative",
-            borderRadius: isLandscapePhone ? 0 : { xs: 2.5, md: 4 },
-            overflow: "hidden",
-            border: isLandscapePhone ? "none" : `1px solid ${COLORS.borderSoft}`,
-            boxShadow: isLandscapePhone ? "none" : "0px 28px 70px rgba(0, 0, 0, 0.46)",
-            height: isLandscapePhone ? "100vh" : "auto",
-            width: "100%",
-            backgroundColor: "#000000",
+            isolation: "isolate",
             ...(isVideoExpanded && !isNativeFullscreen
               ? {
                 position: "fixed",
                 inset: 0,
                 zIndex: 1300,
-                width: "100vw",
-                height: "100vh",
-                minHeight: "100svh",
-                border: "none",
-                borderRadius: 0,
-                boxShadow: "none",
-                "@supports (height: 100dvh)": {
-                  height: "100dvh",
-                  minHeight: "100dvh",
-                },
               }
               : {}),
-            ...(isVideoExpanded
-              ? {
-                ".story-video-frame": {
-                  height: "100%",
-                  width: "100%",
-                },
-              }
-              : {}),
-            "&:fullscreen": {
-              border: "none",
-              borderRadius: 0,
-              boxShadow: "none",
-              height: "100vh",
-              width: "100vw",
-            },
-            "&:fullscreen .story-video-frame": {
-              height: "100%",
-              width: "100%",
-            },
           }}
         >
           <Box
-            className="story-video-frame"
+            ref={heroRef}
             sx={{
-              ...(isLandscapePhone
-                ? { width: "100%", height: "100%" }
-                : { aspectRatio: "16 / 9", width: "100%" }),
               position: "relative",
+              borderRadius: isLandscapePhone ? 0 : { xs: 2.5, md: 4 },
+              overflow: "hidden",
+              border: isLandscapePhone ? "none" : `1px solid ${COLORS.borderSoft}`,
+              boxShadow: isLandscapePhone ? "none" : "0px 28px 70px rgba(0, 0, 0, 0.46)",
+              height: isLandscapePhone ? "100vh" : "auto",
+              width: "100%",
+              backgroundColor: "#000000",
+              ...(isVideoExpanded && !isNativeFullscreen
+                ? {
+                  width: "100vw",
+                  height: "100vh",
+                  minHeight: "100svh",
+                  border: "none",
+                  borderRadius: 0,
+                  boxShadow: "none",
+                  "@supports (height: 100dvh)": {
+                    height: "100dvh",
+                    minHeight: "100dvh",
+                  },
+                }
+                : {}),
+              ...(isVideoExpanded
+                ? {
+                  ".story-video-frame": {
+                    height: "100%",
+                    width: "100%",
+                  },
+                }
+                : {}),
+              "&:fullscreen": {
+                border: "none",
+                borderRadius: 0,
+                boxShadow: "none",
+                height: "100vh",
+                width: "100vw",
+              },
+              "&:fullscreen .story-video-frame": {
+                height: "100%",
+                width: "100%",
+              },
             }}
           >
-            <YouTubeStopOverlayPlayer
-              videoId={videoId}
-              registry={VIDEO_REGISTRY}
-              storyConfig={storyConfig ?? undefined}
-              colors={COLORS}
-              voiceState={voiceState}
-            />
+            <Box
+              className="story-video-frame"
+              sx={{
+                ...(isLandscapePhone
+                  ? { width: "100%", height: "100%" }
+                  : { aspectRatio: "16 / 9", width: "100%" }),
+                position: "relative",
+              }}
+            >
+              <YouTubeStopOverlayPlayer
+                videoId={videoId}
+                registry={VIDEO_REGISTRY}
+                storyConfig={storyConfig ?? undefined}
+                colors={COLORS}
+                voiceState={voiceState}
+              />
+            </Box>
           </Box>
-          
+
+          {/*
+           * Fullscreen button is intentionally a sibling of heroRef (not a
+           * child). This guarantees it paints above the YouTube iframe on
+           * every browser, including Safari iOS where iframes swallow pointer
+           * events from their child elements.
+           */}
+          <Tooltip title={fullscreenButtonLabel} placement="left">
+            <IconButton
+              aria-label={fullscreenButtonLabel}
+              onClick={handleToggleFullscreen}
+              sx={{
+                position: "absolute",
+                bottom: { xs: 12, md: 16 },
+                right: { xs: 12, md: 16 },
+                // Must exceed any z-index created by the YouTube iframe
+                zIndex: 20,
+                pointerEvents: "auto",
+                bgcolor: "rgba(0, 0, 0, 0.5)",
+                color: "#fff",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                width: { xs: 44, md: 48 },
+                height: { xs: 44, md: 48 },
+                // Larger tap target on touch devices
+                "@media (pointer: coarse)": {
+                  width: 48,
+                  height: 48,
+                },
+                "&:hover": { bgcolor: "rgba(0, 0, 0, 0.7)" },
+                "&:active": { bgcolor: "rgba(0, 0, 0, 0.8)" },
+              }}
+            >
+              {isVideoExpanded ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+          </Tooltip>
         </Box>
       </Container>
     </Box>
