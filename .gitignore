@@ -54,5 +54,5 @@ ChamViet_AI.postman_collection.json
 /.gitnexus
 .gitnexus/lbug
 /.gitnexus
-.gitnexus/lbug
 *.pyc
+chamviet-ai/voice-service/**/__pycache__/

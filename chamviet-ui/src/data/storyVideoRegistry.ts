@@ -65,7 +65,7 @@ const STORY_VIDEO_ENTRIES: StoryVideoEntry[] = [
   },
 ];
 
-const FEATURED_STORY_SLUGS = ["su-tich-ho-guom"] as const;
+const FEATURED_STORY_SLUGS = ["su-tich-ho-guom", "su-tich-thanh-giong"] as const;
 
 function normalizeKey(value: string): string {
   return value
